@@ -7,10 +7,13 @@ import Text.Printf
 
 import AdventOfCode
 
+import ChronalCalibration (chronalCalibration)
+
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
-solve n _ = printf "No solver for day %d yet.\n" n
+solve 1 = chronalCalibration . parseInputNumbersWithSign
+solve n = printf "No solver for day %d yet.%s\n" n
 
 getInput :: Int -> IO String
 getInput day = do

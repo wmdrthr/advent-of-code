@@ -12,6 +12,8 @@ dependencies:
 
 library:
   source-dirs: src
+  dependencies:
+    - containers >= 0.5.11.0
 
 executables:
   aoc:
@@ -36,3 +38,4 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - adventofcode
+      - hspec
