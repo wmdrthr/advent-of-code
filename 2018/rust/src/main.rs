@@ -4,6 +4,8 @@ use std::fs;
 use std::env;
 use std::process::exit;
 
+pub mod chronalcalibration;
+
 fn get_data(day: u8) -> String {
     let filename = format!("../inputs/input{:02}.txt", day);
     let contents = match fs::read_to_string(filename) {
@@ -22,9 +24,10 @@ fn usage() {
 }
 
 fn run(day: u8) -> bool {
-    let _data = get_data(day);
+    let data = get_data(day);
 
     match day {
+        1 => { chronalcalibration::solve(data); true}
         _ => {
             println!("no solver for day {} yet.", day);
             false
