@@ -65,6 +65,22 @@ def get_data(day):
 ################################################################################
 # Solvers
 
+def solve1(data):
+    # Chronal Calibration
+
+    changes = [int(x) for x in data.split('\n')]
+    frequency = functools.reduce(operator.add, changes, 0)
+    print(frequency)
+
+    mem = {}
+    frequency = 0
+    for change in itertools.cycle(changes):
+        frequency += change
+        if frequency in mem:
+            print(frequency)
+            break
+        else:
+            mem[frequency] = True
 
 ################################################################################
 
