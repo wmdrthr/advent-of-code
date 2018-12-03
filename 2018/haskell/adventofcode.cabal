@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1a59b85d1f44fe1b2e9e7fe5b11e24ebb09fb6114850130a2354cf231f571f02
+-- hash: ecc67205ec1eb747b3cdb2590558f3803fef933b8cca86b19f38142c38c47518
 
 name:           adventofcode
 version:        0.1.0.0
@@ -23,13 +23,15 @@ library
   exposed-modules:
       AdventOfCode
       ChronalCalibration
+      InventoryManagement
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
-    , containers >=0.5.11.0
+      array
+    , base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 executable aoc
@@ -42,8 +44,8 @@ executable aoc
   build-depends:
       adventofcode
     , base >=4.7 && <5
-    , directory >=1.3.1.5
-    , timeit >=2.0
+    , directory
+    , timeit
   default-language: Haskell2010
 
 test-suite aoc-test
@@ -51,6 +53,7 @@ test-suite aoc-test
   main-is: Spec.hs
   other-modules:
       ChronalCalibrationSpec
+      InventoryManagementSpec
       Paths_adventofcode
   hs-source-dirs:
       test

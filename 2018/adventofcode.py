@@ -82,6 +82,57 @@ def solve1(data):
         else:
             mem[frequency] = True
 
+
+def solve2(data):
+    # Inventory Management System
+
+    def countletters(boxid):
+        counts = [0 for _ in range(26)]
+        start = ord('a')
+        for letter in boxid:
+            counts[ord(letter) - start] += 1
+        return counts
+
+    def hamming_one(bx, by):
+        difference = 0
+        for i in range(len(bx)):
+            if bx[i] != by[i]:
+                difference += 1
+            if difference > 1:
+                return False
+        if difference == 1:
+            return True
+        else:
+            return False
+
+    boxids = data.split('\n')
+    twocount = threecount = 0
+    for boxid in boxids:
+        counts = countletters(boxid)
+        twice = thrice = False
+        for count in counts:
+            if count == 2:
+                twice = True
+            elif count == 3:
+                thrice = True
+            if twice and thrice:
+                break
+        if twice:
+            twocount += 1
+        if thrice:
+            threecount += 1
+    result = twocount * threecount
+    print(result)
+
+    for (bx, by) in itertools.product(boxids, repeat=2):
+        if hamming_one(bx, by):
+            result = []
+            for i in range(len(bx)):
+                if bx[i] == by[i]:
+                    result.append(bx[i])
+            print(''.join(result))
+            break
+
 ################################################################################
 
 if __name__ == '__main__':
@@ -90,6 +141,7 @@ if __name__ == '__main__':
         day = int(sys.argv[1])
     else:
         day = guess_day()
+    print('Day {}'.format(day))
 
     if len(sys.argv) > 2:
         if sys.argv[2] == '-':
