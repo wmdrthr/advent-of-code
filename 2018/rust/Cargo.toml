@@ -6,3 +6,4 @@ authors = ["Shantanu Joshi <weemadarthur@yggdrasil.in>"]
 [dependencies]
 elapsed = "0.1"
 itertools = "0.7"
+regex = "1"

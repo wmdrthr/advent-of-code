@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os, sys
+import os, sys, re
 import json
 import errno
 import atexit
@@ -9,9 +9,6 @@ from datetime import datetime
 import itertools
 import timeit
 
-import pytz
-import requests
-
 import itertools
 import functools
 import operator
@@ -19,6 +16,8 @@ import collections
 import array
 import queue
 
+import pytz
+import requests
 
 SESSION    = '53616c7465645f5f9838857d1efde02a4ef614ed68c0d049e85848042c7adb008a78168f2d2d1eb29f92db86ff9e351d'
 USER_AGENT = 'aocd.py/v0.3.6'
@@ -132,6 +131,26 @@ def solve2(data):
                     result.append(bx[i])
             print(''.join(result))
             break
+
+def solve3(data):
+    # No Matter How You Slice It
+
+    claims = map(lambda l: map(int, re.findall(r'\d+', l)), data.split('\n'))
+    m = collections.defaultdict(list)
+    overlaps = {}
+    for (claimid, x, y, width, height) in claims:
+        overlaps[claimid] = set()
+        for i in range(x, x+width):
+            for j in range(y, y + height):
+                if m[(i,j)]:
+                    for otherclaimid in m[(i,j)]:
+                        overlaps[claimid].add(otherclaimid)
+                        overlaps[otherclaimid].add(claimid)
+                m[(i,j)].append(claimid)
+
+    print(len([k for k in m if len(m[k]) > 1]))
+    print([k for k in overlaps if len(overlaps[k]) == 0])
+
 
 ################################################################################
 

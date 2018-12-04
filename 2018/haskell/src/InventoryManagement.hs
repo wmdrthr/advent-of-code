@@ -4,28 +4,17 @@ module InventoryManagement (
   solve2
   ) where
 
-import AdventOfCode
+import AdventOfCode (cardinality, count)
 
 import           Data.Map (Map)
 import qualified Data.Map as Map
 
--- | Build a map with the cardinalities of each letter in the given
--- String
---
-  -- >>> cardinality "foobar"
-  -- fromList [('a',1),('b',1),('f',1),('o',2),('r',1)]
-cardinalities :: Ord a => [a] -> Map a Int
-cardinalities xs = Map.fromListWith (+) [ (x,1) | x <- xs]
-
--- | count number of items that satisfy the predicate
-count :: Ord a => (a -> Bool) -> [a] -> Int
-count p xs = length (filter p xs)
 
 solve1 :: [String] -> Int
 solve1 input = twoCount * threeCount
-  where inputCardinalities = map cardinalities input
-        twoCount = count (elem 2) inputCardinalities
-        threeCount = count (elem 3) inputCardinalities
+  where counts = map cardinality input
+        twoCount = count (elem 2) counts
+        threeCount = count (elem 3) counts
 
 -- | Find the common elements between two strings, which are different
 -- in only one position.

@@ -9,12 +9,14 @@ import AdventOfCode
 
 import ChronalCalibration (chronalCalibration)
 import InventoryManagement (inventoryManagement)
+import FabricSlices (fabricSlices)
 
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
 solve 1 = chronalCalibration . parseInputNumbersWithSign
 solve 2 = inventoryManagement . lines
+solve 3 = fabricSlices . lines
 solve n = printf "No solver for day %d yet.%s\n" n
 
 getInput :: Int -> IO String

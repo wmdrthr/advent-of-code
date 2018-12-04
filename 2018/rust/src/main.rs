@@ -1,5 +1,6 @@
 #[macro_use] extern crate itertools;
 extern crate elapsed;
+extern crate regex;
 
 use std::fs;
 use std::io::{self, Read};
@@ -8,6 +9,7 @@ use std::process::exit;
 
 pub mod chronalcalibration;
 pub mod inventorymanagement;
+pub mod fabricslices;
 
 fn get_data(day: u8) -> String {
     let args: Vec<String> = env::args().collect();
@@ -40,8 +42,9 @@ fn run(day: u8) -> bool {
     let data = get_data(day);
 
     match day {
-        1 => { chronalcalibration::solve(data); true }
+        1 => { chronalcalibration::solve(data);   true }
         2 => { inventorymanagement::solve(&data); true }
+        3 => { fabricslices::solve(&data);        true }
         _ => {
             println!("no solver for day {} yet.", day);
             false

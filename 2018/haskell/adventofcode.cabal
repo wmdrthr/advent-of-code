@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ecc67205ec1eb747b3cdb2590558f3803fef933b8cca86b19f38142c38c47518
+-- hash: 34998849d9635f976cc3b267b9801b7f0cdffcd36f4c8f9a07cffb985cb9a1b4
 
 name:           adventofcode
 version:        0.1.0.0
@@ -23,15 +23,16 @@ library
   exposed-modules:
       AdventOfCode
       ChronalCalibration
+      FabricSlices
       InventoryManagement
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
       src
   build-depends:
-      array
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , containers
+    , regex-posix
   default-language: Haskell2010
 
 executable aoc
@@ -53,6 +54,7 @@ test-suite aoc-test
   main-is: Spec.hs
   other-modules:
       ChronalCalibrationSpec
+      FabricSlicesSpec
       InventoryManagementSpec
       Paths_adventofcode
   hs-source-dirs:

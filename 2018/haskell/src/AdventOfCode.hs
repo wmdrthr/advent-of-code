@@ -2,8 +2,13 @@ module AdventOfCode (
   parseInputSimple,
   parseInputNumbers,
   parseInputNumbersWithSign,
-  parseInputNumberLists
+  parseInputNumberLists,
+  cardinality,
+  count
   ) where
+
+import           Data.Map (Map)
+import qualified Data.Map as Map
 
 toDigits :: Integer -> [Int]
 toDigits number
@@ -13,25 +18,53 @@ toDigits number
     remainder = fromIntegral (number `mod` 10) :: Int
     quotient = number `div` 10
 
--- parse a String into individual digits
--- "1212" -> [1, 2, 1, 2]
+-- | Convert a String containing a number into a list of its
+-- individual digits.
+--
+-- >>> parseInputSimple "1212"
+-- [1, 2, 1, 2]
 parseInputSimple :: String -> [Int]
 parseInputSimple string = toDigits (read string :: Integer)
 
--- parse a String containing a number on each line into a list of
--- numbers e.g. "12\n34\n56" -> [12, 34, 56]
+-- | Parse a String containing a number on each line into a list of
+-- numbers.
+--
+-- >>> parseInputNumbers "12\n34\n56"
+--- [12, 34, 56]
 parseInputNumbers :: String -> [Int]
 parseInputNumbers = (map read) . lines
 
--- parse a String containing a number on each line into a list of
--- numbers; each number has either a '+' or a '-' sign
--- e.g. "+12\n-34\n+56" -> [12, -34, 56]
+-- | Parse a String containing a number on each line into a list of
+-- numbers; each number has either a '+' or a '-' sign.
+--
+-- >>> parseInputNumbersWithSign "+12\n-34\n+56"
+-- [12, -34, 56]
 parseInputNumbersWithSign :: String -> [Int]
 parseInputNumbersWithSign = (map readInt) . lines
   where readInt ('+':xs) = read xs
         readInt xs       = read xs
 
--- parse a String containing multiple numbers on each line into a list
--- of list of numbers e.g. "1\t2\t3\n4\t5\t6" -> [ [1, 2, 3], [4, 5, 6]]
+-- | Parse a String containing multiple numbers on each line into a
+-- list of list of numbers.
+--
+-- >>> parseInputNumberList" 1\t2\t3\n4\t5\t6"
+-- [[1, 2, 3], [4, 5, 6]]
 parseInputNumberLists :: String -> [[Int]]
 parseInputNumberLists string = map (map read) $ map words $ lines string
+
+
+-- | Calclate the number of occurences of each item in a given list.
+--
+-- >>> cardinality "foobar"
+-- fromList [('a',1),('b',1),('f',1),('o',2),('r',1)]
+cardinality :: Ord a => [a] -> Map a Int
+cardinality xs = Map.fromListWith (+) [ (x,1) | x <- xs]
+
+-- | Count the number of elements in a list (or any foldable) matching a predicate.
+--
+-- >>> count even [1 .. 10]
+-- 5
+-- >>> count (> 1) (cardinality "foobar")
+-- 1
+count :: Foldable t => (a -> Bool) -> t a -> Int
+count pred = foldl (\acc x -> if pred x then acc + 1 else acc) 0

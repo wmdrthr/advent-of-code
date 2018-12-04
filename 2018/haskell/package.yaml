@@ -14,7 +14,7 @@ library:
   source-dirs: src
   dependencies:
     - containers
-    - array
+    - regex-posix
 
 executables:
   aoc:
