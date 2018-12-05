@@ -151,6 +151,42 @@ def solve3(data):
     print(len([k for k in m if len(m[k]) > 1]))
     print([k for k in overlaps if len(overlaps[k]) == 0])
 
+def solve4(data):
+    # Repose Record
+
+    lines = [l.strip() for l in sorted(data.split('\n'))]
+
+    detail = {}
+    current_guard = None
+    start = 0
+    for line in lines:
+        line = line .strip()
+        if line == '':
+            continue
+        numbers = [int(x) for x in re.findall(r'\d+', line)]
+        if line[-1] == 't':
+            current_guard = numbers[-1]
+            if current_guard not in detail:
+                detail[current_guard] = collections.defaultdict(int)
+        elif line[-2:] == 'ep':
+            start =  numbers[4]
+        elif line[-2:] == 'up':
+            for hour in range(start, numbers[4]):
+                detail[current_guard][hour] += 1
+                start = 0
+
+
+    # part 1
+    sleepiest_guard  = max(detail.keys(), key = lambda k : sum(detail[k].values()))
+    max_hours_slept  = max(detail[sleepiest_guard].keys(), key = lambda k : detail[sleepiest_guard][k])
+    print('{} * {} = {}'.format(sleepiest_guard, max_hours_slept, sleepiest_guard * max_hours_slept))
+
+    # part 2
+    sleepiest_guard  = max(detail.keys(), key = lambda k : max(detail[k].values() or [0,]))
+    sleepiest_minute = max(detail[sleepiest_guard].keys(), key = lambda k : detail[sleepiest_guard][k])
+
+    print('{} * {} = {}'.format(sleepiest_minute, sleepiest_guard, sleepiest_guard * sleepiest_minute))
+
 
 ################################################################################
 
@@ -165,6 +201,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         if sys.argv[2] == '-':
             data = sys.stdin.read()
+            sys.stdin = open('/dev/tty')
         else:
             data = sys.argv[2]
     else:
