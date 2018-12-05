@@ -8,6 +8,7 @@ from pprint import pprint
 from datetime import datetime
 import itertools
 import timeit
+import string
 
 import itertools
 import functools
@@ -186,6 +187,45 @@ def solve4(data):
     sleepiest_minute = max(detail[sleepiest_guard].keys(), key = lambda k : detail[sleepiest_guard][k])
 
     print('{} * {} = {}'.format(sleepiest_minute, sleepiest_guard, sleepiest_guard * sleepiest_minute))
+
+def solve5(data):
+    # Alchemical Reduction
+
+    polymer = [ord(c) for c in data]
+
+    def reaction(unita, unitb):
+        return (abs(unita - unitb) == 32)
+
+    def react(polymer):
+        while True:
+            nochange = True
+            if len(polymer) == 2:
+                if reaction(polymer[0], polymer[1]):
+                    polymer = []
+                break
+            for idx, unit in enumerate(polymer):
+                if idx < len(polymer) - 1:
+                    if (reaction(polymer[idx], polymer[idx+1])):
+                        polymer = polymer[:idx] + polymer[idx+2:]
+                        nochange = False
+            if nochange:
+                break
+        return polymer
+
+    print(len(react(polymer)))
+
+    def process(units):
+
+        mpolymer = [ord(c) for c in data if c not in units]
+        return len(react(mpolymer))
+
+    min = len(data)
+    for unit in [c[0] + c[1] for c in zip(string.ascii_lowercase, string.ascii_uppercase)]:
+        l = process(unit)
+        print('{}: {}'.format(unit, l))
+        if l < min:
+            min = l
+    print(min)
 
 
 ################################################################################
