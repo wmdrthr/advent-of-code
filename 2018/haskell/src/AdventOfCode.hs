@@ -3,12 +3,27 @@ module AdventOfCode (
   parseInputNumbers,
   parseInputNumbersWithSign,
   parseInputNumberLists,
+  getInput,
   cardinality,
-  count
+  count,
+  maxKey
   ) where
 
-import           Data.Map (Map)
+import Text.Printf
+import System.Directory (doesFileExist)
+import Data.Map (Map)
+import Data.List (maximumBy)
+import Data.Ord (comparing)
+
 import qualified Data.Map as Map
+
+getInput :: Int -> IO String
+getInput day = do
+  fileExists <- doesFileExist inputFile
+  if fileExists
+    then readFile inputFile
+    else readFile "/dev/null"
+  where inputFile = printf "../inputs/input%02d.txt" day
 
 toDigits :: Integer -> [Int]
 toDigits number
@@ -68,3 +83,8 @@ cardinality xs = Map.fromListWith (+) [ (x,1) | x <- xs]
 -- 1
 count :: Foldable t => (a -> Bool) -> t a -> Int
 count pred = foldl (\acc x -> if pred x then acc + 1 else acc) 0
+
+
+-- | Find the key with the largest value in a Map
+maxKey :: Ord a => Map k a -> k
+maxKey = fst . maximumBy (comparing snd) . Map.toList

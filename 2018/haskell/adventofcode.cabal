@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 34998849d9635f976cc3b267b9801b7f0cdffcd36f4c8f9a07cffb985cb9a1b4
+-- hash: 597e29c2837a498af4e0955972a1aa15444a9a869f66e982707b09d5ae817af5
 
 name:           adventofcode
 version:        0.1.0.0
@@ -25,6 +25,7 @@ library
       ChronalCalibration
       FabricSlices
       InventoryManagement
+      SleepingGuards
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
@@ -32,7 +33,9 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , directory
     , regex-posix
+    , time
   default-language: Haskell2010
 
 executable aoc
@@ -45,7 +48,6 @@ executable aoc
   build-depends:
       adventofcode
     , base >=4.7 && <5
-    , directory
     , timeit
   default-language: Haskell2010
 
@@ -56,6 +58,7 @@ test-suite aoc-test
       ChronalCalibrationSpec
       FabricSlicesSpec
       InventoryManagementSpec
+      SleepingGuardsSpec
       Paths_adventofcode
   hs-source-dirs:
       test
