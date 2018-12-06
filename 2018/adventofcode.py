@@ -68,7 +68,7 @@ def get_data(day):
 def solve1(data):
     # Chronal Calibration
 
-    changes = [int(x) for x in data.split('\n')]
+    changes = [int(x) for x in data]
     frequency = functools.reduce(operator.add, changes, 0)
     print(frequency)
 
@@ -105,9 +105,8 @@ def solve2(data):
         else:
             return False
 
-    boxids = data.split('\n')
     twocount = threecount = 0
-    for boxid in boxids:
+    for boxid in data:
         counts = countletters(boxid)
         twice = thrice = False
         for count in counts:
@@ -124,7 +123,7 @@ def solve2(data):
     result = twocount * threecount
     print(result)
 
-    for (bx, by) in itertools.product(boxids, repeat=2):
+    for (bx, by) in itertools.product(data, repeat=2):
         if hamming_one(bx, by):
             result = []
             for i in range(len(bx)):
@@ -136,7 +135,7 @@ def solve2(data):
 def solve3(data):
     # No Matter How You Slice It
 
-    claims = map(lambda l: map(int, re.findall(r'\d+', l)), data.split('\n'))
+    claims = map(lambda l: map(int, re.findall(r'\d+', l)), data)
     m = collections.defaultdict(list)
     overlaps = {}
     for (claimid, x, y, width, height) in claims:
@@ -155,7 +154,7 @@ def solve3(data):
 def solve4(data):
     # Repose Record
 
-    lines = [l.strip() for l in sorted(data.split('\n'))]
+    lines = sorted(data)
 
     detail = {}
     current_guard = None
@@ -191,7 +190,7 @@ def solve4(data):
 def solve5(data):
     # Alchemical Reduction
 
-    polymer = [ord(c) for c in data]
+    polymer = [ord(c) for c in data[0]]
 
     def reaction(unita, unitb):
         return (abs(unita - unitb) == 32)
@@ -216,7 +215,7 @@ def solve5(data):
 
     def process(units):
 
-        mpolymer = [ord(c) for c in data if c not in units]
+        mpolymer = [ord(c) for c in data[0] if c not in units]
         return len(react(mpolymer))
 
     min = len(data)
@@ -226,6 +225,48 @@ def solve5(data):
         if l < min:
             min = l
     print(min)
+
+def solve6(data):
+    # Chronal Coordinates
+
+    points = [(int(p[0]), int(p[1])) for p in map(lambda l : re.findall(r'\d+', l), data)]
+    maxint = 4294967296
+
+    minx = miny = maxint
+    maxx = maxy = 0
+    for p in points:
+        if p[0] < minx: minx = p[0]
+        if p[0] > maxx: maxx = p[0]
+        if p[1] < miny: miny = p[1]
+        if p[1] > maxy: maxy = p[1]
+
+    def edge_point(point):
+        x, y = point
+        return (x == minx or y == miny or x == maxx or y == maxy)
+
+    def distance(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    grid = collections.defaultdict(int)
+    count = 0
+    for x in range(minx, maxx + 1):
+        for y in range(miny, maxy + 1):
+            distances = [distance((x, y), p) for p in points]
+            totaldistance = sum(distances)
+            if totaldistance < 10000:
+                count += 1
+            mindistance = min(distances)
+            mindistancepoint = points[distances.index(mindistance)]
+            mindistances = [d for d in filter(lambda d: d == mindistance, distances)]
+            if len(mindistances) > 1:
+                continue
+            if edge_point((x, y)):
+                grid[mindistancepoint] = maxint
+            grid[mindistancepoint] += 1
+
+    k = max([k for k in grid.keys() if grid[k] < maxint], key = lambda k : grid[k])
+    print(k, grid[k])
+    print(count)
 
 
 ################################################################################
@@ -246,6 +287,8 @@ if __name__ == '__main__':
             data = sys.argv[2]
     else:
         data = get_data(day)
+
+    data = [line.strip() for line in data.split('\n') if line.strip() != '']
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
