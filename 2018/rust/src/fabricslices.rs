@@ -1,4 +1,3 @@
-
 use regex::Regex;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -6,19 +5,18 @@ use std::collections::HashSet;
 #[derive(Debug)]
 struct Claim {
     id: u32,
-    x:  u32,
-    y:  u32,
-    width:  u32,
+    x: u32,
+    y: u32,
+    width: u32,
     height: u32,
 }
 
 fn parse_claim(pattern: &Regex, s: &str) -> Claim {
-
-    let mut v: Vec<u32> = vec![];
-
-    for mat in pattern.find_iter(s) {
-        v.push(s[mat.start() .. mat.end()].parse::<u32>().unwrap());
-    }
+    let v: Vec<u32> = pattern
+        .find_iter(s)
+        .into_iter()
+        .map(|m| m.as_str().parse::<u32>().unwrap())
+        .collect();
 
     let claim = Claim {
         id: v[0],
@@ -31,27 +29,27 @@ fn parse_claim(pattern: &Regex, s: &str) -> Claim {
     claim
 }
 
-fn resolve_claim(claim: &Claim) -> Vec<(u32,u32)> {
+fn resolve_claim(claim: &Claim) -> Vec<(u32, u32)> {
+    let mut v: Vec<(u32, u32)> = vec![];
 
-    let mut v: Vec<(u32,u32)> = vec![];
-
-    for i in claim.x .. claim.x + claim.width {
-        for j in claim.y .. claim.y + claim.height {
+    for i in claim.x..claim.x + claim.width {
+        for j in claim.y..claim.y + claim.height {
             v.push((i, j));
         }
     }
     v
 }
 
-pub fn solve(data: &String) {
-
+pub fn solve(data: String) {
     let pattern: Regex = Regex::new(r"\d+").unwrap();
 
-    let mut fabric: HashMap<(u32,u32), Vec<u32>> = HashMap::new();
+    let mut fabric: HashMap<(u32, u32), Vec<u32>> = HashMap::new();
     let mut overlaps: HashMap<u32, HashSet<u32>> = HashMap::new();
 
     for line in data.split('\n') {
-        if line.len() == 0 { continue; }
+        if line.len() == 0 {
+            continue;
+        }
         let claim = parse_claim(&pattern, &line);
 
         overlaps.insert(claim.id, HashSet::new());
@@ -71,7 +69,9 @@ pub fn solve(data: &String) {
 
     let mut part1: u32 = 0;
     for (_key, val) in fabric {
-        if val.len() > 1 { part1 += 1; }
+        if val.len() > 1 {
+            part1 += 1;
+        }
     }
 
     println!("{}", part1);

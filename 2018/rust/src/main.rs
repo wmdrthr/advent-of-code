@@ -10,6 +10,7 @@ use std::process::exit;
 pub mod chronalcalibration;
 pub mod inventorymanagement;
 pub mod fabricslices;
+pub mod sleepingguards;
 
 fn get_data(day: u8) -> String {
     let args: Vec<String> = env::args().collect();
@@ -42,9 +43,10 @@ fn run(day: u8) -> bool {
     let data = get_data(day);
 
     match day {
-        1 => { chronalcalibration::solve(data);   true }
-        2 => { inventorymanagement::solve(&data); true }
-        3 => { fabricslices::solve(&data);        true }
+        1 => { chronalcalibration::solve(data);  true }
+        2 => { inventorymanagement::solve(data); true }
+        3 => { fabricslices::solve(data);        true }
+        4 => { sleepingguards::solve(data);      true }
         _ => {
             println!("no solver for day {} yet.", day);
             false
