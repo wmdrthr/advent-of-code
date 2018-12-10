@@ -16,6 +16,7 @@ import operator
 import collections
 import array
 import queue
+import heapq
 
 import pytz
 import requests
@@ -267,6 +268,87 @@ def solve6(data):
     k = max([k for k in grid.keys() if grid[k] < maxint], key = lambda k : grid[k])
     print(k, grid[k])
     print(count)
+
+def solve7(data):
+    # The Sum of Its Parts
+
+    nodes = set()
+    graph = collections.defaultdict(list)
+    parents = collections.defaultdict(list)
+
+    for line in data:
+        a, b = line[5], line[-12]
+        nodes.add(a)
+        nodes.add(b)
+        graph[a].append(b)
+        parents[b].append(a)
+
+    def available(node):
+        for parent in parents[node]:
+            if parent not in pathset:
+                return False
+        return True
+
+    # Part 1
+    heap = [node for node in nodes if node not in parents]
+    heapq.heapify(heap)
+
+    path = []
+    pathset = set()
+
+    while True:
+        if len(heap) == 0:
+            break
+
+        nextnode = heapq.heappop(heap)
+        pathset.add(nextnode)
+        for child in graph[nextnode]:
+            if available(child):
+                heapq.heappush(heap, child)
+
+        path.append(nextnode)
+
+    print(''.join(path))
+
+    # Part 2
+    base_task_time = 60
+    def task_time(task):
+        return (ord(task) - ord('A') + base_task_time + 1)
+
+    nworkers = 5
+    workers = [(0,0) for _ in range(nworkers)]
+
+    heap = [node for node in nodes if node not in parents]
+    heapq.heapify(heap)
+
+    path = []
+    pathset = set()
+
+    counter = 0
+    while True:
+        # assign tasks
+        for idx in range(nworkers):
+            if workers[idx][1] == 0:
+                if len(heap) == 0:
+                    continue
+                task = heapq.heappop(heap)
+                workers[idx] = (task, task_time(task))
+        # work on tasks
+        workers = [(t,w-1) if w > 0 else (0, 0) for t,w in workers]
+        # any worker finished
+        for idx in range(nworkers):
+            if workers[idx][1] == 0 and workers[idx][0] != 0:
+                task = workers[idx][0]
+                pathset.add(task)
+                for child in graph[task]:
+                    if available(child):
+                        heapq.heappush(heap, child)
+                if task != '0':
+                    path.append(task)
+        counter += 1
+        if len(path) == len(nodes):
+            break
+    print(counter)
 
 
 ################################################################################
