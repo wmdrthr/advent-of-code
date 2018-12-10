@@ -350,6 +350,32 @@ def solve7(data):
             break
     print(counter)
 
+def solve8(data):
+    # Memory Maneuver
+
+    data = [int(x) for x in data[0].split(' ')]
+
+    def parse(data):
+        children, metadata = data[:2]
+        data = data[2:]
+        metadata_total = 0
+        scores = []
+        for child in range(children):
+            child_metadatata_total, score, data = parse(data)
+            metadata_total += child_metadatata_total
+            scores.append(score)
+
+        metadata_total += sum(data[:metadata])
+        if children == 0:
+            score = sum(data[:metadata])
+            return metadata_total, score, data[metadata:]
+        else:
+            score = sum([scores[k - 1] for k in data[:metadata] if k > 0 and k <= len(scores)])
+            return metadata_total, score, data[metadata:]
+
+    total, score, _ = parse(data)
+    print(total)
+    print(score)
 
 ################################################################################
 
