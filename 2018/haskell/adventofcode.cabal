@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 597e29c2837a498af4e0955972a1aa15444a9a869f66e982707b09d5ae817af5
+-- hash: 6a5e8249993faa2a2549237a6d5d62364e8eafa19dba957d9cb153d1582e0648
 
 name:           adventofcode
 version:        0.1.0.0
@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      AlchemicalReduction
       ChronalCalibration
       FabricSlices
       InventoryManagement
@@ -55,6 +56,7 @@ test-suite aoc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AlchemicalReductionSpec
       ChronalCalibrationSpec
       FabricSlicesSpec
       InventoryManagementSpec
