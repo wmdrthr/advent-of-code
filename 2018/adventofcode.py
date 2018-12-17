@@ -191,41 +191,27 @@ def solve4(data):
 def solve5(data):
     # Alchemical Reduction
 
-    polymer = [ord(c) for c in data[0]]
+    polymer = data[0]
 
-    def reaction(unita, unitb):
-        return (abs(unita - unitb) == 32)
+    def react(polymer, unit):
+        if len(polymer) == 0:
+            return unit
+        if unit != polymer[0] and unit.lower() == polymer[0].lower():
+            return polymer[1:]
+        else:
+            return unit + polymer
+    simplified_polymer = functools.reduce(react, polymer, '')
+    print(len(simplified_polymer))
 
-    def react(polymer):
-        while True:
-            nochange = True
-            if len(polymer) == 2:
-                if reaction(polymer[0], polymer[1]):
-                    polymer = []
-                break
-            for idx, unit in enumerate(polymer):
-                if idx < len(polymer) - 1:
-                    if (reaction(polymer[idx], polymer[idx+1])):
-                        polymer = polymer[:idx] + polymer[idx+2:]
-                        nochange = False
-            if nochange:
-                break
-        return polymer
+    base_polymer = simplified_polymer
+    minlen = len(base_polymer)
+    for unit in set(simplified_polymer.lower()):
+        stripped_polymer = [c for c in base_polymer if c.lower() != unit]
+        simplified_polymer = functools.reduce(react, stripped_polymer, '')
+        if len(simplified_polymer) < minlen:
+            minlen = len(simplified_polymer)
 
-    print(len(react(polymer)))
-
-    def process(units):
-
-        mpolymer = [ord(c) for c in data[0] if c not in units]
-        return len(react(mpolymer))
-
-    min = len(data)
-    for unit in [c[0] + c[1] for c in zip(string.ascii_lowercase, string.ascii_uppercase)]:
-        l = process(unit)
-        print('{}: {}'.format(unit, l))
-        if l < min:
-            min = l
-    print(min)
+    print(minlen)
 
 def solve6(data):
     # Chronal Coordinates
