@@ -11,17 +11,22 @@ pub mod chronalcalibration;
 pub mod inventorymanagement;
 pub mod fabricslices;
 pub mod sleepingguards;
+pub mod alchemicalreduction;
 
 fn get_data(day: u8) -> String {
-    let args: Vec<String> = env::args().collect();
-    if args.len() > 2 && args[2] == "-" {
-        let mut buffer = String::new();
-        let stdin = io::stdin();
-        let mut handle = stdin.lock();
+    let mut args: Vec<String> = env::args().collect();
+    if args.len() > 2 {
+        if args[2] == "-" {
+            let mut buffer = String::new();
+            let stdin = io::stdin();
+            let mut handle = stdin.lock();
 
-        handle.read_to_string(&mut buffer)
-            .expect("error reading input data");
-        buffer
+            handle.read_to_string(&mut buffer)
+                .expect("error reading input data");
+            buffer
+        } else {
+            args.remove(2)
+        }
     } else {
         let filename = format!("../inputs/input{:02}.txt", day);
         let contents = match fs::read_to_string(filename) {
@@ -47,6 +52,7 @@ fn run(day: u8) -> bool {
         2 => { inventorymanagement::solve(data); true }
         3 => { fabricslices::solve(data);        true }
         4 => { sleepingguards::solve(data);      true }
+        5 => { alchemicalreduction::solve(data); true }
         _ => {
             println!("no solver for day {} yet.", day);
             false
