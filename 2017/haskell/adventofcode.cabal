@@ -1,16 +1,12 @@
 name:                adventofcode
 version:             0.1.0.0
 synopsis:            Advent of Code 2017 Haskell Solutions
-homepage:            https://github.com/wmdrthr/adventofcode/2017/haskell
 license:             MIT
-author:              Shantanu Joshi
-maintainer:          weeemadarthur@yggdrasil.in
+author:              Shantanu Joshi <weeemadarthur@yggdrasil.in>
 copyright:           Copyright: (c) 2017 Shantanu Joshi
-category:            Miscellaneous
+
 build-type:          Simple
 cabal-version:       >=1.10
-
-description:         Advent of Code 2017 Haskell Solutions
 
 library
   hs-source-dirs:      src
@@ -124,4 +120,5 @@ test-suite day9
 
 source-repository head
   type:     git
-  location: https://github.com/wmdrthr/adventofcode/haskell
+  location: https://github.com/wmdrthr/advent-of-code
+  subdir:   2017/haskell
