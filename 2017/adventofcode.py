@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# encoding: utf-8
 
 import os, sys, re
 import json
@@ -85,32 +86,54 @@ def get_data(day):
             save_cache.registered = True
     return CACHE[key]
 
+def with_solutions(soln1, soln2):
+    def wrapper(f):
+
+        def check(index, expected, actual_g):
+            value = next(actual_g)
+            if expected is not None:
+                if value != expected:
+                    print('Incorrect solution for Part {} (expected "{}", actual "{}")'.format(index, expected, value))
+                    sys.exit(23)
+                print(value)
+
+        def wrapped_method(*args):
+            fgen = f(*args)
+            check(1, soln1, fgen)
+            check(2, soln2, fgen)
+        return wrapped_method
+    return wrapper
+
 ################################################################################
 # Solvers
 
+@with_solutions(1136, 1092)
 def solve1(data):
     # Inverse Captcha
     n = len(data)
-    print(sum(int(a) for a, b in zip(data, data[1:] + data[0]) if a==b))
+    yield sum(int(a) for a, b in zip(data, data[1:] + data[0]) if a==b)
     n = n // 2
-    print(sum(int(a) for a, b in zip(data, data[n:] + data[:n]) if a==b))
+    yield sum(int(a) for a, b in zip(data, data[n:] + data[:n]) if a==b)
 
+
+@with_solutions(41919, 303)
 def solve2(data):
     # Corruption Checksum
     rows = data.split('\n')
     rows = [row.split('\t') for row in rows]
     rows = [sorted(map(int, row), reverse=True) for row in rows]
 
-    print(sum([(row[0] - row[-1]) for row in rows]))
+    yield sum([(row[0] - row[-1]) for row in rows])
 
-    pprint(rows)
     res = 0
     for row in rows:
         for a, b in itertools.combinations(row, 2):
             if a % b == 0:
                 res += a // b
-    print(res)
+    yield res
 
+
+@with_solutions(480, 349975)
 def solve3(data):
     # Spiral Memory
     input = int(data)
@@ -126,9 +149,9 @@ def solve3(data):
     greater = abs(input - square)
 
     if lesser < greater:
-        print(abs(ctr - 1 - lesser) - 1)
+        yield abs(ctr - 1 - lesser) - 1
     else:
-        print(abs(ctr - greater) - 1)
+        yield abs(ctr - greater) - 1
 
     # Part 2 using https://oeis.org/A141481
     oeis_uri = 'https://oeis.org/A141481/b141481.txt'
@@ -139,9 +162,11 @@ def solve3(data):
         a, b = line.split()
         b = int(b)
         if b > input:
-            print(b)
+            yield b
             break
 
+
+@with_solutions(451, 223)
 def solve4(data):
     # High-Entropy Passphrases
     passphrases = data.split('\n')
@@ -153,7 +178,7 @@ def solve4(data):
         if len(words) == len(wordset):
             count += 1
 
-    print(count)
+    yield count
 
     count = 0
     for phrase in passphrases:
@@ -169,8 +194,10 @@ def solve4(data):
         if flag:
             count += 1
 
-    print(count)
+    yield count
 
+
+@with_solutions(360603, 25347697)
 def solve5(data):
     # A Maze of Twisty Trampolines, All Alike
     offsets = [int(s.strip()) for s in data.split()]
@@ -184,7 +211,7 @@ def solve5(data):
             break
         index = newindex
 
-    print(steps)
+    yield steps
 
     offsets = [int(s.strip()) for s in data.split()]
 
@@ -200,11 +227,13 @@ def solve5(data):
             break
         index = newindex
 
-    print(steps)
+    yield steps
 
     if len(offsets) < 10:
         pprint(offsets)
 
+
+@with_solutions(14029, 2765)
 def solve6(data):
     # Memory Reallocation
     banks = [int(x) for x in data.split()]
@@ -243,9 +272,7 @@ def solve6(data):
             history.append(config)
             break
 
-    print(count)
-
-    pprint(history)
+    yield count
 
     index = len(history) - 1
     while index > 0:
@@ -253,8 +280,10 @@ def solve6(data):
         if history[index] == history[-1]:
             break
 
-    print((index, len(history) - index - 1))
+    yield len(history) - index - 1
 
+
+@with_solutions('vgzejbd', 1226)
 def solve7(data):
     # Recursive Circus
     disc_regex = re.compile('^(?P<name>[a-z]+)\s\((?P<weight>[\d]+)\)')
@@ -313,7 +342,7 @@ def solve7(data):
     while disc.parent is not None:
         disc = disc.parent
 
-    print(disc) # Part 1
+    yield disc.name
 
     # we start from the root, which is obviously unbalanced, and
     # traverse the tree visiting each unbalanced child until we reach
@@ -340,8 +369,10 @@ def solve7(data):
             continue
 
     weight_difference = unbalanced.cweight() - balanced.cweight()
-    print(unbalanced.weight - weight_difference)
+    yield unbalanced.weight - weight_difference
 
+
+@with_solutions(7787, 8997)
 def solve8(data):
     # I Heard You Like Registers
     registers = collections.defaultdict(int)
@@ -374,9 +405,11 @@ def solve8(data):
                 registers[register] -= int(value)
                 maximum = max(maximum, registers[register])
 
-    print(max(registers.values()))
-    print(maximum)
+    yield max(registers.values())
+    yield maximum
 
+
+@with_solutions(10050, 4482)
 def solve9(data):
     # Stream Processing
     sum = 0
@@ -415,8 +448,8 @@ def solve9(data):
         if len(line) < 25:
             print('%3d\t%3d\t%s' % (total, count, line))
 
-    print(sum)
-    print(count)
+    yield sum
+    yield count
 
 HEX = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '0a', '0b', '0c', '0d', '0e', '0f',
        '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '1a', '1b', '1c', '1d', '1e', '1f',
@@ -482,6 +515,8 @@ def knothash(input_data):
 
     return ''.join([HEX[x] for x in dense_hash])
 
+
+@with_solutions(23874, 'e1a65bfb5a5ce396025fab5528c25a87')
 def solve10(data):
     # Knot Hash
 
@@ -491,11 +526,13 @@ def solve10(data):
     current = skip = 0
 
     string, _, _ = knothash_round(string, lengths)
-    print(string[0] * string[1])
+    yield string[0] * string[1]
 
     # Part 2
-    print(knothash(data))
+    yield knothash(data)
 
+
+@with_solutions(650, 1465)
 def solve11(data):
     # Hex Ed
 
@@ -527,8 +564,12 @@ def solve11(data):
             distances.append(cube_distance(current, origin))
         return (cube_distance(current, origin), max(distances))
 
-    print(_solve(data))
+    a, b = _solve(data)
+    yield a
+    yield b
 
+
+@with_solutions(141, 171)
 def solve12(data):
     # Digital Plumber
 
@@ -543,9 +584,11 @@ def solve12(data):
             G.add_edge(node, head)
 
     connected = list(networkx.connected_components(G))
-    print(len(connected[0]))
-    print(len(connected))
+    yield len(connected[0])
+    yield len(connected)
 
+
+@with_solutions(632, 3849742)
 def solve13(data):
     # Packet Scanners
 
@@ -560,24 +603,35 @@ def solve13(data):
     for position in firewall:
         if scanner(firewall[position], position) == 0:
             severity += position * firewall[position]
-    print(severity)
+    yield severity
 
     for delay in itertools.count():
         result = (scanner(firewall[pos], delay + pos) == 0 for pos in firewall)
         if not any(result):
             break
-    print(delay)
+    yield delay
 
-BITS = { '0': (0, [False, False, False, False]), '1': (1, [False, False, False,  True]), '2': (1, [False, False,  True, False]),
-         '3': (2, [False, False,  True,  True]), '4': (1, [False, True,  False, False]), '5': (2, [False,  True, False,  True]),
-         '6': (2, [False,  True,  True, False]), '7': (3, [False, True,  True,   True]), '8': (1, [True,  False, False, False]),
-         '9': (2, [ True, False, False,  True]), 'a': (2, [ True, False,  True, False]), 'b': (3, [ True, False,  True,  True]),
-         'c': (2, [ True,  True, False, False]), 'd': (3, [ True,  True, False,  True]), 'e': (3, [ True,  True,  True, False]),
-         'f': (4, [ True,  True,  True,  True])}
 
+@with_solutions(8316, 1074)
 def solve14(data):
     # Disk Defragmentation
 
+    BITS = { '0': (0, [False, False, False, False]),
+             '1': (1, [False, False, False,  True]),
+             '2': (1, [False, False,  True, False]),
+             '3': (2, [False, False,  True,  True]),
+             '4': (1, [False, True,  False, False]),
+             '5': (2, [False,  True, False,  True]),
+             '6': (2, [False,  True,  True, False]),
+             '7': (3, [False, True,  True,   True]),
+             '8': (1, [True,  False, False, False]),
+             '9': (2, [ True, False, False,  True]),
+             'a': (2, [ True, False,  True, False]),
+             'b': (3, [ True, False,  True,  True]),
+             'c': (2, [ True,  True, False, False]),
+             'd': (3, [ True,  True, False,  True]),
+             'e': (3, [ True,  True,  True, False]),
+             'f': (4, [ True,  True,  True,  True])}
 
     bitmap = []
     total = 0
@@ -589,7 +643,7 @@ def solve14(data):
             total += BITS[digit][0]
             for bit in BITS[digit][1]:
                 bitmap[-1].append(bit)
-    print (total)
+    yield total
 
     seen = set()
     n = 0
@@ -617,8 +671,10 @@ def solve14(data):
             n += 1
             dfs(x, y)
 
-    print(n)
+    yield n
 
+
+@with_solutions(609, 253)
 def solve15(data):
     # Dueling Generators
 
@@ -634,13 +690,15 @@ def solve15(data):
     A = generator(16807, 883)
     B = generator(48271, 879)
 
-    print(sum(next(A) == next(B) for _ in range(40000000)))
+    yield sum(next(A) == next(B) for _ in range(40000000))
 
     A = generator(16807, 883, 4)
     B = generator(48271, 879, 8)
 
-    print(sum(next(A) == next(B) for _ in range(5000000)))
+    yield sum(next(A) == next(B) for _ in range(5000000))
 
+
+@with_solutions('gkmndaholjbfcepi', 'abihnfkojcmegldp')
 def solve16(data):
     # Permutation Promenade
 
@@ -662,18 +720,20 @@ def solve16(data):
         return programs
 
     programs = oneround(list('abcdefghijklmnop'))
-    print(''.join(programs))
+    yield ''.join(programs)
 
     programs = list('abcdefghijklmnop')
     history = []
     for x in range(1000000000):
         sp =  ''.join(programs)
         if sp in history:
-            print(''.join(history[1000000000 % len(history)]))
+            yield ''.join(history[1000000000 % len(history)])
             break
         history.append(sp)
         programs = oneround(programs)
 
+
+@with_solutions(1971, 17202899)
 def solve17(data):
     # Spinlock
 
@@ -684,7 +744,7 @@ def solve17(data):
         position = ((position + step) % len(buffer)) + 1
         buffer.insert(position, current)
 
-    print(buffer[position-3:position+3])
+    yield buffer[position + 1]
 
     position = val = 0
     bufferlen = 1
@@ -693,8 +753,10 @@ def solve17(data):
         if position == 1:
             val = current
         bufferlen += 1
-    print(val)
+    yield val
 
+
+@with_solutions(3188, 7112)
 def solve18(data):
     # Duet
 
@@ -761,7 +823,7 @@ def solve18(data):
         ip, state = execute(registers, 0, ip, None)
         if state == 'done':
             break
-    print(registers['lastsnd'])
+    yield registers['lastsnd']
 
     # Part 2
     registers = [collections.defaultdict(int) for x in range(2)]
@@ -796,8 +858,10 @@ def solve18(data):
         if _state in ('done', 'recv'):
             pr = 1 - pr
 
-    print(registers[1]['count'])
+    yield registers[1]['count']
 
+
+@with_solutions('SXPZDFJNRL', 18126)
 def solve19(data):
     # A Series of Tubes
 
@@ -837,9 +901,11 @@ def solve19(data):
         elif diagram[x][y] == ' ':
             break
 
-    print(''.join(path))
-    print(count)
+    yield ''.join(path)
+    yield count
 
+
+@with_solutions('161', 438)
 def solve20(data):
     # Particle Swarm
 
@@ -875,7 +941,7 @@ def solve20(data):
             particle['p'] = add(particle['p'], particle['v'])
 
     _particles = sorted(particles, key = distance)
-    print (_particles[0])
+    yield _particles[0]['n']
 
     # Part 2
     def collisions(_particles):
@@ -896,8 +962,10 @@ def solve20(data):
             particle['p'] = add(particle['p'], particle['v'])
         particles = collisions(particles)
 
-    print(len(particles))
+    yield len(particles)
 
+
+@with_solutions(205, 3389823)
 def solve21(data):
     # Fractal Art
 
@@ -965,8 +1033,10 @@ def solve21(data):
     for n in range(18):
         m = iteration(m)
         if n == 4 or n == 17:
-            print(to_str(m).count('#'))
+            yield to_str(m).count('#')
 
+
+@with_solutions(5240, 2512144)
 def solve22(data):
     # Sporifica Virus
 
@@ -1035,7 +1105,7 @@ def solve22(data):
     for n in range(10000):
         position, direction, infected = step(grid, position, direction)
         if infected: count += 1
-    print(count)
+    yield count
 
     # Part 2
     grid, position = load(data)
@@ -1045,8 +1115,10 @@ def solve22(data):
     for n in range(10000000):
         position, direction, infected = evolved_step(grid, position, direction)
         if infected: count += 1
-    print(count)
+    yield count
 
+
+@with_solutions(6724, 903)
 def solve23(data):
     # Coprocessor Conflagaration
 
@@ -1087,7 +1159,7 @@ def solve23(data):
         ip = execute(registers, ip)
         if ip < 0 or ip >= len(program):
             break
-    print(registers['count'])
+    yield registers['count']
 
     # Part 2
     h = 0
@@ -1096,8 +1168,10 @@ def solve23(data):
             if b % x == 0:
                 h += 1
                 break
-    print(h)
+    yield h
 
+
+@with_solutions(1906, 1824)
 def solve24(data):
     # Electromagnetic Moat
 
@@ -1117,22 +1191,23 @@ def solve24(data):
         components[x].add(y)
         components[y].add(x)
 
+    # Part 1
     bridges = []
     maxstrength = maxlength = 0
     for bridge in build_bridges(components):
         bridges.append(bridge)
         maxstrength = max(maxstrength, sum(x+y for x,y in bridge))
         maxlength = max(maxlength, len(bridge))
-
-    # Part 1
-    print (maxstrength)
+    yield maxstrength
 
     # Part 2
     maxstrength = 0
     for bridge in filter(lambda b : len(b) == maxlength, bridges):
         maxstrength = max(maxstrength, sum(x+y for x,y in bridge))
-    print(maxstrength)
+    yield maxstrength
 
+
+@with_solutions(3578, None)
 def solve25(data):
     # The Halting Problem
 
@@ -1157,7 +1232,8 @@ def solve25(data):
         else:
             cursor += 1
         state = nextstate
-    print(list(tape.values()).count(1))
+    yield list(tape.values()).count(1)
+    yield None
 
 ################################################################################
 
@@ -1191,9 +1267,9 @@ if __name__ == '__main__':
         end = time.time()
         elapsed = (end - start)
         if elapsed > 0.001:
-            print('Elapsed: %8.3f s' % elapsed)
+            print('Elapsed: %4.3f s' % elapsed)
         else:
             elapsed *= 1000.0
-            print('Elapsed: %8.3f us' % elapsed)
+            print('Elapsed: %4.3f us' % elapsed)
     else:
         print('No solver for day {}'.format(day))
