@@ -1,19 +1,18 @@
 module Main where
 
 import System.Environment (getArgs)
-import System.Directory (doesFileExist)
-import Text.Printf
+import Text.Printf        (printf)
 
 import AdventOfCode
-import Day1 (day1)
-import Day2 (day2)
-import Day3 (day3)
-import Day4 (day4)
-import Day5 (day5)
-import Day6 (day6)
-import Day7 (day7)
-import Day8 (day8)
-import Day9 (day9)
+import Day01 (day1)
+import Day02 (day2)
+import Day03 (day3)
+import Day04 (day4)
+import Day05 (day5)
+import Day06 (day6)
+import Day07 (day7)
+import Day08 (day8)
+import Day09 (day9)
 import Day10 (day10)
 
 -- solve calls the correct solver after parsing the input into the
@@ -32,16 +31,8 @@ solve 10 = day10
 
 solve n = printf "No solver for day %d yet.%s\n" n
 
-getInput :: Int -> IO String
-getInput day = do
-  fileExists <- doesFileExist inputFile
-  if fileExists
-    then readFile inputFile
-    else readFile "/dev/null"
-  where inputFile = printf "inputs/input%02d.txt" day
-
 main :: IO ()
 main = do
   day <- fmap (read . head) getArgs
-  input <- getInput day
+  input <- getTestInput day
   solve day input

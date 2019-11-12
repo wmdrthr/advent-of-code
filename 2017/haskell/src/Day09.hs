@@ -1,4 +1,4 @@
-module Day9 (
+module Day09 (
   day9,
   solve1,
   solve2

@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns  #-}
 
-module Day8 (
+module Day08 (
   day8,
   solve
   ) where

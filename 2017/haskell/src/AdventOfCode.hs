@@ -1,11 +1,23 @@
 module AdventOfCode (
+  getTestInput,
   parseInputSimple,
   parseInputNumbers,
   parseInputNumberLists,
   parseCommaSeparatedNumbers
   ) where
 
-import Data.List.Split (splitOn)
+import Data.List.Split  (splitOn)
+import System.Directory (doesFileExist)
+import Text.Printf      (printf)
+
+
+getTestInput :: Int -> IO String
+getTestInput day = do
+  fileExists <- doesFileExist inputFile
+  if fileExists
+    then readFile inputFile
+    else readFile "/dev/null"
+  where inputFile = printf "inputs/input%02d.txt" day
 
 toDigits :: Integer -> [Int]
 toDigits number

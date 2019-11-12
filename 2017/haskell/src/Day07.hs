@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns  #-}
 
-module Day7 (
+module Day07 (
   day7,
   solve1,
   solve2

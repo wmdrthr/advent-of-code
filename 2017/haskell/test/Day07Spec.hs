@@ -1,7 +1,7 @@
 module Main where
 
 import Test.Hspec
-import Day7 as Day7
+import Day07 as Day07
 
 sampleInput = ["pbga (66)",
                "xhth (57)",
@@ -23,12 +23,12 @@ spec = do
     context "solve1" $ do
 
       it "returns 'tknk' for the sample input" $ do
-        Day7.solve1 sampleInput `shouldBe` "tknk"
+        Day07.solve1 sampleInput `shouldBe` "tknk"
 
     context "solve2" $ do
 
       it "returns 60 for the sample input" $ do
-        Day7.solve2 sampleInput `shouldBe` 60
+        Day07.solve2 sampleInput `shouldBe` 60
 
 main :: IO ()
 main = hspec spec
