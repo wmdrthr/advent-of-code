@@ -12,10 +12,11 @@ library
   hs-source-dirs:      src
   exposed-modules:     AdventOfCode,
                        Day1, Day2, Day3, Day4, Day5
-                     , Day6, Day7, Day8, Day9
+                     , Day6, Day7, Day8, Day9, Day10
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5.7.1
                      , time >= 1.6.0.1
+                     , split >= 0.2.3.3
                      , vector >= 0.12.0.1
   default-language:    Haskell2010
 
@@ -111,6 +112,16 @@ test-suite day8
 test-suite day9
   hs-source-dirs:      test
   main-is:             Day9Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day10
+  hs-source-dirs:      test
+  main-is:             Day10Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
