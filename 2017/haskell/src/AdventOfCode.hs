@@ -3,13 +3,14 @@ module AdventOfCode (
   parseInputSimple,
   parseInputNumbers,
   parseInputNumberLists,
-  parseCommaSeparatedNumbers
+  parseCommaSeparatedNumbers,
+  strip
   ) where
 
 import Data.List.Split  (splitOn)
 import System.Directory (doesFileExist)
 import Text.Printf      (printf)
-
+import qualified Data.Text as T
 
 getTestInput :: Int -> IO String
 getTestInput day = do
@@ -18,6 +19,9 @@ getTestInput day = do
     then readFile inputFile
     else readFile "/dev/null"
   where inputFile = printf "inputs/input%02d.txt" day
+
+strip :: String -> String
+strip = T.unpack . T.strip . T.pack
 
 toDigits :: Integer -> [Int]
 toDigits number

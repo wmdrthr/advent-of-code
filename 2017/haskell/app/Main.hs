@@ -27,7 +27,7 @@ solve  6 = day6 . head . parseInputNumberLists
 solve  7 = day7 . lines
 solve  8 = day8 . lines
 solve  9 = day9
-solve 10 = day10
+solve 10 = day10 . strip
 
 solve n = printf "No solver for day %d yet.%s\n" n
 
