@@ -14,6 +14,7 @@ import Day07 (day7)
 import Day08 (day8)
 import Day09 (day9)
 import Day10 (day10)
+import Day11 (day11)
 
 -- solve calls the correct solver after parsing the input into the
 -- expected format
@@ -28,6 +29,7 @@ solve  7 = day7 . lines
 solve  8 = day8 . lines
 solve  9 = day9
 solve 10 = day10 . strip
+solve 11 = day11 . strip
 
 solve n = printf "No solver for day %d yet.%s\n" n
 
