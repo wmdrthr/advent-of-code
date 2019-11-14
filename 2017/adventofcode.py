@@ -86,21 +86,18 @@ def get_data(day):
             save_cache.registered = True
     return CACHE[key]
 
-def with_solutions(soln1, soln2):
+def with_solutions(*expected):
     def wrapper(f):
-
-        def check(index, expected, actual_g):
-            value = next(actual_g)
-            if expected is not None:
-                if value != expected:
-                    print('Incorrect solution for Part {} (expected "{}", actual "{}")'.format(index, expected, value))
-                    sys.exit(23)
-                print(value)
-
-        def wrapped_method(*args):
+        error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
+        def wrapped_method(*args, **kwargs):
             fgen = f(*args)
-            check(1, soln1, fgen)
-            check(2, soln2, fgen)
+            for index in range(2):
+                actual = next(fgen)
+                if expected[index] is not None and not kwargs['skip_verification']:
+                    if actual != expected[index]:
+                        print(error_msg.format(index + 1, expected[index], actual))
+                        sys.exit(23)
+                print(actual)
         return wrapped_method
     return wrapper
 
@@ -1244,12 +1241,14 @@ if __name__ == '__main__':
     else:
         day = guess_day()
 
+    custom_data = False
     get_session_id()
     if len(sys.argv) > 2:
         if sys.argv[2] == '-':
             data = sys.stdin.read()
         else:
             data = sys.argv[2]
+        custom_data = True
     else:
         data = get_data(day)
 
@@ -1263,7 +1262,7 @@ if __name__ == '__main__':
     solver = solvers.get('solve{}'.format(day), None)
     if solver is not None:
         start = time.time()
-        solver(data)
+        solver(data, skip_verification=custom_data)
         end = time.time()
         elapsed = (end - start)
         if elapsed > 0.001:
