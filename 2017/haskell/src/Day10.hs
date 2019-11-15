@@ -1,7 +1,8 @@
 module Day10 (
   day10,
   solve1,
-  solve2
+  solve2,
+  knotHash
   ) where
 
 import AdventOfCode         (parseCommaSeparatedNumbers)
