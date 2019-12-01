@@ -79,6 +79,27 @@ def with_solutions(*expected):
 ################################################################################
 # Solvers
 
+@with_solutions(3266288, 4896582)
+def solve1(data):
+
+    # The Tyranny of the Rocket Equation
+
+    total_basic_fuel = 0
+    total_fuel = 0
+    for module in data.split():
+        mass = int(module)
+        fuel = math.floor(mass / 3) - 2
+        total_basic_fuel += fuel
+        total_fuel += fuel
+        while True:
+            extra_fuel = math.floor(fuel / 3) - 2
+            if extra_fuel <= 0:
+                break
+            total_fuel += extra_fuel
+            fuel = extra_fuel
+
+    yield total_basic_fuel
+    yield total_fuel
 
 ################################################################################
 
