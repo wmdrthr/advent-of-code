@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 88d891d220ccb2871eae37518114cf642f08dd61779be6e4e151237605b5f615
+-- hash: 136c15208839515bb6eab620aa688f860073ce63f2a6270b75905645409c4268
 
 name:           adventofcode
 version:        2019.0.0
@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      Tsiolkovsky
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
@@ -51,6 +52,7 @@ test-suite aoc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      TsiolkovskySpec
       Paths_adventofcode
   hs-source-dirs:
       test
