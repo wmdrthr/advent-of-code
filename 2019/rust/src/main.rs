@@ -5,6 +5,7 @@ use std::process::exit;
 use std::env;
 
 pub mod adventofcode;
+pub mod tsiolkovsky;
 
 fn usage() {
     println!("usage: adventofcode <day>\n\t1 <= day <= 31");
@@ -13,6 +14,7 @@ fn usage() {
 fn run(day: u8, data: String) -> bool {
 
     match day {
+        1 => { tsiolkovsky::solve(data); true }
         _ => {
             println!("no solver for day {} yet.", day);
             false
