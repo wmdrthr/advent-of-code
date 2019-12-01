@@ -1,0 +1,8 @@
+[package]
+name = "adventofcode"
+version = "2019.0.0"
+authors = ["Shantanu Joshi <weemadarthur@yggdrasil.in>"]
+
+[dependencies]
+elapsed = "0.1.2"
+chrono = "0.4.10"

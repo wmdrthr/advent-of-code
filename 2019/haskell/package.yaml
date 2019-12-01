@@ -1,0 +1,43 @@
+name:                adventofcode
+version:             2019.0.0
+git:                 "https://git.sr.ht/weemadarthur/adventofcode"
+license:             MIT
+author:              "Shantanu Joshi"
+maintainer:          "weeemadarthur@yggdrasil.in"
+copyright:           "Copyright: (c) 2019 Shantanu Joshi"
+description:         "Advent of Code 2019: Haskell Solutions"
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - containers
+    - regex-posix
+    - directory
+    - time
+
+executables:
+  aoc2019:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - adventofcode
+      - timeit
+
+tests:
+  aoc-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - adventofcode
+      - hspec
