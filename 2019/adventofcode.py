@@ -66,13 +66,18 @@ def with_solutions(*expected):
         error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
         def wrapped_method(*args, **kwargs):
             fgen = f(*args)
-            for index in range(2):
-                actual = next(fgen)
-                if expected[index] is not None and not kwargs['skip_verification']:
-                    if actual != expected[index]:
-                        print(error_msg.format(index + 1, expected[index], actual))
-                        sys.exit(23)
-                print(actual)
+            try:
+                for index in range(2):
+                    actual = next(fgen)
+                    if expected[index] is not None and not kwargs['skip_verification']:
+                        if actual != expected[index]:
+                            print(error_msg.format(index + 1, expected[index], actual))
+                            sys.exit(23)
+                    print(actual)
+                return
+            except (StopIteration, TypeError):
+                return
+
         return wrapped_method
     return wrapper
 
@@ -100,6 +105,42 @@ def solve1(data):
 
     yield total_basic_fuel
     yield total_fuel
+
+
+@with_solutions(3562672, 8250)
+def solve2(data):
+
+    # 1202 Program Alarm
+
+    tape = [int(x) for x in data.split(',')]
+
+    def run(program, noun, verb):
+        memory = program[:]
+        memory[1] = noun
+        memory[2] = verb
+        iptr = 0
+        while True:
+            opcode, input_a, input_b, output = memory[iptr:iptr+4]
+            if opcode == 1:
+                memory[output] = memory[input_a] + memory[input_b]
+            elif opcode == 2:
+                memory[output] = memory[input_a] * memory[input_b]
+            elif opcode == 99:
+                break
+            iptr += 4
+        return memory
+
+    # Part 1
+    result = run(tape, 12, 2)
+    yield result[0]
+
+    # Part 2
+    for x in range(100):
+        for y in range(100):
+            result = run(tape, x, y)
+            if result[0] == 19690720:
+                n = 100 * x + y
+                yield n
 
 ################################################################################
 
