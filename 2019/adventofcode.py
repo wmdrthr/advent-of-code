@@ -107,6 +107,23 @@ def solve1(data):
     yield total_fuel
 
 
+def intcode_run(program, noun, verb):
+
+    memory = program[:]
+    memory[1] = noun
+    memory[2] = verb
+    iptr = 0
+    while True:
+        opcode, input_a, input_b, output = memory[iptr:iptr+4]
+        if opcode == 1:
+            memory[output] = memory[input_a] + memory[input_b]
+        elif opcode == 2:
+            memory[output] = memory[input_a] * memory[input_b]
+        elif opcode == 99:
+            break
+        iptr += 4
+    return memory
+
 @with_solutions(3562672, 8250)
 def solve2(data):
 
@@ -114,30 +131,14 @@ def solve2(data):
 
     tape = [int(x) for x in data.split(',')]
 
-    def run(program, noun, verb):
-        memory = program[:]
-        memory[1] = noun
-        memory[2] = verb
-        iptr = 0
-        while True:
-            opcode, input_a, input_b, output = memory[iptr:iptr+4]
-            if opcode == 1:
-                memory[output] = memory[input_a] + memory[input_b]
-            elif opcode == 2:
-                memory[output] = memory[input_a] * memory[input_b]
-            elif opcode == 99:
-                break
-            iptr += 4
-        return memory
-
     # Part 1
-    result = run(tape, 12, 2)
+    result = intcode_run(tape, 12, 2)
     yield result[0]
 
     # Part 2
     for x in range(100):
         for y in range(100):
-            result = run(tape, x, y)
+            result = intcode_run(tape, x, y)
             if result[0] == 19690720:
                 n = 100 * x + y
                 yield n

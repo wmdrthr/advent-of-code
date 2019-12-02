@@ -8,7 +8,6 @@ const YEAR: i32 = 2019;
 
 pub fn guess_day() -> Result<u8, i32> {
     let today: Date<Local> = Local::today();
-    println!("Today = {}", today);
     if today.year() != YEAR || today.month() != 12 || today.day() > 25 {
         Err(2)
     } else {
