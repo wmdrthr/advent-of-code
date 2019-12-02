@@ -3,6 +3,7 @@ module AdventOfCode (
   parseInputNumbers,
   parseInputNumbersWithSign,
   parseInputNumberLists,
+  parseCommaSeparatedNumbers,
   cardinality,
   count,
   maxKey,
@@ -11,11 +12,13 @@ module AdventOfCode (
   ) where
 
 import Text.Printf
-import System.Directory (doesFileExist)
+import System.Directory   (doesFileExist)
 import System.Environment (getArgs)
-import Data.Map (Map)
-import Data.List (maximumBy)
-import Data.Ord (comparing)
+import Data.Map           (Map)
+import Data.List          (maximumBy)
+import Data.List.Split    (splitOn)
+import Data.Ord           (comparing)
+
 import Data.Time.Clock
 import Data.Time.Calendar
 import Data.Time.LocalTime
@@ -90,6 +93,9 @@ parseInputNumbersWithSign = (map readInt) . lines
 parseInputNumberLists :: String -> [[Int]]
 parseInputNumberLists string = map (map read) $ map words $ lines string
 
+-- | Parse a comma separated list of numbers e.g. "1,2,3" -> [1,2,3]
+parseCommaSeparatedNumbers :: String -> [Int]
+parseCommaSeparatedNumbers = (map read) . (splitOn ",")
 
 -- | Calclate the number of occurences of each item in a given list.
 --

@@ -17,6 +17,7 @@ library:
     - regex-posix
     - directory
     - time
+    - split
 
 executables:
   aoc2019:
@@ -41,3 +42,4 @@ tests:
     dependencies:
       - adventofcode
       - hspec
+      - containers

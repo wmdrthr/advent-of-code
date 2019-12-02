@@ -6,11 +6,13 @@ import Text.Printf (printf)
 
 import AdventOfCode
 import Tsiolkovsky (day01)
+import IntCode     (day02)
 
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
 solve 1 = day01 . lines
+solve 2 = day02 . parseCommaSeparatedNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()

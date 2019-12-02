@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 136c15208839515bb6eab620aa688f860073ce63f2a6270b75905645409c4268
+-- hash: 86b764f6d51b7ad2a83bb8552a612825636874df991621cdcc65382ff15a307c
 
 name:           adventofcode
 version:        2019.0.0
@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      IntCode
       Tsiolkovsky
   other-modules:
       Paths_adventofcode
@@ -32,6 +33,7 @@ library
     , containers
     , directory
     , regex-posix
+    , split
     , time
   default-language: Haskell2010
 
@@ -52,6 +54,7 @@ test-suite aoc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      IntCodeSpec
       TsiolkovskySpec
       Paths_adventofcode
   hs-source-dirs:
@@ -60,5 +63,6 @@ test-suite aoc-test
   build-depends:
       adventofcode
     , base >=4.7 && <5
+    , containers
     , hspec
   default-language: Haskell2010
