@@ -7,6 +7,7 @@ from pprint import pprint
 from datetime import datetime
 
 import math
+import collections
 
 import pytz
 import requests
@@ -142,6 +143,54 @@ def solve2(data):
             if result[0] == 19690720:
                 n = 100 * x + y
                 yield n
+
+@with_solutions(2129, 134662)
+def solve3(data):
+
+    grid = collections.defaultdict(lambda: (0, [0,0]))
+
+    def points(start, direction, distance):
+        x, y = start
+        for step in range(distance):
+            if direction == 'R':
+                point = (x + 1, y)
+            elif direction == 'U':
+                point = (x, y - 1)
+            elif direction == 'L':
+                point = (x - 1, y)
+            elif direction == 'D':
+                point = (x, y + 1)
+            else:
+                raise Exception('Invalid direction: {}'.format(direction))
+            yield point
+            x, y = point
+
+    origin = (0, 0)
+    def manhattan(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    for wire, route in enumerate([l for l in data.split('\n') if len(l) > 0]):
+        current = origin
+        steps = 0
+        for path in route.split(','):
+            direction = path[0]
+            distance = int(path[1:])
+            for point in points(current, direction, distance):
+                (w,s) = grid[point]
+                steps += 1
+                s[wire] = steps
+                grid[point] = (w + wire + 1, s)
+            current = point
+
+    # Part 1
+    intersections = [manhattan(origin, k) for (k,v) in grid.items() if v[0] == 3]
+    intersections.sort()
+    yield intersections[0]
+
+    # Part 2
+    signal_delay = [sum(v[1]) for (k,v) in grid.items() if v[0] == 3]
+    signal_delay.sort()
+    yield signal_delay[0]
 
 ################################################################################
 
