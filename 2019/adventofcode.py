@@ -147,6 +147,8 @@ def solve2(data):
 @with_solutions(2129, 134662)
 def solve3(data):
 
+    # Crossed Wires
+
     grid = collections.defaultdict(lambda: (0, [0,0]))
 
     def points(start, direction, distance):
@@ -191,6 +193,36 @@ def solve3(data):
     signal_delay = [sum(v[1]) for (k,v) in grid.items() if v[0] == 3]
     signal_delay.sort()
     yield signal_delay[0]
+
+@with_solutions(1150, 748)
+def solve4(data):
+
+    # Secure Container
+
+    def increasing(n):
+        ns = list(n)
+        if ns == sorted(ns):
+            return True
+        return False
+
+    def duplicates(n, check):
+        counter = collections.defaultdict(int)
+        for d in list(n):
+            counter[d] += 1
+        return len([v for v in counter.values() if check(v)]) > 0
+
+    start, end = data.split('-', 2)
+
+    # Part 1
+    valid = lambda p: increasing(p) and duplicates(p, lambda v: v > 1)
+    passwords = [p for p in range(int(start), int(end)) if valid(str(p))]
+    yield len(passwords)
+
+    # Part 2
+    valid = lambda p: increasing(p) and duplicates(p, lambda v: v == 2)
+    passwords = [p for p in passwords if valid(str(p))]
+    yield len(passwords)
+
 
 ################################################################################
 
