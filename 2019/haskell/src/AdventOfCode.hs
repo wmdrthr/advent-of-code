@@ -14,7 +14,7 @@ import Data.List          (maximumBy)
 import Data.List.Split    (splitOn)
 import Data.Ord           (comparing)
 
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 toDigits :: Integer -> [Int]
 toDigits number

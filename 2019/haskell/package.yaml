@@ -15,6 +15,7 @@ library:
   dependencies:
     - containers
     - split
+    - mtl
 
 executables:
   aoc2019:
@@ -29,6 +30,7 @@ executables:
       - timeit
       - directory
       - time
+      - split
 
 tests:
   aoc-2019-test:

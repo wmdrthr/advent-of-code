@@ -5,6 +5,7 @@ import System.Environment  (getArgs)
 import System.Environment  (getArgs)
 import System.TimeIt       (timeIt)
 import Text.Printf         (printf)
+import Data.List.Split     (splitOn)
 import Data.Time.Clock     (getCurrentTime)
 import Data.Time.Calendar  (toGregorian)
 import Data.Time.LocalTime
@@ -14,6 +15,7 @@ import AdventOfCode
 import Tsiolkovsky  (day01)
 import IntCode      (day02)
 import CrossedWires (day03)
+import Passwords    (day04)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -46,7 +48,8 @@ guessDay = do
 solve :: Int -> String -> IO ()
 solve 1 = day01 . lines
 solve 2 = day02 . parseCommaSeparatedNumbers
-solve 3 = day03 . lines 
+solve 3 = day03 . lines
+solve 4 = day04 . map read . splitOn "-"
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()
