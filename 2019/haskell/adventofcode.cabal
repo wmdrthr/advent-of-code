@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 86b764f6d51b7ad2a83bb8552a612825636874df991621cdcc65382ff15a307c
+-- hash: 085454061c1a1b9d87d9992a5770ee3902995dc549664cfb2e717db525b7f438
 
 name:           adventofcode
 version:        2019.0.0
@@ -17,11 +17,12 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://git.sr.ht/weemadarthur/adventofcode
+  location: https://git.sr.ht/weemadarthur/advent-of-code
 
 library
   exposed-modules:
       AdventOfCode
+      CrossedWires
       IntCode
       Tsiolkovsky
   other-modules:
@@ -31,10 +32,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
-    , directory
-    , regex-posix
     , split
-    , time
   default-language: Haskell2010
 
 executable aoc2019
@@ -47,13 +45,17 @@ executable aoc2019
   build-depends:
       adventofcode
     , base >=4.7 && <5
+    , directory
+    , time
     , timeit
   default-language: Haskell2010
 
-test-suite aoc-test
+test-suite aoc-2019-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AdventOfCodeSpec
+      CrossedWiresSpec
       IntCodeSpec
       TsiolkovskySpec
       Paths_adventofcode

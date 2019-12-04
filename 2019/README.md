@@ -23,7 +23,7 @@ site), and save it in `~/.config/adventofcode/session`.
 
 ## Haskell
 
-![Haskell Progress: 2/25](https://img.shields.io/badge/Haskell-2/25-blue?logo=haskell&style=for-the-badge&logoColor=white)
+![Haskell Progress: 3/25](https://img.shields.io/badge/Haskell-3/25-blue?logo=haskell&style=for-the-badge&logoColor=white)
 
 The Haskell solution uses [Stack](https://www.haskellstack.org/) as
 the build tool.

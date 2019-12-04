@@ -7,49 +7,14 @@ module AdventOfCode (
   cardinality,
   count,
   maxKey,
-  getInput,
-  guessDay
+  manhattanDistance
   ) where
 
-import Text.Printf
-import System.Directory   (doesFileExist)
-import System.Environment (getArgs)
-import Data.Map           (Map)
 import Data.List          (maximumBy)
 import Data.List.Split    (splitOn)
 import Data.Ord           (comparing)
 
-import Data.Time.Clock
-import Data.Time.Calendar
-import Data.Time.LocalTime
-
-
-import qualified Data.Map as Map
-
-getInput :: Int -> IO String
-getInput day = do
-  args <- getArgs
-  if (length args) > 1 then do return $ last args
-    else
-    do
-      let inputFile = printf "../inputs/input%02d.txt" day
-      fileExists <- doesFileExist inputFile
-      if fileExists
-        then readFile inputFile
-        else errorWithoutStackTrace (printf "Input not found for day %d." day)
-
-guessDay :: IO Int
-guessDay = do
-  args <- getArgs
-  case args of
-    [] -> do
-      (year, month, day) <- getCurrentTime >>= return . toGregorian . localDay
-                            . (utcToLocalTime (TimeZone 330 False "IST"))
-      if year /= 2019 || month /= 12 || day > 25
-        then errorWithoutStackTrace "AoC 2019 not currently running, day must be provided."
-        else return day
-    (day:_) -> do
-      return (read day)
+import qualified Data.Map as M
 
 toDigits :: Integer -> [Int]
 toDigits number
@@ -101,8 +66,8 @@ parseCommaSeparatedNumbers = (map read) . (splitOn ",")
 --
 -- >>> cardinality "foobar"
 -- fromList [('a',1),('b',1),('f',1),('o',2),('r',1)]
-cardinality :: Ord a => [a] -> Map a Int
-cardinality xs = Map.fromListWith (+) [ (x,1) | x <- xs]
+cardinality :: Ord a => [a] -> M.Map a Int
+cardinality xs = M.fromListWith (+) [ (x,1) | x <- xs]
 
 -- | Count the number of elements in a list (or any foldable) matching a predicate.
 --
@@ -115,5 +80,10 @@ count pred = foldl (\acc x -> if pred x then acc + 1 else acc) 0
 
 
 -- | Find the key with the largest value in a Map
-maxKey :: Ord a => Map k a -> k
-maxKey = fst . maximumBy (comparing snd) . Map.toList
+maxKey :: Ord a => M.Map k a -> k
+maxKey = fst . maximumBy (comparing snd) . M.toList
+
+
+-- Manhattan Distance between two points
+manhattanDistance :: Num a => (a,a) -> (a,a) -> a
+manhattanDistance (ax, ay) (bx, by) = abs (ax - bx) + abs (ay - by)

@@ -1,6 +1,6 @@
 name:                adventofcode
 version:             2019.0.0
-git:                 "https://git.sr.ht/weemadarthur/adventofcode"
+git:                 "https://git.sr.ht/weemadarthur/advent-of-code"
 license:             MIT
 author:              "Shantanu Joshi"
 maintainer:          "weeemadarthur@yggdrasil.in"
@@ -14,9 +14,6 @@ library:
   source-dirs: src
   dependencies:
     - containers
-    - regex-posix
-    - directory
-    - time
     - split
 
 executables:
@@ -30,9 +27,11 @@ executables:
     dependencies:
       - adventofcode
       - timeit
+      - directory
+      - time
 
 tests:
-  aoc-test:
+  aoc-2019-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
