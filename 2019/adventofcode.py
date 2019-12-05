@@ -76,8 +76,13 @@ def with_solutions(*expected):
                             sys.exit(23)
                     print(actual)
                 return
-            except (StopIteration, TypeError):
+            except StopIteration:
                 return
+            except TypeError as e:
+                if e.args[0] == "'NoneType' object is not an iterator":
+                    return
+                else:
+                    raise e
 
         return wrapped_method
     return wrapper
@@ -108,22 +113,85 @@ def solve1(data):
     yield total_fuel
 
 
-def intcode_run(program, noun, verb):
+def intcode_run(memory, inputs = None):
 
-    memory = program[:]
-    memory[1] = noun
-    memory[2] = verb
+    def decode(opcode):
+
+        opcode, modes = opcode % 100, opcode // 100
+        input_a_mode  = modes % 10
+        input_b_mode  = (modes // 10) % 10
+        output_mode   = modes // 100
+
+        return opcode, input_a_mode, input_b_mode, output_mode
+
+    outputs = None
     iptr = 0
     while True:
-        opcode, input_a, input_b, output = memory[iptr:iptr+4]
-        if opcode == 1:
-            memory[output] = memory[input_a] + memory[input_b]
-        elif opcode == 2:
-            memory[output] = memory[input_a] * memory[input_b]
-        elif opcode == 99:
+        if memory[iptr] == 99:
             break
-        iptr += 4
-    return memory
+
+        try:
+            opcode, input_a, input_b, output = memory[iptr:iptr+4]
+            opcode, input_a_mode, input_b_mode, output_mode = decode(opcode)
+            if input_a_mode:
+                operand_a = input_a
+            else:
+                operand_a = memory[input_a]
+            if opcode in (1, 2, 5, 6, 7, 8):
+                if input_b_mode:
+                    operand_b = input_b
+                else:
+                    operand_b = memory[input_b]
+
+            # execute
+            if opcode == 1: # add
+                memory[output] = operand_a + operand_b
+                iptr += 4
+            elif opcode == 2: # multiply
+                memory[output] = operand_a * operand_b
+                iptr += 4
+            elif opcode == 3: # input
+                if inputs is None or len(inputs) == 0:
+                    raise Exception('illegal instruction')
+                memory[input_a] = inputs.popleft()
+                iptr += 2
+            elif opcode == 4: # output
+                if outputs is None:
+                    outputs = collections.deque()
+                if output_mode:
+                    outputs.append(input_a)
+                else:
+                    outputs.append(operand_a)
+                iptr += 2
+            elif opcode == 5: # jump-if-true
+                if operand_a != 0:
+                    iptr = operand_b
+                else:
+                    iptr += 3
+            elif opcode == 6: # jump-if-false
+                if operand_a == 0:
+                    iptr = operand_b
+                else:
+                    iptr += 3
+            elif opcode == 7: # less than
+                if operand_a < operand_b:
+                    memory[output] = 1
+                else:
+                    memory[output] = 0
+                iptr += 4
+            elif opcode == 8: # equals
+                if operand_a == operand_b:
+                    memory[output] = 1
+                else:
+                    memory[output] = 0
+                iptr += 4
+            else:
+                raise Exception('illegal instruction')
+        except Exception as e:
+            print(e.args)
+            import pdb; pdb.set_trace()
+
+    return memory, outputs
 
 @with_solutions(3562672, 8250)
 def solve2(data):
@@ -133,13 +201,17 @@ def solve2(data):
     tape = [int(x) for x in data.split(',')]
 
     # Part 1
-    result = intcode_run(tape, 12, 2)
+    program = tape[:]
+    program[1:3] = [12,2]
+    result,_ = intcode_run(program)
     yield result[0]
 
     # Part 2
     for x in range(100):
         for y in range(100):
-            result = intcode_run(tape, x, y)
+            program = tape[:]
+            program[1:3] = [x,y]
+            result,_ = intcode_run(program)
             if result[0] == 19690720:
                 n = 100 * x + y
                 yield n
@@ -223,6 +295,20 @@ def solve4(data):
     passwords = [p for p in passwords if valid(str(p))]
     yield len(passwords)
 
+@with_solutions(13547311, 236453)
+def solve5(data):
+
+    # Sunny with a Chance of Asteroids
+
+    tape = [int(x) for x in data.split(',')]
+
+    program = tape[:]
+    _,outputs = intcode_run(program, collections.deque([1]))
+    yield outputs[-1]
+
+    program = tape[:]
+    _, outputs = intcode_run(program, collections.deque([5]))
+    yield outputs[0]
 
 ################################################################################
 
