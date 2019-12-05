@@ -219,7 +219,7 @@ def solve4(data):
     yield len(passwords)
 
     # Part 2
-    valid = lambda p: increasing(p) and duplicates(p, lambda v: v == 2)
+    valid = lambda p: duplicates(p, lambda v: v == 2)
     passwords = [p for p in passwords if valid(str(p))]
     yield len(passwords)
 
