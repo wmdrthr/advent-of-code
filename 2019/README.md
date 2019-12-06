@@ -2,7 +2,7 @@
 
 ## Python
 
-![Python Progress: 5/25](https://img.shields.io/badge/Python-5/25-brightgreen?logo=python&style=for-the-badge&logoColor=white)
+![Python Progress: 6/25](https://img.shields.io/badge/Python-6/25-brightgreen?logo=python&style=for-the-badge&logoColor=white)
 
 Run `python3 adventofcode.py` to run the solvers for any given day's
 puzzle. Pass a day number to run the solvers for that day.

@@ -16,7 +16,6 @@ YEAR  = 2019
 
 SESSIONID_FILE = '~/.config/adventofcode/session'
 USER_AGENT     = 'wmdrthr/advent-of-code'
-UPDATE_INPUT   = False
 
 def get_session_id():
     try:
@@ -48,12 +47,21 @@ def get_data(day):
         data = open(inputfile).read()
         data = data.strip()
     else:
+        # if trying to fetch the data for the current AoC, check if the
+        # day's puzzle has unlocked yet
+        now = datetime.now(tz=pytz.timezone('Asia/Kolkata'))
+        if now.year == YEAR and now.month == 12 and day < 25:
+            unlock = now.replace(hour = 10, minute = 30) # Midnight EST -> 10:30 AM IST
+            if now < unlock:
+                print("Today's puzzle hasn't unlocked yet!")
+                return None
+
         uri = 'http://adventofcode.com/{year}/day/{day}/input'.format(year=YEAR, day=day)
         response = requests.get(uri,
                                 cookies={'session': get_session_id()},
                                 headers={'User-Agent': USER_AGENT})
         if response.status_code != 200:
-            raise Exception('Unexpected response: (status = %d)\n%s'.format(response.status_code,
+            raise Exception('Unexpected response: (status = {})\n{}'.format(response.status_code,
                                                                             response.content))
         data = response.text.strip()
         print('Fetched data for day {}'.format(day))
@@ -126,9 +134,7 @@ def intcode_run(memory, inputs = None):
 
     outputs = None
     iptr = 0
-    while True:
-        if memory[iptr] == 99:
-            break
+    while memory[iptr] != 99:
 
         try:
             opcode, input_a, input_b, output = memory[iptr:iptr+4]
@@ -310,6 +316,52 @@ def solve5(data):
     _, outputs = intcode_run(program, collections.deque([5]))
     yield outputs[0]
 
+@with_solutions(162439, 367)
+def solve6(data):
+
+    # Universal Orbit Map
+
+    orbital_map = collections.defaultdict(list)
+    primaries = {}
+    satellites = collections.defaultdict(set)
+
+    entries = [l.strip().split(')', 2) for l in data.split('\n') if len(l) > 1]
+    for a, b in entries:
+        primaries[b] = a
+        orbital_map[a].append(b)
+
+    # Part 1
+    orbital_counter = collections.defaultdict(int)
+    def update_orbit_counts(primary):
+        for satellite in orbital_map[primary]:
+            orbital_counter[satellite] = 1 + orbital_counter[primary]
+            update_orbit_counts(satellite)
+
+    update_orbit_counts('COM')
+    print(sum(orbital_counter.values()))
+
+    # Part 2
+    for object in orbital_map.keys():
+        primary = primaries.get(object, None)
+        while primary is not None:
+            satellites[primary].add(object)
+            primary = primaries.get(primary, None)
+
+    def count_transfers(current, target):
+        transfers = 0
+        current = primaries[current]
+        while True:
+            current = primaries[current]
+            transfers += 1
+            if target in satellites[current]:
+                break
+
+        return transfers, current
+
+    stage1, current = count_transfers('YOU', 'SAN')
+    stage2, _ = count_transfers('SAN', 'YOU')
+    print(stage1 + stage2)
+
 ################################################################################
 
 if __name__ == '__main__':
@@ -328,6 +380,10 @@ if __name__ == '__main__':
         custom_data = True
     else:
         data = get_data(day)
+
+    if not data:
+        print('Cannot run solver without data. Bailing')
+        sys.exit(0)
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
