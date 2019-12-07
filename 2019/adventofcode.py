@@ -8,6 +8,9 @@ from datetime import datetime
 
 import math
 import collections
+import itertools
+import queue
+import threading
 
 import pytz
 import requests
@@ -121,7 +124,17 @@ def solve1(data):
     yield total_fuel
 
 
-def intcode_run(memory, inputs = None):
+class IQueue(queue.Queue):
+
+    def __init__(self, iterable = None):
+        queue.Queue.__init__(self)
+        if iterable:
+            for it in iterable:
+                self.put(it)
+
+def intcode_run(memory, inputQ = None, outputQ = None):
+
+    tname = threading.current_thread().name
 
     def decode(opcode):
 
@@ -132,72 +145,67 @@ def intcode_run(memory, inputs = None):
 
         return opcode, input_a_mode, input_b_mode, output_mode
 
-    outputs = None
     iptr = 0
     while memory[iptr] != 99:
 
-        try:
-            opcode, input_a, input_b, output = memory[iptr:iptr+4]
-            opcode, input_a_mode, input_b_mode, output_mode = decode(opcode)
-            if input_a_mode:
-                operand_a = input_a
-            else:
-                operand_a = memory[input_a]
-            if opcode in (1, 2, 5, 6, 7, 8):
-                if input_b_mode:
-                    operand_b = input_b
-                else:
-                    operand_b = memory[input_b]
+        # fetch and decode
+        opcode, input_a_mode, input_b_mode, output_mode = decode(memory[iptr])
+        operand_a = memory[iptr+1]
+        if not input_a_mode:
+            operand_a = memory[operand_a]
+        if opcode in (1, 2, 5, 6, 7, 8):
+            operand_b = memory[iptr+2]
+            if not input_b_mode:
+                operand_b = memory[operand_b]
+        if opcode in (1, 2, 7, 8):
+            output = memory[iptr+3]
 
-            # execute
-            if opcode == 1: # add
-                memory[output] = operand_a + operand_b
-                iptr += 4
-            elif opcode == 2: # multiply
-                memory[output] = operand_a * operand_b
-                iptr += 4
-            elif opcode == 3: # input
-                if inputs is None or len(inputs) == 0:
-                    raise Exception('illegal instruction')
-                memory[input_a] = inputs.popleft()
-                iptr += 2
-            elif opcode == 4: # output
-                if outputs is None:
-                    outputs = collections.deque()
-                if output_mode:
-                    outputs.append(input_a)
-                else:
-                    outputs.append(operand_a)
-                iptr += 2
-            elif opcode == 5: # jump-if-true
-                if operand_a != 0:
-                    iptr = operand_b
-                else:
-                    iptr += 3
-            elif opcode == 6: # jump-if-false
-                if operand_a == 0:
-                    iptr = operand_b
-                else:
-                    iptr += 3
-            elif opcode == 7: # less than
-                if operand_a < operand_b:
-                    memory[output] = 1
-                else:
-                    memory[output] = 0
-                iptr += 4
-            elif opcode == 8: # equals
-                if operand_a == operand_b:
-                    memory[output] = 1
-                else:
-                    memory[output] = 0
-                iptr += 4
-            else:
+        # execute
+        if opcode == 1: # add
+            memory[output] = operand_a + operand_b
+            iptr += 4
+        elif opcode == 2: # multiply
+            memory[output] = operand_a * operand_b
+            iptr += 4
+        elif opcode == 3: # input
+            if inputQ is None:
                 raise Exception('illegal instruction')
-        except Exception as e:
-            print(e.args)
-            import pdb; pdb.set_trace()
+            memory[memory[iptr+1]] = inputQ.get(block = True, timeout=5)
+            iptr += 2
+        elif opcode == 4: # output
+            if outputQ is None:
+                raise Exception('illegal instruction')
+            if output_mode:
+                outputQ.put(memory[iptr+1])
+            else:
+                outputQ.put(operand_a)
+            iptr += 2
+        elif opcode == 5: # jump-if-true
+            if operand_a != 0:
+                iptr = operand_b
+            else:
+                iptr += 3
+        elif opcode == 6: # jump-if-false
+            if operand_a == 0:
+                iptr = operand_b
+            else:
+                iptr += 3
+        elif opcode == 7: # less than
+            if operand_a < operand_b:
+                memory[output] = 1
+            else:
+                memory[output] = 0
+            iptr += 4
+        elif opcode == 8: # equals
+            if operand_a == operand_b:
+                memory[output] = 1
+            else:
+                memory[output] = 0
+            iptr += 4
+        else:
+            raise Exception('illegal instruction')
 
-    return memory, outputs
+    return memory
 
 @with_solutions(3562672, 8250)
 def solve2(data):
@@ -209,7 +217,7 @@ def solve2(data):
     # Part 1
     program = tape[:]
     program[1:3] = [12,2]
-    result,_ = intcode_run(program)
+    result = intcode_run(program)
     yield result[0]
 
     # Part 2
@@ -217,7 +225,7 @@ def solve2(data):
         for y in range(100):
             program = tape[:]
             program[1:3] = [x,y]
-            result,_ = intcode_run(program)
+            result = intcode_run(program)
             if result[0] == 19690720:
                 n = 100 * x + y
                 yield n
@@ -309,12 +317,15 @@ def solve5(data):
     tape = [int(x) for x in data.split(',')]
 
     program = tape[:]
-    _,outputs = intcode_run(program, collections.deque([1]))
-    yield outputs[-1]
+    outputQ = IQueue()
+    intcode_run(program, IQueue([1]), outputQ)
+    while not outputQ.empty():
+        output = outputQ.get_nowait()
+    yield output
 
     program = tape[:]
-    _, outputs = intcode_run(program, collections.deque([5]))
-    yield outputs[0]
+    intcode_run(program, IQueue([5]), outputQ)
+    yield outputQ.get_nowait()
 
 @with_solutions(162439, 367)
 def solve6(data):
@@ -361,6 +372,50 @@ def solve6(data):
     stage1, current = count_transfers('YOU', 'SAN')
     stage2, _ = count_transfers('SAN', 'YOU')
     print(stage1 + stage2)
+
+
+@with_solutions(844468, 4215746)
+def solve7(data):
+
+    tape = [int(x) for x in data.split(',')]
+
+    # Part 1
+    max_output = 0
+    for phase_setting in itertools.permutations([0, 1, 2, 3, 4]):
+        current_input = 0
+        for n in range(5):
+            outputQ = IQueue()
+            intcode_run(tape[:], IQueue([phase_setting[n], current_input]), outputQ)
+            #print('Amp 1 Output: ', outputs)
+            current_input = outputQ.get_nowait()
+        max_output = max(max_output, current_input)
+    yield max_output
+
+    # Part 2
+    max_output = 0
+    for phase_setting in itertools.permutations([5, 6, 7, 8, 9]):
+        queueAB = IQueue([phase_setting[1]])
+        queueBC = IQueue([phase_setting[2]])
+        queueCD = IQueue([phase_setting[3]])
+        queueDE = IQueue([phase_setting[4]])
+        queueEA = IQueue([phase_setting[0], 0])
+
+        amps = [threading.Thread(target=intcode_run, name='A', args=(tape[:], queueEA, queueAB)),
+                threading.Thread(target=intcode_run, name='B', args=(tape[:], queueAB, queueBC)),
+                threading.Thread(target=intcode_run, name='C', args=(tape[:], queueBC, queueCD)),
+                threading.Thread(target=intcode_run, name='D', args=(tape[:], queueCD, queueDE)),
+                threading.Thread(target=intcode_run, name='E', args=(tape[:], queueDE, queueEA))]
+
+        for amp in amps:
+            amp.start()
+        for amp in amps:
+            amp.join()
+
+        while not queueEA.empty():
+            output = queueEA.get_nowait()
+        max_output = max(max_output, output)
+
+    yield max_output
 
 ################################################################################
 
