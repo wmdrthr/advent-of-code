@@ -60,9 +60,10 @@ fn run(day: u8, data: String) -> bool {
 
     match day {
         1 => { tsiolkovsky::solve(data);   true }
-        2 => { intcode::solve(data);       true }
+        2 => { intcode::solve2(data);      true }
         3 => { crossingwires::solve(data); true }
         4 => { passwords::solve(data);     true }
+        5 => { intcode::solve5(data);      true }
         _ => {
             println!("no solver for day {} yet.", day);
             false
