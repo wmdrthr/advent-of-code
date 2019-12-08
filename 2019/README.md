@@ -1,8 +1,11 @@
 # Advent of Code 2019
 
-## Python
+## Progress
+![Python Progress](http://weemadarthur.metapath.org/Python.svg)
+![Haskell Progress](http://weemadarthur.metapath.org/Haskell.svg)
+![Rust Progress](http://weemadarthur.metapath.org/Rust.svg)
 
-![Python Progress: 6/25](https://img.shields.io/badge/Python-6/25-brightgreen?logo=python&style=for-the-badge&logoColor=white)
+## Python
 
 Run `python3 adventofcode.py` to run the solvers for any given day's
 puzzle. Pass a day number to run the solvers for that day.
@@ -23,8 +26,6 @@ site), and save it in `~/.config/adventofcode/session`.
 
 ## Haskell
 
-![Haskell Progress: 4/25](https://img.shields.io/badge/Haskell-4/25-blue?logo=haskell&style=for-the-badge&logoColor=white)
-
 The Haskell solution uses [Stack](https://www.haskellstack.org/) as
 the build tool.
 
@@ -38,8 +39,6 @@ Run `stack run N` to run the solvers for any given day N.
 Run `stack test` to run the included tests for all solvers.
 
 ## Rust
-
-![Rust Progress: 4/25](https://img.shields.io/badge/Rust-4/25-blue?logo=rust&style=for-the-badge&logoColor=white)
 
 The Rust solution is a simple Rust project, using the standard Rust
 build tools.
