@@ -11,6 +11,7 @@ import collections
 import itertools
 import queue
 import threading
+import unicodedata as U
 
 import pytz
 import requests
@@ -377,6 +378,8 @@ def solve6(data):
 @with_solutions(844468, 4215746)
 def solve7(data):
 
+    # Amplification Circuit
+
     tape = [int(x) for x in data.split(',')]
 
     # Part 1
@@ -416,6 +419,40 @@ def solve7(data):
         max_output = max(max_output, output)
 
     yield max_output
+
+@with_solutions(2176, None)
+def solve8(data):
+
+    # Space Image Format
+
+    WIDTH, HEIGHT = 25, 6
+    AREA = WIDTH * HEIGHT
+    layers = []
+    for layer in range(len(data) // AREA):
+        layers.append(data[layer * AREA : (layer + 1) * AREA])
+
+    # Part 1
+    minzeros = (65536, 0)
+    for index, layer in enumerate(layers):
+        zeros = layer.count('0')
+        if zeros < minzeros[0]:
+            minzeros = (zeros, index)
+
+    layer = layers[minzeros[1]]
+    yield (layer.count('1') * layer.count('2'))
+
+    # Part 2
+    chars = {'1':U.lookup('FULL BLOCK'), '0':U.lookup('LIGHT SHADE')}
+    image = ['x' for _ in range(AREA)]
+    for n in range(AREA):
+        pixels = [l[n] for l in layers]
+        for i in range(len(data) // AREA):
+            if pixels[i] != '2':
+                image[n] = chars[pixels[i]]
+                break
+
+    for row in range(HEIGHT):
+        print(' '.join(image[row*WIDTH:(row+1)*WIDTH]))
 
 ################################################################################
 
