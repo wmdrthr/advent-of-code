@@ -1,3 +1,5 @@
+#![feature(is_sorted)]
+
 extern crate elapsed;
 extern crate chrono;
 

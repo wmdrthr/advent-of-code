@@ -1,11 +1,7 @@
-use std::iter::FromIterator;
 use std::collections::HashMap;
 
 fn increasing(password: &str) -> bool {
-    let mut sorted: Vec<char> = password[..].chars().collect();
-    sorted.sort();
-
-    password == String::from_iter(sorted)
+   password.chars().is_sorted()
 }
 
 fn cardinality(s: &str) -> HashMap<char,u32> {
