@@ -8,10 +8,12 @@ from datetime import datetime
 
 import math
 import collections
+from enum import Enum
 import itertools
 import queue
 import threading
 import unicodedata as U
+import traceback as T
 
 import pytz
 import requests
@@ -133,80 +135,171 @@ class IQueue(queue.Queue):
             for it in iterable:
                 self.put(it)
 
-def intcode_run(memory, inputQ = None, outputQ = None):
+class VMState(Enum):
+    START = 0
+    INIT = 1
+    RUNNING = 2
+    HALTED = 3
+    CRASHED = 4
 
-    tname = threading.current_thread().name
+class IntCodeVM():
 
-    def decode(opcode):
+    def __init__(self, program = None, inputQ = None, outputQ = None):
+        self.state = VMState.START
+        if program:
+            self.reset(program, inputQ, outputQ)
 
+    def reset(self, program, inputQ = None, outputQ = None):
+        self.memory = collections.defaultdict(int)
+        self.ip = 0
+        self.base = 0
+        self.state = VMState.INIT
+
+        if inputQ:
+            self.inputQ = inputQ
+        if outputQ:
+            self.outputQ = outputQ
+
+        for idx, val in enumerate(program):
+            self.memory[idx] = val
+
+        return self
+
+    def decode(self, opcode):
         opcode, modes = opcode % 100, opcode // 100
         input_a_mode  = modes % 10
         input_b_mode  = (modes // 10) % 10
         output_mode   = modes // 100
 
-        return opcode, input_a_mode, input_b_mode, output_mode
+        return opcode, (input_a_mode, input_b_mode, output_mode)
 
-    iptr = 0
-    while memory[iptr] != 99:
+    def fetch(self, loc, mode):
+        if mode == 0:
+            return self.memory[self.memory[loc]]
+        elif mode == 1:
+            return self.memory[loc]
+        elif mode == 2:
+            return self.memory[self.memory[loc] + self.base]
 
-        # fetch and decode
-        opcode, input_a_mode, input_b_mode, output_mode = decode(memory[iptr])
-        operand_a = memory[iptr+1]
-        if not input_a_mode:
-            operand_a = memory[operand_a]
-        if opcode in (1, 2, 5, 6, 7, 8):
-            operand_b = memory[iptr+2]
-            if not input_b_mode:
-                operand_b = memory[operand_b]
-        if opcode in (1, 2, 7, 8):
-            output = memory[iptr+3]
-
-        # execute
-        if opcode == 1: # add
-            memory[output] = operand_a + operand_b
-            iptr += 4
-        elif opcode == 2: # multiply
-            memory[output] = operand_a * operand_b
-            iptr += 4
-        elif opcode == 3: # input
-            if inputQ is None:
-                raise Exception('illegal instruction')
-            memory[memory[iptr+1]] = inputQ.get(block = True, timeout=5)
-            iptr += 2
-        elif opcode == 4: # output
-            if outputQ is None:
-                raise Exception('illegal instruction')
-            if output_mode:
-                outputQ.put(memory[iptr+1])
-            else:
-                outputQ.put(operand_a)
-            iptr += 2
-        elif opcode == 5: # jump-if-true
-            if operand_a != 0:
-                iptr = operand_b
-            else:
-                iptr += 3
-        elif opcode == 6: # jump-if-false
-            if operand_a == 0:
-                iptr = operand_b
-            else:
-                iptr += 3
-        elif opcode == 7: # less than
-            if operand_a < operand_b:
-                memory[output] = 1
-            else:
-                memory[output] = 0
-            iptr += 4
-        elif opcode == 8: # equals
-            if operand_a == operand_b:
-                memory[output] = 1
-            else:
-                memory[output] = 0
-            iptr += 4
+    def dest(self, loc, mode):
+        if mode == 2:
+            return self.memory[loc] + self.base
         else:
-            raise Exception('illegal instruction')
+            return self.memory[loc]
 
-    return memory
+    def add(self, modes):
+        operand_a = self.fetch(self.ip + 1, modes[0])
+        operand_b = self.fetch(self.ip + 2, modes[1])
+        destination = self.dest(self.ip + 3, modes[2])
+
+        self.memory[destination] = operand_a + operand_b
+        self.ip += 4
+
+    def mul(self, modes):
+        operand_a = self.fetch(self.ip + 1, modes[0])
+        operand_b = self.fetch(self.ip + 2, modes[1])
+        destination = self.dest(self.ip + 3, modes[2])
+
+        self.memory[destination] = operand_a * operand_b
+        self.ip += 4
+
+    def read(self, modes):
+        destination = self.dest(self.ip + 1, modes[0])
+        if self.inputQ is None:
+            raise Exception('illegal instruction (no input)')
+        self.memory[destination] = self.inputQ.get(block = True, timeout = 1)
+        self.ip += 2
+
+    def write(self, modes):
+        value = self.fetch(self.ip + 1, modes[0])
+        if self.outputQ is None:
+            raise Exception('illegal instruction (no output)')
+        self.outputQ.put(value)
+        self.ip += 2
+
+    def jump_if_true(self, modes):
+        value = self.fetch(self.ip + 1, modes[0])
+        if value != 0:
+            self.ip = self.fetch(self.ip + 2, modes[1])
+        else:
+            self.ip += 3
+
+    def jump_if_false(self, modes):
+        value = self.fetch(self.ip + 1, modes[0])
+        if value == 0:
+            self.ip = self.fetch(self.ip + 2, modes[1])
+        else:
+            self.ip += 3
+
+    def less_than(self, modes):
+        value_a = self.fetch(self.ip + 1, modes[0])
+        value_b = self.fetch(self.ip + 2, modes[1])
+        destination = self.dest(self.ip + 3, modes[2])
+
+        if value_a < value_b:
+            self.memory[destination] = 1
+        else:
+            self.memory[destination] = 0
+        self.ip += 4
+
+    def equals(self, modes):
+        value_a = self.fetch(self.ip + 1, modes[0])
+        value_b = self.fetch(self.ip + 2, modes[1])
+        destination = self.dest(self.ip + 3, modes[2])
+
+        if value_a == value_b:
+            self.memory[destination] = 1
+        else:
+            self.memory[destination] = 0
+        self.ip += 4
+
+    def adjust_base(self, modes):
+        value = self.fetch(self.ip + 1, modes[0])
+        self.base += value
+        self.ip += 2
+
+    def step(self):
+
+        opcode, modes = self.decode(self.memory[self.ip])
+        if opcode == 1:
+            self.add(modes)
+        elif opcode == 2:
+            self.mul(modes)
+        elif opcode == 3:
+            self.read(modes)
+        elif opcode == 4:
+            self.write(modes)
+        elif opcode == 5:
+            self.jump_if_true(modes)
+        elif opcode == 6:
+            self.jump_if_false(modes)
+        elif opcode == 7:
+            self.less_than(modes)
+        elif opcode == 8:
+            self.equals(modes)
+        elif opcode == 9:
+            self.adjust_base(modes)
+        else:
+            raise Exception('illegal opcode (unknown opcode: {})'.format(opcode))
+
+    def run(self):
+
+        if self.state is not VMState.INIT:
+            print('Invalid state: {}, should be INIT'.format(self.state))
+            return
+
+        self.state = VMState.RUNNING
+        while self.memory[self.ip] != 99:
+            try:
+                self.step()
+            except Exception as e:
+                print('VM crash! {}'.format(e.args[0]))
+                T.print_tb(sys.exc_info()[2])
+                self.state = VMState.CRASHED
+                return self
+
+        self.state = VMState.HALTED
+        return self
 
 @with_solutions(3562672, 8250)
 def solve2(data):
@@ -218,18 +311,20 @@ def solve2(data):
     # Part 1
     program = tape[:]
     program[1:3] = [12,2]
-    result = intcode_run(program)
-    yield result[0]
+    vm = IntCodeVM(program).run()
+    assert(vm.state is VMState.HALTED)
+    yield vm.memory[0]
 
     # Part 2
     for x in range(100):
         for y in range(100):
-            program = tape[:]
-            program[1:3] = [x,y]
-            result = intcode_run(program)
-            if result[0] == 19690720:
-                n = 100 * x + y
-                yield n
+             program = tape[:]
+             program[1:3] = [x,y]
+             vm.reset(program).run()
+             assert(vm.state is VMState.HALTED)
+             if vm.memory[0] == 19690720:
+                 n = 100 * x + y
+                 yield n
 
 @with_solutions(2129, 134662)
 def solve3(data):
@@ -317,15 +412,16 @@ def solve5(data):
 
     tape = [int(x) for x in data.split(',')]
 
-    program = tape[:]
     outputQ = IQueue()
-    intcode_run(program, IQueue([1]), outputQ)
+
+    vm = IntCodeVM(tape, IQueue([1]), outputQ).run()
+    assert(vm.state is VMState.HALTED)
     while not outputQ.empty():
         output = outputQ.get_nowait()
     yield output
 
-    program = tape[:]
-    intcode_run(program, IQueue([5]), outputQ)
+    vm.reset(tape, IQueue([5])).run()
+    assert(vm.state is VMState.HALTED)
     yield outputQ.get_nowait()
 
 @with_solutions(162439, 367)
@@ -384,18 +480,20 @@ def solve7(data):
 
     # Part 1
     max_output = 0
+    vm = IntCodeVM()
     for phase_setting in itertools.permutations([0, 1, 2, 3, 4]):
         current_input = 0
         for n in range(5):
             outputQ = IQueue()
-            intcode_run(tape[:], IQueue([phase_setting[n], current_input]), outputQ)
-            #print('Amp 1 Output: ', outputs)
+            vm.reset(tape, IQueue([phase_setting[n], current_input]), outputQ).run()
+            assert(vm.state is VMState.HALTED)
             current_input = outputQ.get_nowait()
         max_output = max(max_output, current_input)
     yield max_output
 
     # Part 2
     max_output = 0
+    vms = [IntCodeVM() for _ in range(5)]
     for phase_setting in itertools.permutations([5, 6, 7, 8, 9]):
         queueAB = IQueue([phase_setting[1]])
         queueBC = IQueue([phase_setting[2]])
@@ -403,16 +501,18 @@ def solve7(data):
         queueDE = IQueue([phase_setting[4]])
         queueEA = IQueue([phase_setting[0], 0])
 
-        amps = [threading.Thread(target=intcode_run, name='A', args=(tape[:], queueEA, queueAB)),
-                threading.Thread(target=intcode_run, name='B', args=(tape[:], queueAB, queueBC)),
-                threading.Thread(target=intcode_run, name='C', args=(tape[:], queueBC, queueCD)),
-                threading.Thread(target=intcode_run, name='D', args=(tape[:], queueCD, queueDE)),
-                threading.Thread(target=intcode_run, name='E', args=(tape[:], queueDE, queueEA))]
+        def runvm(vm, inputQ, outputQ):
+            vm.reset(tape, inputQ, outputQ).run()
+
+        amps = [threading.Thread(target=runvm, name='A', args=(vms[0], queueEA, queueAB)),
+                threading.Thread(target=runvm, name='B', args=(vms[1], queueAB, queueBC)),
+                threading.Thread(target=runvm, name='C', args=(vms[2], queueBC, queueCD)),
+                threading.Thread(target=runvm, name='D', args=(vms[3], queueCD, queueDE)),
+                threading.Thread(target=runvm, name='E', args=(vms[4], queueDE, queueEA))]
 
         for amp in amps:
             amp.start()
-        for amp in amps:
-            amp.join()
+        amps[-1].join()
 
         while not queueEA.empty():
             output = queueEA.get_nowait()
@@ -453,6 +553,23 @@ def solve8(data):
 
     for row in range(HEIGHT):
         print(' '.join(image[row*WIDTH:(row+1)*WIDTH]))
+
+@with_solutions(2465411646, 69781)
+def solve9(data):
+
+    # Sensor Boost
+
+    tape = [int(x) for x in data.split(',')]
+    outputQ = IQueue()
+
+    # Part 1
+    vm = IntCodeVM(tape, IQueue([1]), outputQ).run()
+    yield outputQ.get_nowait()
+
+    # Part 2
+    vm.inputQ.put(2)
+    vm.reset(tape).run()
+    yield outputQ.get_nowait()
 
 ################################################################################
 
