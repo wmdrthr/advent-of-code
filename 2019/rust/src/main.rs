@@ -15,6 +15,7 @@ pub mod tsiolkovsky;
 pub mod intcode;
 pub mod crossingwires;
 pub mod passwords;
+pub mod orbitalmap;
 
 fn usage() {
     println!("usage: adventofcode <day>\n\t1 <= day <= 31");
@@ -64,6 +65,7 @@ fn run(day: u8, data: String) -> bool {
         3 => { crossingwires::solve(data); true }
         4 => { passwords::solve(data);     true }
         5 => { intcode::solve5(data);      true }
+        6 => { orbitalmap::solve(data);    true }
         _ => {
             println!("no solver for day {} yet.", day);
             false

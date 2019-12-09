@@ -464,10 +464,10 @@ def solve6(data):
             if target in satellites[current]:
                 break
 
-        return transfers, current
+        return transfers
 
-    stage1, current = count_transfers('YOU', 'SAN')
-    stage2, _ = count_transfers('SAN', 'YOU')
+    stage1 = count_transfers('YOU', 'SAN')
+    stage2 = count_transfers('SAN', 'YOU')
     print(stage1 + stage2)
 
 
