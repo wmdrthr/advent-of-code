@@ -571,6 +571,55 @@ def solve9(data):
     vm.reset(tape).run()
     yield outputQ.get_nowait()
 
+@with_solutions(269, 612)
+def solve10(data):
+
+    # Monitoring Station
+
+    data = [l.strip() for l in data.split('\n') if len(l) > 1]
+    asteroids = [(x, y) for y,l in enumerate(data) for x,c in enumerate(l) if c == '#']
+
+    def angle(x, y):
+        angle = math.atan2(x[0] - y[0], y[1] - x[1])
+        if angle < 0:
+            angle += 2 * math.pi
+        return round(angle, 10)
+
+    # Part 1
+    max_visible = 0
+    station = None
+    for asteroid in asteroids:
+        angles = set()
+        for other in asteroids:
+            if asteroid != other:
+                angles.add(angle(other, asteroid))
+        if len(angles) > max_visible:
+            max_visible = len(angles)
+            station = asteroid
+
+    yield max_visible
+
+    # Part 2
+    def distance(x, y):
+        return ((x[0] - y[0]) ** 2) + ((x[1] - y[1]) ** 2)
+
+    targets = collections.defaultdict(list)
+    for asteroid in asteroids:
+        if asteroid != station:
+            targets[angle(asteroid, station)].append((distance(station, asteroid), asteroid))
+
+    for angle in targets.keys():
+        targets[angle].sort(key = lambda t: t[0])
+
+    counter = 0
+    while True:
+        for angle in sorted(targets.keys()):
+            if len(targets[angle]) > 0:
+                _, asteroid = targets[angle].pop(0)
+                counter += 1
+                if counter == 200:
+                    yield asteroid[0] * 100 + asteroid[1]
+
 ################################################################################
 
 if __name__ == '__main__':
