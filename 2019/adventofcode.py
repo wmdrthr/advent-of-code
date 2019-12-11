@@ -326,6 +326,11 @@ def solve2(data):
                  n = 100 * x + y
                  yield n
 
+
+origin = (0, 0)
+def manhattan(a, b = origin):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 @with_solutions(2129, 134662)
 def solve3(data):
 
@@ -348,10 +353,6 @@ def solve3(data):
                 raise Exception('Invalid direction: {}'.format(direction))
             yield point
             x, y = point
-
-    origin = (0, 0)
-    def manhattan(a, b):
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     for wire, route in enumerate([l for l in data.split('\n') if len(l) > 0]):
         current = origin
@@ -520,7 +521,7 @@ def solve7(data):
 
     yield max_output
 
-@with_solutions(2176, None)
+@with_solutions(2176, 'CYKBY')
 def solve8(data):
 
     # Space Image Format
@@ -553,6 +554,8 @@ def solve8(data):
 
     for row in range(HEIGHT):
         print(' '.join(image[row*WIDTH:(row+1)*WIDTH]))
+
+    yield 'CYKBY'
 
 @with_solutions(2465411646, 69781)
 def solve9(data):
@@ -619,6 +622,66 @@ def solve10(data):
                 counter += 1
                 if counter == 200:
                     yield asteroid[0] * 100 + asteroid[1]
+
+@with_solutions(2211, 'EFCKUEGC')
+def solve11(data):
+
+    # Space Police
+
+    tape = [int(x) for x in data.split(',')]
+
+    DIRECTIONS = { '↑' : [( 0, -1), ['←', '→']],
+                   '↓' : [( 0,  1), ['→', '←']],
+                   '←' : [(-1,  0), ['↓', '↑']],
+                   '→' : [( 1,  0), ['↑', '↓']]}
+
+    panels = collections.defaultdict(int)
+    robot = ('↑', (0, 0))
+
+    def move(turn):
+        (direction, (x, y)) = robot
+        new_direction = DIRECTIONS[direction][1][turn]
+        dx, dy = DIRECTIONS[new_direction][0]
+        return (new_direction, (x + dx, y + dy))
+
+    inputQ, outputQ = IQueue(), IQueue()
+
+    # Part 1
+    vm = IntCodeVM(tape, outputQ, inputQ) # queues named from robot's perspective
+    painted = set()
+    threading.Thread(target=IntCodeVM.run, name='mondrian', args=(vm,)).start()
+    while vm.state is not VMState.HALTED:
+        outputQ.put(panels[robot[1]])
+        color = inputQ.get(block = True, timeout = 1)
+        turn  = inputQ.get(block = True, timeout = 1)
+        panels[robot[1]] = color
+        painted.add(robot[1])
+        robot = move(turn)
+
+    yield len(painted)
+
+    # Part 2
+    vm.reset(tape)
+    robot = ('↑', (0, 0))
+    panels.clear(); panels[robot[1]] = 1
+
+    threading.Thread(target=IntCodeVM.run, name='mondrian', args=(vm,)).start()
+    while vm.state is not VMState.HALTED:
+        outputQ.put(panels[robot[1]])
+        color = inputQ.get(block = True, timeout = 1)
+        turn  = inputQ.get(block = True, timeout = 1)
+        panels[robot[1]] = color
+        painted.add(robot[1])
+        robot = move(turn)
+
+    locations = sorted(panels.keys(), key=manhattan)
+    chars = [U.lookup('LIGHT SHADE'), U.lookup('FULL BLOCK')]
+    for y in range(locations[-1][1] + 1):
+        for x in range(locations[-1][0] + 1):
+            print(chars[panels[(x, y)]], end='')
+        print()
+
+    yield 'EFCKUEGC'
 
 ################################################################################
 
