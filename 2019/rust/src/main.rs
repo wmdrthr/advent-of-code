@@ -2,6 +2,7 @@
 
 extern crate elapsed;
 extern crate chrono;
+extern crate itertools;
 
 use std::process::exit;
 use std::env;
@@ -68,6 +69,7 @@ fn run(day: u8, data: String) -> bool {
         4 => { passwords::solve(data);     true }
         5 => { intcode::solve5(data);      true }
         6 => { orbitalmap::solve(data);    true }
+        7 => { intcode::solve7(data);      true }
         _ => {
             println!("no solver for day {} yet.", day);
             false

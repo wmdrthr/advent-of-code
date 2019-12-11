@@ -1,10 +1,19 @@
-use std::collections::VecDeque;
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+use itertools::Itertools;
 
 #[derive(Debug)]
 enum Mode {
     Position, Immediate
 }
 type Modes = (Mode, Mode, Mode);
+
+#[derive(PartialEq, Debug)]
+enum State {
+    INIT, RUNNING, HALTED, CRASHED
+}
 
 fn get_mode(mode: i32) -> Mode {
     match mode {
@@ -17,15 +26,28 @@ fn get_mode(mode: i32) -> Mode {
 pub struct VM {
     memory: Vec<i32>,
     ip: usize,
-    input: Option<VecDeque<i32>>,
-    output: Option<VecDeque<i32>>
+    state: State,
+    input: Option<Receiver<i32>>,
+    output: Option<Sender<i32>>
 }
 
+macro_rules! crash {
+    ($self:ident, $msg:expr) => {
+        {
+            $self.state = State::CRASHED;
+            println!("VM CRASH: {}", $msg);
+            return;
+        }
+    }
+}
+
+
 impl VM {
-    fn new(program: Vec<i32>, input: Option<VecDeque<i32>>, output: Option<VecDeque<i32>>) -> VM {
+    fn new(program: Vec<i32>, input: Option<Receiver<i32>>, output: Option<Sender<i32>>) -> VM {
         VM {
             memory: program,
             ip: 0,
+            state: State::INIT,
             input,
             output
         }
@@ -59,12 +81,9 @@ impl VM {
 
     fn read(&mut self) {
         let output = self.memory[self.ip + 1];
-        let value: i32 = match &mut self.input {
-            Some(q) => match q.pop_front() {
-                Some(v) => v,
-                None    => panic!("Input Required")
-            }
-            None    => panic!("Illegal Instruction")
+        let value: i32 = match &self.input {
+            Some(rx) => rx.recv().unwrap(),
+            None    => crash!(self, "Illegal Instruction")
         };
 
         self.memory[output as usize] = value;
@@ -73,9 +92,9 @@ impl VM {
 
     fn write(&mut self, modes: Modes) {
         let output = self.fetch(self.ip + 1, modes.0);
-        match &mut self.output {
-            Some(q) => q.push_back(output),
-            None    => panic!("Illegal Instruction")
+        match &self.output {
+            Some(tx) => tx.send(output).unwrap(),
+            None    => crash!(self, "Illegal Instruction")
         };
         self.ip += 2;
     }
@@ -139,47 +158,55 @@ impl VM {
             6 => self.jump_if_false(modes),
             7 => self.less_than(modes),
             8 => self.equals(modes),
-            _ => panic!(format!("Invalid opcode: {} at location {}", m % 100, self.ip)),
+            _ => crash!(self, format!("Invalid opcode: {} at location {}", m % 100, self.ip)),
         };
     }
 
     fn run(&mut self) {
 
+        self.state = State::RUNNING;
         loop {
             if self.memory[self.ip] == 99 {
+                self.state = State::HALTED;
                 break;
             }
 
             self.step();
+            if self.state != State::RUNNING {
+                break;
+            }
         }
     }
 }
 
-pub fn intcode_basic_run(program: Vec<i32>) -> VM {
-    let mut vm = VM::new(program, None, None);
-    vm.run();
-    vm
-}
+pub fn intcode_spawn(program: Vec<i32>, inputs: Vec<i32>) -> (Sender<i32>, Receiver<i32>) {
 
-pub fn intcode_advanced_run(program: Vec<i32>, inputs: Vec<i32>) -> VM {
+    let (input_tx, input_rx)   = mpsc::channel();
+    let (output_tx, output_rx) = mpsc::channel();
 
-    let mut input_queue: VecDeque<i32> = VecDeque::new();
+    let mut vm = VM::new(program, Some(input_rx), Some(output_tx));
+
+    thread::spawn(move || {
+        vm.run();
+    });
+
     for it in inputs {
-        input_queue.push_back(it);
+        input_tx.send(it).unwrap();
     }
-    let mut vm = VM::new(program, Some(input_queue), Some(VecDeque::new()));
-    vm.run();
-    vm
+
+    (input_tx, output_rx)
 }
 
-// Solver for Day 2
+
+// Solver for Day 2: 1202 Program Alarm
 pub fn solve2(data: String) {
     let tape: Vec<i32> = data.split(",").map(|l| l.parse::<i32>().unwrap()).collect();
 
     // Part 1
     let mut tape1 = tape.clone();
     tape1[1] = 12; tape1[2] = 2;
-    let vm = intcode_basic_run(tape1);
+    let mut vm = VM::new(tape1, None, None);
+    vm.run();
     println!("Part 1: {}", vm.memory[0]);
 
     // Part 2
@@ -187,7 +214,8 @@ pub fn solve2(data: String) {
         for y in 0..100 {
             let mut tape2 = tape.clone();
             tape2[1] = x; tape2[2] = y;
-            let vm = intcode_basic_run(tape2);
+            let mut vm = VM::new(tape2, None, None);
+            vm.run();
             if vm.memory[0] == 19690720 {
                 println!("Part 2: {}", (100 * x + y));
                 return;
@@ -196,19 +224,91 @@ pub fn solve2(data: String) {
     }
 }
 
-// Solver for Day 5
+
+// Solver for Day 5: Sunny with a Chance of Asteroids
 pub fn solve5(data: String) {
 
     let tape: Vec<i32> = data.split(",") .map(|l| l.parse::<i32>().unwrap()).collect();
 
     // Part 1
-    let mut vm = intcode_advanced_run(tape.clone(), vec![1]);
-    let drained = vm.output.unwrap().drain(0..).filter(|v| *v != 0).collect::<VecDeque<_>>();
-    println!("Part 1: {}", drained[0]);
+    let (_, rx) = intcode_spawn(tape.clone(), vec![1]);
+    loop {
+        let v = rx.recv_timeout(Duration::from_millis(500)).unwrap();
+        if v != 0 {
+            println!("Part 1: {}", v);
+            break;
+        }
+    }
 
     // Part 2
-    vm = intcode_advanced_run(tape.clone(), vec![5]);
-    println!("Part 2: {}", vm.output.unwrap().pop_front().unwrap());
+    let (_, rx) = intcode_spawn(tape.clone(), vec![5]);
+    println!("Part 2: {}", rx.recv_timeout(Duration::from_millis(500)).unwrap());
+}
+
+
+// Solver for Day 7: Amplification Circuit
+fn solve7b(tape: &Vec<i32>, settings: Vec<i32>) -> i32 {
+
+        let (tx_ab, rx_ab) = mpsc::channel(); tx_ab.send(settings[1]).unwrap();
+        let (tx_bc, rx_bc) = mpsc::channel(); tx_bc.send(settings[2]).unwrap();
+        let (tx_cd, rx_cd) = mpsc::channel(); tx_cd.send(settings[3]).unwrap();
+        let (tx_de, rx_de) = mpsc::channel(); tx_de.send(settings[4]).unwrap();
+        let (tx_ea, rx_ea) = mpsc::channel();
+        let (tx, rx)       = mpsc::channel(); tx.send(settings[0]).unwrap(); tx.send(0).unwrap();
+
+        let mut vms: Vec<VM> = Vec::new();
+        vms.push(VM::new(tape.clone(), Some(rx),    Some(tx_ab)));
+        vms.push(VM::new(tape.clone(), Some(rx_ab), Some(tx_bc)));
+        vms.push(VM::new(tape.clone(), Some(rx_bc), Some(tx_cd)));
+        vms.push(VM::new(tape.clone(), Some(rx_cd), Some(tx_de)));
+        vms.push(VM::new(tape.clone(), Some(rx_de), Some(tx_ea)));
+
+        for mut vm in vms {
+            thread::spawn(move || {
+                vm.run();
+            });
+        }
+
+        let (tx_out, rx_out) = mpsc::channel();
+
+        let handler = thread::spawn(move || {
+            loop {
+                let v: i32 = rx_ea.recv().unwrap();
+                match tx.send(v) {
+                    Ok(_)  => {},
+                    Err(_) => { tx_out.send(v).unwrap(); break; }
+                }
+            }
+        });
+    handler.join().unwrap();
+
+    rx_out.recv().unwrap()
+}
+
+
+pub fn solve7(data: String) {
+
+    let tape: Vec<i32> = data.split(",") .map(|l| l.parse::<i32>().unwrap()).collect();
+
+    // Part 1
+    let mut max_output: i32 = 0;
+    for setting in (0..5).permutations(5) {
+        let mut current: i32 = 0;
+        for i in 0..5 {
+            let (_, rx) = intcode_spawn(tape.clone(), vec![setting[i].clone(), current]);
+            current = rx.recv().unwrap();
+        }
+        max_output = max_output.max(current);
+    }
+    println!("Part 1: {}", max_output);
+
+    // Part 2
+    max_output = 0;
+    for settings in (5..10).permutations(5) {
+        let output = solve7b(&tape, settings);
+        max_output = max_output.max(output);
+    }
+    println!("Part 2: {}", max_output);
 }
 
 #[cfg(test)]
@@ -232,82 +332,108 @@ mod tests {
 
 
         for n in 0..4 {
-            let vm = intcode_basic_run(inputs[n].clone());
+            let mut vm = VM::new(inputs[n].clone(), None, None);
+            vm.run();
             assert_eq!(vm.memory, outputs[n]);
         }
     }
 
     #[test]
     fn intcode_advanced_programs_1() {
-        let mut vm = intcode_advanced_run(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![5]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
-        vm = intcode_advanced_run(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![12]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 1);
+
+        let (_, rx) = intcode_spawn(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![5]);
+        assert_eq!(rx.recv().unwrap(), 0);
+
+        let (_, rx) = intcode_spawn(vec![3,9,8,9,10,9,4,9,99,-1,8], vec![12]);
+        assert_eq!(rx.recv().unwrap(), 0);
     }
 
     #[test]
     fn intcode_advanced_programs_2() {
-        let mut vm = intcode_advanced_run(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
-        vm = intcode_advanced_run(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![5]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![12]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 0);
+
+        let (_, rx) = intcode_spawn(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![5]);
+        assert_eq!(rx.recv().unwrap(), 1);
+
+        let (_, rx) = intcode_spawn(vec![3,9,7,9,10,9,4,9,99,-1,8], vec![12]);
+        assert_eq!(rx.recv().unwrap(), 0);
     }
 
     #[test]
     fn intcode_advanced_programs_3() {
-        let mut vm = intcode_advanced_run(vec![3,3,1108,-1,8,3,4,3,99], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,3,1108,-1,8,3,4,3,99], vec![5]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
-        vm = intcode_advanced_run(vec![3,3,1108,-1,8,3,4,3,99], vec![12]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,3,1108,-1,8,3,4,3,99], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 1);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1108,-1,8,3,4,3,99], vec![5]);
+        assert_eq!(rx.recv().unwrap(), 0);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1108,-1,8,3,4,3,99], vec![12]);
+        assert_eq!(rx.recv().unwrap(), 0);
     }
 
     #[test]
     fn intcode_advanced_programs_4() {
-        let mut vm = intcode_advanced_run(vec![3,3,1107,-1,8,3,4,3,99], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
-        vm = intcode_advanced_run(vec![3,3,1107,-1,8,3,4,3,99], vec![5]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,3,1107,-1,8,3,4,3,99], vec![12]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,3,1107,-1,8,3,4,3,99], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 0);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1107,-1,8,3,4,3,99], vec![5]);
+        assert_eq!(rx.recv().unwrap(), 1);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1107,-1,8,3,4,3,99], vec![12]);
+        assert_eq!(rx.recv().unwrap(), 0);
     }
 
     #[test]
     fn intcode_advanced_programs_5() {
-        let mut vm = intcode_advanced_run(vec![3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], vec![0]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 1);
 
-        vm = intcode_advanced_run(vec![3,3,1105,-1,9,1101,0,0,12,4,12,99,1], vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1);
-        vm = intcode_advanced_run(vec![3,3,1105,-1,9,1101,0,0,12,4,12,99,1], vec![0]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 0);
+        let (_, rx) = intcode_spawn(vec![3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], vec![0]);
+        assert_eq!(rx.recv().unwrap(), 0);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1105,-1,9,1101,0,0,12,4,12,99,1], vec![8]);
+        assert_eq!(rx.recv().unwrap(), 1);
+
+        let (_, rx) = intcode_spawn(vec![3,3,1105,-1,9,1101,0,0,12,4,12,99,1], vec![0]);
+        assert_eq!(rx.recv().unwrap(), 0);
     }
 
     #[test]
     fn intcode_advanced_programs_6() {
-        let mut vm = intcode_advanced_run(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+        let (_, rx) = intcode_spawn(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
                                                1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
                                                999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99],
-                                          vec![8]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1000);
+                                    vec![8]);
+        assert_eq!(rx.recv().unwrap(), 1000);
 
-        vm = intcode_advanced_run(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+        let (_, rx) = intcode_spawn(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
                                        1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
                                        999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99],
-                                  vec![5]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 999);
+                                    vec![5]);
+        assert_eq!(rx.recv().unwrap(), 999);
 
-        vm = intcode_advanced_run(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+        let (_, rx) = intcode_spawn(vec![3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
                                        1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
                                        999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99],
-                                  vec![12]);
-        assert_eq!(vm.output.unwrap().pop_front().unwrap(), 1001);
+                                    vec![12]);
+        assert_eq!(rx.recv().unwrap(), 1001);
     }
+
+    #[test]
+    fn intcode_amplifier_programs() {
+
+        let mut program = vec![3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0];
+        assert_eq!(solve7b(&program, vec![4,3,2,1,0]), 43210);
+
+        program = vec![3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0];
+        assert_eq!(solve7b(&program, vec![0,1,2,3,4]), 54321);
+
+        program = vec![3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,
+                       1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0];
+        assert_eq!(solve7b(&program, vec![1,0,4,3,2]), 65210);
+    }
+
 }
