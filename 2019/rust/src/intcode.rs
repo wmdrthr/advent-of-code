@@ -6,7 +6,7 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 enum Mode {
-    Position, Immediate
+    Position, Immediate, Relative
 }
 type Modes = (Mode, Mode, Mode);
 
@@ -15,20 +15,22 @@ enum State {
     INIT, RUNNING, HALTED, CRASHED
 }
 
-fn get_mode(mode: i32) -> Mode {
+fn get_mode(mode: i64) -> Mode {
     match mode {
         0 => Mode::Position,
         1 => Mode::Immediate,
+        2 => Mode::Relative,
         _ => panic!(format!("Invalid mode {}", mode))
     }
 }
 
 pub struct VM {
-    memory: Vec<i32>,
+    memory: Vec<i64>,
     ip: usize,
+    base: i64,
     state: State,
-    input: Option<Receiver<i32>>,
-    output: Option<Sender<i32>>
+    input: Option<Receiver<i64>>,
+    output: Option<Sender<i64>>
 }
 
 macro_rules! crash {
@@ -43,28 +45,47 @@ macro_rules! crash {
 
 
 impl VM {
-    fn new(program: Vec<i32>, input: Option<Receiver<i32>>, output: Option<Sender<i32>>) -> VM {
+    fn new(program: Vec<i64>, input: Option<Receiver<i64>>, output: Option<Sender<i64>>) -> VM {
         VM {
             memory: program,
             ip: 0,
+            base: 0,
             state: State::INIT,
             input,
             output
         }
     }
 
-    fn fetch(&self, m: usize, mode: Mode) -> i32 {
+    fn resize(&mut self, l: usize) {
+        if l >= self.memory.len() {
+            self.memory.resize(2 * l, 0);
+        }
+    }
+
+    fn fetch(&mut self, m: usize, mode: Mode) -> i64 {
+        self.resize(m);
         let v = self.memory[m];
         match mode {
-            Mode::Position => self.memory[v as usize],
-            Mode::Immediate => v
+            Mode::Position  => self.memory[v as usize],
+            Mode::Immediate => v,
+            Mode::Relative  => self.memory[(v + self.base) as usize]
         }
+    }
+
+    fn dest(&mut self, m: usize, mode: Mode) -> usize {
+        self.resize(m);
+        let output = match mode {
+            Mode::Relative => (self.memory[m] + self.base) as usize,
+            _ => self.memory[m] as usize
+        };
+        self.resize(output);
+        output
     }
 
     fn add(&mut self, modes: Modes) {
         let operand_a = self.fetch(self.ip + 1, modes.0);
         let operand_b = self.fetch(self.ip + 2, modes.1);
-        let output = self.memory[self.ip + 3];
+        let output = self.dest(self.ip + 3, modes.2);
 
         self.memory[output as usize] = operand_a + operand_b;
         self.ip += 4;
@@ -73,15 +94,15 @@ impl VM {
     fn mul(&mut self, modes: Modes) {
         let operand_a = self.fetch(self.ip + 1, modes.0);
         let operand_b = self.fetch(self.ip + 2, modes.1);
-        let output = self.memory[self.ip + 3];
+        let output = self.dest(self.ip + 3, modes.2);
 
         self.memory[output as usize] = operand_a * operand_b;
         self.ip += 4;
     }
 
-    fn read(&mut self) {
-        let output = self.memory[self.ip + 1];
-        let value: i32 = match &self.input {
+    fn read(&mut self, modes: Modes) {
+        let output = self.dest(self.ip + 1, modes.0);
+        let value: i64 = match &self.input {
             Some(rx) => rx.recv().unwrap(),
             None    => crash!(self, "Illegal Instruction")
         };
@@ -120,7 +141,7 @@ impl VM {
     fn less_than(&mut self, modes: Modes) {
         let value_a = self.fetch(self.ip + 1, modes.0);
         let value_b = self.fetch(self.ip + 2, modes.1);
-        let output = self.memory[self.ip + 3];
+        let output = self.dest(self.ip + 3, modes.2);
 
         if value_a < value_b {
             self.memory[output as usize] = 1;
@@ -133,7 +154,7 @@ impl VM {
     fn equals(&mut self, modes: Modes) {
         let value_a = self.fetch(self.ip + 1, modes.0);
         let value_b = self.fetch(self.ip + 2, modes.1);
-        let output = self.memory[self.ip + 3];
+        let output = self.dest(self.ip + 3, modes.2);
 
         if value_a == value_b {
             self.memory[output as usize] = 1;
@@ -143,21 +164,28 @@ impl VM {
         self.ip += 4;
     }
 
+    fn adj_base(&mut self, modes: Modes) {
+        let value = self.fetch(self.ip + 1, modes.0);
+        self.base += value;
+        self.ip += 2
+    }
+
     fn step(&mut self) {
-        let m: i32 = self.memory[self.ip];
-        let flags: i32 = m / 100;
+        let m: i64 = self.memory[self.ip];
+        let flags: i64 = m / 100;
         let modes = (get_mode(flags % 10),
                      get_mode((flags / 10) % 10),
                      get_mode(flags / 100));
         match m % 100 {
             1 => self.add(modes),
             2 => self.mul(modes),
-            3 => self.read(),
+            3 => self.read(modes),
             4 => self.write(modes),
             5 => self.jump_if_true(modes),
             6 => self.jump_if_false(modes),
             7 => self.less_than(modes),
             8 => self.equals(modes),
+            9 => self.adj_base(modes),
             _ => crash!(self, format!("Invalid opcode: {} at location {}", m % 100, self.ip)),
         };
     }
@@ -179,7 +207,7 @@ impl VM {
     }
 }
 
-pub fn intcode_spawn(program: Vec<i32>, inputs: Vec<i32>) -> (Sender<i32>, Receiver<i32>) {
+pub fn intcode_spawn(program: Vec<i64>, inputs: Vec<i64>) -> (Sender<i64>, Receiver<i64>) {
 
     let (input_tx, input_rx)   = mpsc::channel();
     let (output_tx, output_rx) = mpsc::channel();
@@ -200,7 +228,7 @@ pub fn intcode_spawn(program: Vec<i32>, inputs: Vec<i32>) -> (Sender<i32>, Recei
 
 // Solver for Day 2: 1202 Program Alarm
 pub fn solve2(data: String) {
-    let tape: Vec<i32> = data.split(",").map(|l| l.parse::<i32>().unwrap()).collect();
+    let tape: Vec<i64> = data.split(",").map(|l| l.parse::<i64>().unwrap()).collect();
 
     // Part 1
     let mut tape1 = tape.clone();
@@ -228,7 +256,7 @@ pub fn solve2(data: String) {
 // Solver for Day 5: Sunny with a Chance of Asteroids
 pub fn solve5(data: String) {
 
-    let tape: Vec<i32> = data.split(",") .map(|l| l.parse::<i32>().unwrap()).collect();
+    let tape: Vec<i64> = data.split(",") .map(|l| l.parse::<i64>().unwrap()).collect();
 
     // Part 1
     let (_, rx) = intcode_spawn(tape.clone(), vec![1]);
@@ -247,7 +275,7 @@ pub fn solve5(data: String) {
 
 
 // Solver for Day 7: Amplification Circuit
-fn solve7b(tape: &Vec<i32>, settings: Vec<i32>) -> i32 {
+fn solve7b(tape: &Vec<i64>, settings: Vec<i64>) -> i64 {
 
         let (tx_ab, rx_ab) = mpsc::channel(); tx_ab.send(settings[1]).unwrap();
         let (tx_bc, rx_bc) = mpsc::channel(); tx_bc.send(settings[2]).unwrap();
@@ -273,7 +301,7 @@ fn solve7b(tape: &Vec<i32>, settings: Vec<i32>) -> i32 {
 
         let handler = thread::spawn(move || {
             loop {
-                let v: i32 = rx_ea.recv().unwrap();
+                let v: i64 = rx_ea.recv().unwrap();
                 match tx.send(v) {
                     Ok(_)  => {},
                     Err(_) => { tx_out.send(v).unwrap(); break; }
@@ -288,12 +316,12 @@ fn solve7b(tape: &Vec<i32>, settings: Vec<i32>) -> i32 {
 
 pub fn solve7(data: String) {
 
-    let tape: Vec<i32> = data.split(",") .map(|l| l.parse::<i32>().unwrap()).collect();
+    let tape: Vec<i64> = data.split(",") .map(|l| l.parse::<i64>().unwrap()).collect();
 
     // Part 1
-    let mut max_output: i32 = 0;
+    let mut max_output: i64 = 0;
     for setting in (0..5).permutations(5) {
-        let mut current: i32 = 0;
+        let mut current: i64 = 0;
         for i in 0..5 {
             let (_, rx) = intcode_spawn(tape.clone(), vec![setting[i].clone(), current]);
             current = rx.recv().unwrap();
@@ -311,6 +339,19 @@ pub fn solve7(data: String) {
     println!("Part 2: {}", max_output);
 }
 
+
+// Solver for Day 9: Sensor Boost
+pub fn solve9(data: String) {
+
+    let tape: Vec<i64> = data.split(",") .map(|l| l.parse::<i64>().unwrap()).collect();
+
+    let (_, rx) = intcode_spawn(tape.clone(), vec![1]);
+    println!("Part 1: {}", rx.recv().unwrap());
+
+    let (_, rx) = intcode_spawn(tape.clone(), vec![2]);
+    println!("Part 2: {}", rx.recv().unwrap());
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -318,13 +359,13 @@ mod tests {
 
     #[test]
     fn intcode_basic_programs() {
-        let inputs: Vec<Vec<i32>> = vec![
+        let inputs: Vec<Vec<i64>> = vec![
             vec![1, 0, 0, 0, 99],
             vec![2, 3, 0, 3, 99],
             vec![2, 4, 4, 5, 99, 0],
             vec![1, 1, 1, 4, 99, 5, 6, 0, 99]];
 
-        let outputs: Vec<Vec<i32>> = vec![
+        let outputs: Vec<Vec<i64>> = vec![
             vec![2, 0, 0, 0, 99],
             vec![2, 3, 0, 6, 99],
             vec![2, 4, 4, 5, 99, 9801],
@@ -436,4 +477,25 @@ mod tests {
         assert_eq!(solve7b(&program, vec![1,0,4,3,2]), 65210);
     }
 
+
+    #[test]
+    fn intcode_advanced_programs_7() {
+
+        let tape = vec![109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99];
+        let (_, rx) = intcode_spawn(tape.clone(), vec![0]);
+        let mut output = Vec::new();
+        loop {
+            match rx.recv() {
+                Ok(v) => output.push(v),
+                Err(_) => break
+            }
+        }
+        assert_eq!(output, tape);
+
+        let (_, rx) = intcode_spawn(vec![1102,34915192,34915192,7,4,7,99,0], vec![0]);
+        assert_eq!(rx.recv().unwrap(), 1219070632396864);
+
+        let (_, rx) = intcode_spawn(vec![104,1125899906842624,99], vec![0]);
+        assert_eq!(rx.recv().unwrap(), 1125899906842624);
+    }
 }

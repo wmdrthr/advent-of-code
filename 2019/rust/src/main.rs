@@ -72,6 +72,7 @@ fn run(day: u8, data: String) {
         6 => { orbitalmap::solve(data);        }
         7 => { intcode::solve7(data);          }
         8 => { spaceimageformat::solve8(data); }
+        9 => { intcode::solve9(data);          }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
