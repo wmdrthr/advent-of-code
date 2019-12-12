@@ -471,7 +471,6 @@ def solve6(data):
     stage2 = count_transfers('SAN', 'YOU')
     print(stage1 + stage2)
 
-
 @with_solutions(844468, 4215746)
 def solve7(data):
 

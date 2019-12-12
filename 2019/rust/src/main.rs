@@ -19,6 +19,7 @@ pub mod intcode;
 pub mod crossingwires;
 pub mod passwords;
 pub mod orbitalmap;
+pub mod spaceimageformat;
 
 fn usage() {
     println!("usage: adventofcode <day>\n\t1 <= day <= 31");
@@ -60,20 +61,18 @@ fn get_data(day: u8) -> String {
     }
 }
 
-fn run(day: u8, data: String) -> bool {
+fn run(day: u8, data: String) {
 
     match day {
-        1 => { tsiolkovsky::solve(data);   true }
-        2 => { intcode::solve2(data);      true }
-        3 => { crossingwires::solve(data); true }
-        4 => { passwords::solve(data);     true }
-        5 => { intcode::solve5(data);      true }
-        6 => { orbitalmap::solve(data);    true }
-        7 => { intcode::solve7(data);      true }
-        _ => {
-            println!("no solver for day {} yet.", day);
-            false
-        }
+        1 => { tsiolkovsky::solve(data);       }
+        2 => { intcode::solve2(data);          }
+        3 => { crossingwires::solve(data);     }
+        4 => { passwords::solve(data);         }
+        5 => { intcode::solve5(data);          }
+        6 => { orbitalmap::solve(data);        }
+        7 => { intcode::solve7(data);          }
+        8 => { spaceimageformat::solve8(data); }
+        _ => { println!("no solver for day {} yet.", day); }
     }
 }
 
@@ -94,7 +93,7 @@ fn main() {
 
     let data = get_data(day);
 
-    let (elapsed, _status) = elapsed::measure_time(|| {
+    let (elapsed, _) = elapsed::measure_time(|| {
         run(day, data);
     });
     println!("elapsed = {}", elapsed);
