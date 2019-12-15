@@ -13,13 +13,13 @@ use chrono::prelude::*;
 
 const YEAR: i32 = 2019;
 
-pub mod adventofcode;
 pub mod tsiolkovsky;
 pub mod intcode;
 pub mod crossingwires;
 pub mod passwords;
 pub mod orbitalmap;
 pub mod spaceimageformat;
+pub mod asteroids;
 
 fn usage() {
     println!("usage: adventofcode <day>\n\t1 <= day <= 31");
@@ -50,29 +50,30 @@ fn get_data(day: u8) -> String {
         }
     } else {
         let filename = format!("../inputs/input{:02}.txt", day);
-        let contents = match fs::read_to_string(filename) {
-            Ok(str) => str,
+
+        match fs::read_to_string(filename) {
+            Ok(contents) => contents,
             Err(_) => {
                 println!("input not found for day {}", day);
                 String::from("")
             }
-        };
-        contents
+        }
     }
 }
 
 fn run(day: u8, data: String) {
 
     match day {
-        1 => { tsiolkovsky::solve(data);       }
-        2 => { intcode::solve2(data);          }
-        3 => { crossingwires::solve(data);     }
-        4 => { passwords::solve(data);         }
-        5 => { intcode::solve5(data);          }
-        6 => { orbitalmap::solve(data);        }
-        7 => { intcode::solve7(data);          }
-        8 => { spaceimageformat::solve8(data); }
-        9 => { intcode::solve9(data);          }
+        1  => { tsiolkovsky::solve(data);       }
+        2  => { intcode::solve2(data);          }
+        3  => { crossingwires::solve(data);     }
+        4  => { passwords::solve(data);         }
+        5  => { intcode::solve5(data);          }
+        6  => { orbitalmap::solve(data);        }
+        7  => { intcode::solve7(data);          }
+        8  => { spaceimageformat::solve8(data); }
+        9  => { intcode::solve9(data);          }
+        10 => { asteroids::solve10(data);       }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }

@@ -1,6 +1,11 @@
-pub use crate::adventofcode::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
+
+type V2 = (i32, i32);
+
+fn manhattan(a: (i32, i32), b: (i32, i32)) -> i32 {
+    (a.0 - b.0).abs() + (a.1 - b.1).abs()
+}
 
 fn parse(segment: &str) -> Vec<V2> {
     let direction = segment.chars().next().unwrap();
@@ -110,7 +115,7 @@ mod tests {
     }
 
     #[test]
-    fn corssingwires_b2() {
+    fn crossingwires_b2() {
         assert_eq!(
             solve2(
                 "R75,D30,R83,U83,L12,D49,R71,U7,L72",
