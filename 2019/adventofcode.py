@@ -14,6 +14,8 @@ import queue
 import threading
 import unicodedata as U
 import traceback as T
+from dataclasses import dataclass
+import copy
 
 import pytz
 import requests
@@ -681,6 +683,125 @@ def solve11(data):
         print()
 
     yield 'EFCKUEGC'
+
+
+@dataclass
+class V3:
+    x: int = 0
+    y: int = 0
+    z: int = 0
+
+    def __repr__(self):
+        return '<{},{},{}>'.format(self.x, self.y, self.z)
+
+    def __getitem__(self, dim):
+        if not 0 <= dim <= 2:
+            raise IndexError(f'invalid dimension: {dim}')
+        return (self.x, self.y, self.z)[dim]
+
+    def __setitem__(self, dim, value):
+        if not 0 <= dim <= 2:
+            raise IndexError(f'invalid dimension: {dim}')
+        if dim == 0: self.x = value
+        elif dim == 1: self.y = value
+        elif dim == 2: self.z = value
+
+    def __add__(self, other):
+        return V3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        self.z += other.z
+        return self
+
+    def __int__(self):
+        return abs(self.x) + abs(self.y) + abs(self.z)
+
+@with_solutions(7928, 518311327635164)
+def solve12(data):
+
+    # The N-Body Problem
+
+    @dataclass
+    class Moon:
+        position: V3
+        velocity: V3
+
+        def __repr__(self):
+            return '(P{}, V{})'.format(self.position, self.velocity)
+
+        def __int__(self):
+            return int(self.position) * int(self.velocity)
+
+        def time_step(self):
+            self.position += self.velocity
+
+        def energy(self):
+            return int(self.position) * int(self.velocity)
+
+    moons = []
+    pattern = re.compile('<x=([-\d]+), y=([-\d]+), z=([-\d]+)>')
+    for line in data.split('\n'):
+        match = pattern.match(line)
+        if match:
+            x, y, z = [int(v) for v in match.groups()]
+            moons.append(Moon(V3(x, y, z), V3(0, 0, 0)))
+    original_state = copy.deepcopy(moons)
+
+    def gravity(ma, mb, dim):
+        if ma.position[dim] < mb.position[dim]:
+            ma.velocity[dim] = ma.velocity[dim] + 1
+            mb.velocity[dim] = mb.velocity[dim] - 1
+        elif ma.position[dim] > mb.position[dim]:
+            ma.velocity[dim] = ma.velocity[dim] - 1
+            mb.velocity[dim] = mb.velocity[dim] + 1
+
+    # Part 1
+    for _ in range(1000):
+        for ma, mb in itertools.combinations(moons, 2):
+            for dim in (0, 1, 2):
+                gravity(ma, mb, dim)
+        for moon in moons:
+            moon.time_step()
+
+    yield sum([moon.energy() for moon in moons])
+
+    # Part 2
+    def lcm(a, b):
+        return a * b // math.gcd(a, b)
+
+    class Sim:
+        def __init__(self, moons, dim):
+            self.moons = copy.deepcopy(moons)
+            self.dim = dim
+            self.steps = 0
+
+        def run(self):
+            self.thread = threading.current_thread()
+            while True:
+                for ma, mb in itertools.combinations(self.moons, 2):
+                    gravity(ma, mb, self.dim)
+                for moon in self.moons:
+                    moon.time_step()
+                self.steps += 1
+                if sum([int(moon.velocity) for moon in self.moons]) == 0:
+                    self.steps *= 2
+                    break
+                if self.moons == original_state:
+                    break
+
+    simulations = []
+    for dim in (0, 1, 2):
+        sim = Sim(original_state, dim)
+        simulations.append(sim)
+        threading.Thread(target=Sim.run, args=(sim,)).start()
+
+    for sim in simulations:
+        sim.thread.join()
+
+    steps = [sim.steps for sim in simulations]
+    yield lcm(lcm(steps[0], steps[1]), steps[2])
 
 ################################################################################
 
