@@ -209,7 +209,7 @@ class IntCodeVM():
         destination = self.dest(self.ip + 1, modes[0])
         if self.inputQ is None:
             raise Exception('illegal instruction (no input)')
-        self.memory[destination] = self.inputQ.get(block = True, timeout = 1)
+        self.memory[destination] = self.inputQ.get(block = True)
         self.ip += 2
 
     def write(self, modes):
@@ -802,6 +802,73 @@ def solve12(data):
 
     steps = [sim.steps for sim in simulations]
     yield lcm(lcm(steps[0], steps[1]), steps[2])
+
+@with_solutions(205, 10292)
+def solve13(data):
+
+    # Care Package
+
+    tape = [int(x) for x in data.split(',')]
+
+    inputQ, outputQ = IQueue(), IQueue()
+
+    # Part 1
+    vm = IntCodeVM(tape, inputQ, outputQ)
+    threading.Thread(target=IntCodeVM.run, name='breakout', args=(vm,)).start()
+    counter = 0
+    while vm.state is VMState.RUNNING:
+        x = outputQ.get(block = True, timeout = 1)
+        y = outputQ.get(block = True, timeout = 1)
+        t = outputQ.get(block = True, timeout = 1)
+        if t == 2:
+            counter += 1
+
+    yield counter
+
+    # Part 2
+    tiles = [' ', U.lookup('FULL BLOCK'), U.lookup('LIGHT SHADE'), '━', '❍']
+    def display(screen):
+        for y in range(20):
+            for x in range(50):
+                print(tiles[screen[(x, y)]], end='')
+            print()
+
+    tape[0] = 2
+    vm.reset(tape)
+    screen = collections.defaultdict(int)
+    threading.Thread(target=IntCodeVM.run, name='breakout', args=(vm,)).start()
+    score, ball, paddle = 0, (0, 0), (0, 0)
+    while vm.state is VMState.RUNNING:
+        x = outputQ.get(block = True)
+        y = outputQ.get(block = True)
+        t = outputQ.get(block = True)
+
+        if (x,y) == (-1, 0):
+            score = t
+            continue
+
+        screen[(x, y)] = t
+        if t == 3:
+            paddle = (x, y)
+        if t == 4:
+            ball = (x, y)
+
+            if ball[0] < paddle[0]:
+                inputQ.put(-1)
+            elif ball[0] > paddle[0]:
+                inputQ.put(1)
+            else:
+                inputQ.put(0)
+
+    while not outputQ.empty():
+        x = outputQ.get()
+        y = outputQ.get()
+        t = outputQ.get()
+
+        if (x,y) == (-1, 0):
+            score = t
+
+    yield score
 
 ################################################################################
 
