@@ -10,6 +10,7 @@ import math
 import collections
 from enum import Enum
 import itertools
+import functools
 import queue
 import threading
 import unicodedata as U
@@ -870,6 +871,67 @@ def solve13(data):
 
     yield score
 
+@with_solutions(1590844, 1184209)
+def solve14(data):
+
+    # Space Stoichiometry
+
+    pattern = re.compile(r'^((?:\d+ [A-Z]+, )*\d+ [A-Z]+) => (\d+) ([A-Z]+)$')
+
+    reactions = {}
+    for line in data.split('\n'):
+        match = pattern.search(line)
+        if match:
+            output = (int(match.group(2)), match.group(3))
+            inputs = []
+            for input in match.group(1).split(', '):
+                amount, input = input.split(' ')
+                inputs.append((int(amount), input))
+            reactions[output[1]] = (output[0], inputs)
+
+    def calculate(target, target_amount, surplus=None):
+        if surplus is None:
+            surplus = collections.defaultdict(int)
+        if target == 'ORE':
+            return target_amount
+        elif target_amount <= surplus[target]:
+            surplus[target] -= target_amount
+            return 0
+
+        target_amount -= surplus[target]
+        surplus[target] = 0
+
+        ore = 0
+        output_amount, inputs = reactions[target]
+        production_ratio = math.ceil(target_amount / output_amount)
+        for input_amount, input in inputs:
+            input_amount *= production_ratio
+            ore += calculate(input, input_amount, surplus)
+        surplus[target] += output_amount * production_ratio - target_amount
+        return ore
+
+    # Part 1
+    fuel_cost = calculate('FUEL', 1)
+    yield fuel_cost
+
+    # Part 2
+    ore = 1000000000000
+    target_fuel = ore // fuel_cost
+    fuel = 0
+    surplus = collections.defaultdict(int)
+    while ore and target_fuel:
+        new_surplus = collections.defaultdict(int, surplus)
+        ore_used = calculate('FUEL', target_fuel, new_surplus)
+        if ore_used > ore:
+            target_fuel //= 2
+        else:
+            fuel += target_fuel
+            ore -= ore_used
+            surplus = new_surplus
+
+    yield fuel
+
+
 ################################################################################
 
 if __name__ == '__main__':
@@ -884,7 +946,10 @@ if __name__ == '__main__':
         if sys.argv[2] == '-':
             data = sys.stdin.read()
         else:
-            data = sys.argv[2]
+            if os.path.exists(sys.argv[2]):
+                data = open(sys.argv[2]).read().strip()
+            else:
+                data = sys.argv[2]
         custom_data = True
     else:
         data = get_data(day)
