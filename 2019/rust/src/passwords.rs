@@ -35,6 +35,8 @@ fn twins(password: &str) -> bool {
 
 }
 
+// Day 4: Secure Container
+
 pub fn solve(data: String) {
 
     let start: u32 = data[0..6].parse::<u32>().expect("invalid input");

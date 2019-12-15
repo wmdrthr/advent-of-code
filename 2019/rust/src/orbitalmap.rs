@@ -59,6 +59,8 @@ impl OrbitalMap {
     }
 }
 
+// Day 6: Universal Orbit Map
+
 pub fn solve(data: String) {
 
     let mut om = OrbitalMap::from(data);

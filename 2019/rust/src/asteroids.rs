@@ -139,7 +139,9 @@ fn load_asteroids(data: String) -> Vec<V2> {
     asteroids
 }
 
-pub fn solve10(data: String) {
+// Day 10: Monitoring Station
+
+pub fn solve(data: String) {
 
     let asteroids = load_asteroids(data);
 

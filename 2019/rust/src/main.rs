@@ -15,10 +15,14 @@ const YEAR: i32 = 2019;
 
 pub mod tsiolkovsky;
 pub mod intcode;
+pub mod programalarm;
 pub mod crossingwires;
 pub mod passwords;
+pub mod airconditioning;
 pub mod orbitalmap;
+pub mod amplifiers;
 pub mod spaceimageformat;
+pub mod sensorboost;
 pub mod asteroids;
 
 fn usage() {
@@ -64,16 +68,16 @@ fn get_data(day: u8) -> String {
 fn run(day: u8, data: String) {
 
     match day {
-        1  => { tsiolkovsky::solve(data);       }
-        2  => { intcode::solve2(data);          }
-        3  => { crossingwires::solve(data);     }
-        4  => { passwords::solve(data);         }
-        5  => { intcode::solve5(data);          }
-        6  => { orbitalmap::solve(data);        }
-        7  => { intcode::solve7(data);          }
-        8  => { spaceimageformat::solve8(data); }
-        9  => { intcode::solve9(data);          }
-        10 => { asteroids::solve10(data);       }
+        1  => { tsiolkovsky::solve(data);      }
+        2  => { programalarm::solve(data);     }
+        3  => { crossingwires::solve(data);    }
+        4  => { passwords::solve(data);        }
+        5  => { airconditioning::solve(data);  }
+        6  => { orbitalmap::solve(data);       }
+        7  => { amplifiers::solve(data);       }
+        8  => { spaceimageformat::solve(data); }
+        9  => { sensorboost::solve(data);      }
+        10 => { asteroids::solve(data);        }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }

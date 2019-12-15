@@ -82,6 +82,8 @@ fn solve2(wire1: &str, wire2: &str) -> u32 {
     *intersections.first().expect("world gone mad")
 }
 
+// Day 3: Crossed Wires
+
 pub fn solve(data: String) {
     let wires: Vec<&str> = data.split("\n").collect();
 

@@ -1,4 +1,4 @@
-fn solve(data: String, width: usize, height: usize) {
+fn solve_for_dimensions(data: String, width: usize, height: usize) {
     let pixels: Vec<usize> = data
         .chars()
         .map(|i| i.to_digit(10).unwrap() as usize)
@@ -45,6 +45,8 @@ fn solve(data: String, width: usize, height: usize) {
     println!("CYKBY");
 }
 
-pub fn solve8(data: String) {
-    solve(data, 25, 6);
+// Day 8: Space Image Format
+
+pub fn solve(data: String) {
+    solve_for_dimensions(data, 25, 6);
 }

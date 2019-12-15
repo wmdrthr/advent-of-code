@@ -20,6 +20,8 @@ fn calculate(modules: Vec<f32>) -> (u32, u32) {
     (total_basic_fuel, total_fuel)
 }
 
+
+// Day 1: The Tyranny of the Rocket Equation
 pub fn solve(data: String) {
 
     let modules: Vec<f32> = data.split("\n")
