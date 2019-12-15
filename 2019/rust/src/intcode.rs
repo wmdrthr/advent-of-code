@@ -56,27 +56,35 @@ impl VM {
         }
     }
 
-    fn resize(&mut self, l: usize) {
-        if l >= self.memory.len() {
-            self.memory.resize(2 * l, 0);
+    fn resize(&mut self, m: usize) {
+        if m >= self.memory.len() {
+            self.memory.resize(2 * m, 0);
         }
     }
 
-    fn fetch(&mut self, m: usize, mode: Mode) -> i64 {
+    fn get(&mut self, m: usize) -> i64 {
         self.resize(m);
-        let v = self.memory[m];
+        self.memory[m]
+    }
+
+    fn set(&mut self, m: usize, v: i64) {
+        self.resize(m);
+        self.memory[m] = v;
+    }
+
+    fn fetch(&mut self, m: usize, mode: Mode) -> i64 {
+        let v = self.get(m);
         match mode {
-            Mode::Position  => self.memory[v as usize],
+            Mode::Position  => self.get(v as usize),
             Mode::Immediate => v,
-            Mode::Relative  => self.memory[(v + self.base) as usize]
+            Mode::Relative  => self.get((v + self.base) as usize)
         }
     }
 
     fn dest(&mut self, m: usize, mode: Mode) -> usize {
-        self.resize(m);
         let output = match mode {
-            Mode::Relative => (self.memory[m] + self.base) as usize,
-            _ => self.memory[m] as usize
+            Mode::Relative => (self.get(m) + self.base) as usize,
+            _ => self.get(m) as usize
         };
         self.resize(output);
         output
@@ -87,7 +95,7 @@ impl VM {
         let operand_b = self.fetch(self.ip + 2, modes.1);
         let output = self.dest(self.ip + 3, modes.2);
 
-        self.memory[output as usize] = operand_a + operand_b;
+        self.set(output as usize, operand_a + operand_b);
         self.ip += 4;
     }
 
@@ -96,7 +104,7 @@ impl VM {
         let operand_b = self.fetch(self.ip + 2, modes.1);
         let output = self.dest(self.ip + 3, modes.2);
 
-        self.memory[output as usize] = operand_a * operand_b;
+        self.set(output as usize, operand_a * operand_b);
         self.ip += 4;
     }
 
@@ -107,7 +115,7 @@ impl VM {
             None    => crash!(self, "Illegal Instruction")
         };
 
-        self.memory[output as usize] = value;
+        self.set(output as usize, value);
         self.ip += 2;
     }
 
@@ -144,9 +152,9 @@ impl VM {
         let output = self.dest(self.ip + 3, modes.2);
 
         if value_a < value_b {
-            self.memory[output as usize] = 1;
+            self.set(output as usize, 1);
         } else {
-            self.memory[output as usize] = 0;
+            self.set(output as usize, 0);
         }
         self.ip += 4;
     }
@@ -157,9 +165,9 @@ impl VM {
         let output = self.dest(self.ip + 3, modes.2);
 
         if value_a == value_b {
-            self.memory[output as usize] = 1;
+            self.set(output as usize, 1);
         } else {
-            self.memory[output as usize] = 0;
+            self.set(output as usize, 0);
         }
         self.ip += 4;
     }
@@ -171,7 +179,7 @@ impl VM {
     }
 
     fn step(&mut self) {
-        let m: i64 = self.memory[self.ip];
+        let m: i64 = self.get(self.ip);
         let flags: i64 = m / 100;
         let modes = (get_mode(flags % 10),
                      get_mode((flags / 10) % 10),
@@ -194,7 +202,7 @@ impl VM {
 
         self.state = State::RUNNING;
         loop {
-            if self.memory[self.ip] == 99 {
+            if self.get(self.ip) == 99 {
                 self.state = State::HALTED;
                 break;
             }
