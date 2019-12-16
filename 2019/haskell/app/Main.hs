@@ -16,6 +16,7 @@ import Tsiolkovsky  (day01)
 import IntCode      (day02)
 import CrossedWires (day03)
 import Passwords    (day04)
+import OrbitalMap   (day06)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -50,6 +51,7 @@ solve 1 = day01 . lines
 solve 2 = day02 . parseCommaSeparatedNumbers
 solve 3 = day03 . lines
 solve 4 = day04 . map read . splitOn "-"
+solve 6 = day06 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()

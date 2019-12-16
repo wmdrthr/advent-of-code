@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 28f7cfca967140b7863fda7edaecdcaaab2672a655ba865dcfb32839c4386d0f
+-- hash: 1dda6b1fe0a9f7938477e4a6814cf6ec3fa4d456cbee648dd0b16402cdd0a8da
 
 name:           adventofcode
 version:        2019.0.0
@@ -24,6 +24,7 @@ library
       AdventOfCode
       CrossedWires
       IntCode
+      OrbitalMap
       Passwords
       Tsiolkovsky
   other-modules:
@@ -60,6 +61,7 @@ test-suite aoc-2019-test
       AdventOfCodeSpec
       CrossedWiresSpec
       IntCodeSpec
+      OrbitalMapSpec
       PasswordsSpec
       TsiolkovskySpec
       Paths_adventofcode
