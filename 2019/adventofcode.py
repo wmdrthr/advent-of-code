@@ -932,6 +932,47 @@ def solve14(data):
     yield fuel
 
 
+@with_solutions('11833188', '55005000')
+def solve16(data):
+
+    # Flawed Frequency Transmission
+
+    base_pattern = [0, 1, 0, -1]
+
+    def nth_pattern(n):
+        if n == 0:
+            return itertools.islice(itertools.cycle(base_pattern), 1, None)
+        pattern = []
+        for val in base_pattern:
+            pattern += [val] * (n + 1)
+        return itertools.islice(itertools.cycle(pattern), 1, None)
+
+    # Part 1
+    signal = [int(c) for c in data]
+    for phase in range(100):
+        phase_output = []
+        for n in range(len(signal)):
+            pattern = nth_pattern(n)
+            output_digit = sum([a * b for (a,b) in zip(signal, pattern)])
+            phase_output.append(abs(output_digit) % 10)
+        signal = phase_output
+    yield '{}'.format(''.join([chr(48 + d) for d in phase_output[:8]]))
+
+    # Part 2
+    skip = int(data[:7])
+    signal = [int(c) for c in data] * 10000
+
+    for phase in range(100):
+        checksum = 0
+        phase_output = []
+        for n in range(1, len(signal) - skip + 1):
+            checksum += signal[-n]
+            phase_output.append(abs(checksum) % 10)
+        signal = [0] * skip + list(reversed(phase_output))
+
+    print(''.join([chr(48 + d) for d in signal[skip:skip+8]]))
+
+
 ################################################################################
 
 if __name__ == '__main__':
