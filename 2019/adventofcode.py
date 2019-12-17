@@ -105,29 +105,71 @@ def with_solutions(*expected):
     return wrapper
 
 ################################################################################
-# Solvers
+# Common Code
 
-@with_solutions(3266288, 4896582)
-def solve1(data):
+ORIGIN = (0, 0)
+def manhattan(a, b = ORIGIN):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-    # The Tyranny of the Rocket Equation
+DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
+               '↓' : [( 0,  1), ['→', '←'], 2],
+               '←' : [(-1,  0), ['↓', '↑'], 3],
+               '→' : [( 1,  0), ['↑', '↓'], 4]}
 
-    total_basic_fuel = 0
-    total_fuel = 0
-    for module in data.split():
-        mass = int(module)
-        fuel = math.floor(mass / 3) - 2
-        total_basic_fuel += fuel
-        total_fuel += fuel
-        while True:
-            extra_fuel = math.floor(fuel / 3) - 2
-            if extra_fuel <= 0:
-                break
-            total_fuel += extra_fuel
-            fuel = extra_fuel
+def display(grid, tiles):
+    # Given a dict representing a point grid, print the grid, using
+    # the given tileset.
 
-    yield total_basic_fuel
-    yield total_fuel
+    max_x = max_y = 0
+    min_x = min_y = 65536
+    for point in grid.keys():
+        min_x = min(min_x, point[0])
+        max_x = max(max_x, point[0])
+        min_y = min(min_y, point[1])
+        max_y = max(max_y, point[1])
+
+    for y in range(min_y, max_x + 1):
+        row = []
+        for x in range(min_x, max_x + 1):
+            row.append(tiles[grid[(x, y)]])
+        print(''.join(row))
+
+
+@dataclass
+class V3:
+    x: int = 0
+    y: int = 0
+    z: int = 0
+
+    def __repr__(self):
+        return '<{},{},{}>'.format(self.x, self.y, self.z)
+
+    def __getitem__(self, dim):
+        if not 0 <= dim <= 2:
+            raise IndexError(f'invalid dimension: {dim}')
+        return (self.x, self.y, self.z)[dim]
+
+    def __setitem__(self, dim, value):
+        if not 0 <= dim <= 2:
+            raise IndexError(f'invalid dimension: {dim}')
+        if dim == 0: self.x = value
+        elif dim == 1: self.y = value
+        elif dim == 2: self.z = value
+
+    def __add__(self, other):
+        return V3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        self.z += other.z
+        return self
+
+    def __int__(self):
+        return abs(self.x) + abs(self.y) + abs(self.z)
+
+################################################################################
+# IntCode VM
 
 
 class IQueue(queue.Queue):
@@ -320,6 +362,32 @@ class IntCodeVM():
         self.thread.start()
         return self
 
+################################################################################
+# Solvers
+
+@with_solutions(3266288, 4896582)
+def solve1(data):
+
+    # The Tyranny of the Rocket Equation
+
+    total_basic_fuel = 0
+    total_fuel = 0
+    for module in data.split():
+        mass = int(module)
+        fuel = math.floor(mass / 3) - 2
+        total_basic_fuel += fuel
+        total_fuel += fuel
+        while True:
+            extra_fuel = math.floor(fuel / 3) - 2
+            if extra_fuel <= 0:
+                break
+            total_fuel += extra_fuel
+            fuel = extra_fuel
+
+    yield total_basic_fuel
+    yield total_fuel
+
+
 @with_solutions(3562672, 8250)
 def solve2(data):
 
@@ -345,10 +413,6 @@ def solve2(data):
                  n = 100 * x + y
                  yield n
 
-
-origin = (0, 0)
-def manhattan(a, b = origin):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 @with_solutions(2129, 134662)
 def solve3(data):
@@ -396,6 +460,7 @@ def solve3(data):
     signal_delay.sort()
     yield signal_delay[0]
 
+
 @with_solutions(1150, 748)
 def solve4(data):
 
@@ -425,6 +490,7 @@ def solve4(data):
     passwords = [p for p in passwords if valid(str(p))]
     yield len(passwords)
 
+
 @with_solutions(13547311, 236453)
 def solve5(data):
 
@@ -443,6 +509,7 @@ def solve5(data):
     vm.reset(tape, IQueue([5])).run()
     assert(vm.state is VMState.HALTED)
     yield outputQ.get_nowait()
+
 
 @with_solutions(162439, 367)
 def solve6(data):
@@ -489,6 +556,7 @@ def solve6(data):
     stage1 = count_transfers('YOU', 'SAN')
     stage2 = count_transfers('SAN', 'YOU')
     print(stage1 + stage2)
+
 
 @with_solutions(844468, 4215746)
 def solve7(data):
@@ -539,6 +607,7 @@ def solve7(data):
 
     yield max_output
 
+
 @with_solutions(2176, 'CYKBY')
 def solve8(data):
 
@@ -575,6 +644,7 @@ def solve8(data):
 
     yield 'CYKBY'
 
+
 @with_solutions(2465411646, 69781)
 def solve9(data):
 
@@ -591,6 +661,7 @@ def solve9(data):
     vm.inputQ.put(2)
     vm.reset(tape).run()
     yield outputQ.get_nowait()
+
 
 @with_solutions(269, 612)
 def solve10(data):
@@ -641,10 +712,6 @@ def solve10(data):
                 if counter == 200:
                     yield asteroid[0] * 100 + asteroid[1]
 
-DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
-               '↓' : [( 0,  1), ['→', '←'], 2],
-               '←' : [(-1,  0), ['↓', '↑'], 3],
-               '→' : [( 1,  0), ['↑', '↓'], 4]}
 
 @with_solutions(2211, 'EFCKUEGC')
 def solve11(data):
@@ -653,8 +720,8 @@ def solve11(data):
 
     tape = [int(x) for x in data.split(',')]
 
-    panels = collections.defaultdict(int)
-    robot = ('↑', (0, 0))
+    panel = collections.defaultdict(int)
+    robot = ('↑', ORIGIN)
 
     def move(turn):
         (direction, (x, y)) = robot
@@ -669,10 +736,10 @@ def solve11(data):
     painted = set()
     vm.start('mondrian')
     while vm.state is not VMState.HALTED:
-        outputQ.put(panels[robot[1]])
+        outputQ.put(panel[robot[1]])
         color = inputQ.get(block = True, timeout = 1)
         turn  = inputQ.get(block = True, timeout = 1)
-        panels[robot[1]] = color
+        panel[robot[1]] = color
         painted.add(robot[1])
         robot = move(turn)
 
@@ -680,59 +747,26 @@ def solve11(data):
 
     # Part 2
     vm.reset(tape)
-    robot = ('↑', (0, 0))
-    panels.clear(); panels[robot[1]] = 1
+    robot = ('↑', ORIGIN)
+    panel.clear(); panel[robot[1]] = 1
     vm.start('mondrian')
     while vm.state is not VMState.HALTED:
-        outputQ.put(panels[robot[1]])
+        outputQ.put(panel[robot[1]])
         color = inputQ.get(block = True, timeout = 1)
         turn  = inputQ.get(block = True, timeout = 1)
-        panels[robot[1]] = color
+        panel[robot[1]] = color
         painted.add(robot[1])
         robot = move(turn)
 
-    locations = sorted(panels.keys(), key=manhattan)
+    locations = sorted(panel.keys(), key=manhattan)
     chars = [U.lookup('LIGHT SHADE'), U.lookup('FULL BLOCK')]
     for y in range(locations[-1][1] + 1):
         for x in range(locations[-1][0] + 1):
-            print(chars[panels[(x, y)]], end='')
+            print(chars[panel[(x, y)]], end='')
         print()
 
     yield 'EFCKUEGC'
 
-
-@dataclass
-class V3:
-    x: int = 0
-    y: int = 0
-    z: int = 0
-
-    def __repr__(self):
-        return '<{},{},{}>'.format(self.x, self.y, self.z)
-
-    def __getitem__(self, dim):
-        if not 0 <= dim <= 2:
-            raise IndexError(f'invalid dimension: {dim}')
-        return (self.x, self.y, self.z)[dim]
-
-    def __setitem__(self, dim, value):
-        if not 0 <= dim <= 2:
-            raise IndexError(f'invalid dimension: {dim}')
-        if dim == 0: self.x = value
-        elif dim == 1: self.y = value
-        elif dim == 2: self.z = value
-
-    def __add__(self, other):
-        return V3(self.x + other.x, self.y + other.y, self.z + other.z)
-
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-        self.z += other.z
-        return self
-
-    def __int__(self):
-        return abs(self.x) + abs(self.y) + abs(self.z)
 
 @with_solutions(7928, 518311327635164)
 def solve12(data):
@@ -819,6 +853,7 @@ def solve12(data):
     steps = [sim.steps for sim in simulations]
     yield lcm(lcm(steps[0], steps[1]), steps[2])
 
+
 @with_solutions(205, 10292)
 def solve13(data):
 
@@ -842,18 +877,11 @@ def solve13(data):
     yield counter
 
     # Part 2
-    tiles = [' ', U.lookup('FULL BLOCK'), U.lookup('LIGHT SHADE'), '━', '❍']
-    def display(screen):
-        for y in range(20):
-            for x in range(50):
-                print(tiles[screen[(x, y)]], end='')
-            print()
-
     tape[0] = 2
     vm.reset(tape)
     screen = collections.defaultdict(int)
     vm.start('breakout')
-    score, ball, paddle = 0, (0, 0), (0, 0)
+    score, ball, paddle = 0, ORIGIN, ORIGIN
     while vm.state is VMState.RUNNING:
         x = outputQ.get(block = True)
         y = outputQ.get(block = True)
@@ -885,6 +913,7 @@ def solve13(data):
             score = t
 
     yield score
+
 
 @with_solutions(1590844, 1184209)
 def solve14(data):
@@ -984,7 +1013,7 @@ def solve15(data):
     vm = IntCodeVM(tape, inputQ, outputQ)
     vm.start('theseus')
 
-    droid = (0, 0)
+    droid = ORIGIN
     explore = [(0, 1), (1, 0), (-1, 0), (0, -1)]
 
     while len(explore) > 0:
@@ -1008,21 +1037,17 @@ def solve15(data):
                 if status == 2:
                     maze[droid] = OXYGEN
                     oxygen_system = droid
-                    oxy_path = navigate((0, 0), droid)
+                    oxy_path = navigate(ORIGIN, droid)
                     yield len(oxy_path)
                 else:
                     maze[droid] = EMPTY
 
     vm.interrupt()
 
-    xs = [point[0] for point in maze.keys()]
-    ys = [point[1] for point in maze.keys()]
-    tiles = {UNKNOWN: U.lookup('LIGHT SHADE'), EMPTY: '.', WALL: U.lookup('FULL BLOCK'), OXYGEN: '*'}
-
-    for y in range(min(ys), max(ys)+1):
-        for x in range(min(xs), max(xs)+1):
-            print(tiles[maze[(x,y)]], end='')
-        print()
+    display(maze, {UNKNOWN: U.lookup('LIGHT SHADE'),
+                   EMPTY: '.',
+                   WALL: U.lookup('FULL BLOCK'),
+                   OXYGEN: '*'})
 
     # Part 2
     time = 0
