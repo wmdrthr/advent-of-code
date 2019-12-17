@@ -144,6 +144,7 @@ class VMState(Enum):
     RUNNING = 2
     HALTED = 3
     CRASHED = 4
+    INTERRUPTED = 5
 
 class IntCodeVM():
 
@@ -209,7 +210,11 @@ class IntCodeVM():
         destination = self.dest(self.ip + 1, modes[0])
         if self.inputQ is None:
             raise Exception('illegal instruction (no input)')
-        self.memory[destination] = self.inputQ.get(block = True)
+        try:
+            self.memory[destination] = self.inputQ.get(block = True)
+        except queue.Empty:
+            if self.state is not VMState.INTERRUPTED:
+                raise
         self.ip += 2
 
     def write(self, modes):
@@ -284,6 +289,12 @@ class IntCodeVM():
         else:
             raise Exception('illegal opcode (unknown opcode: {})'.format(opcode))
 
+    def interrupt(self):
+
+        self.state = VMState.INTERRUPTED
+        if self.inputQ is not None:
+            self.inputQ.put(0)
+
     def run(self):
 
         if self.state is not VMState.INIT:
@@ -291,7 +302,7 @@ class IntCodeVM():
             return
 
         self.state = VMState.RUNNING
-        while self.memory[self.ip] != 99:
+        while self.state is VMState.RUNNING and self.memory[self.ip] != 99:
             try:
                 self.step()
             except Exception as e:
@@ -300,11 +311,12 @@ class IntCodeVM():
                 self.state = VMState.CRASHED
                 return self
 
-        self.state = VMState.HALTED
+        if self.state == VMState.RUNNING:
+            self.state = VMState.HALTED
         return self
 
     def start(self, name):
-        self.thread = threading.Thread(target=IntCodeVM.run, name=name, args=(self,))
+        self.thread = threading.Thread(target=IntCodeVM.run, name=name, args=(self,), daemon=True)
         self.thread.start()
         return self
 
@@ -629,10 +641,10 @@ def solve10(data):
                 if counter == 200:
                     yield asteroid[0] * 100 + asteroid[1]
 
-DIRECTIONS = { '↑' : [( 0, -1), ['←', '→']],
-               '↓' : [( 0,  1), ['→', '←']],
-               '←' : [(-1,  0), ['↓', '↑']],
-               '→' : [( 1,  0), ['↑', '↓']]}
+DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
+               '↓' : [( 0,  1), ['→', '←'], 2],
+               '←' : [(-1,  0), ['↓', '↑'], 3],
+               '→' : [( 1,  0), ['↑', '↓'], 4]}
 
 @with_solutions(2211, 'EFCKUEGC')
 def solve11(data):
@@ -933,6 +945,98 @@ def solve14(data):
             surplus = new_surplus
 
     yield fuel
+
+
+@with_solutions(236, 368)
+def solve15(data):
+
+    # Oxygen System
+
+    tape = [int(x) for x in data.split(',')]
+
+    UNKNOWN = 0
+    EMPTY = 1
+    WALL = 2
+    OXYGEN = 3
+
+    maze = collections.defaultdict(int, {(0,0): EMPTY})
+    oxygen_system = None
+
+    def step(point, direction):
+        (dx, dy) = DIRECTIONS[direction][0]
+        return (point[0] + dx, point[1] + dy)
+
+    def navigate(current, dest, prev = None):
+        path = None
+        for dir in DIRECTIONS.keys():
+            next = step(current, dir)
+            if next == prev:
+                continue
+            if next == dest:
+                return [dir]
+            if maze[next] == EMPTY or maze[next] == OXYGEN:
+                new_path = navigate(next, dest, current)
+                if new_path is not None and (path is None or len(new_path) < len(path)):
+                    path = [dir] + new_path
+        return path
+
+    inputQ, outputQ = IQueue(), IQueue()
+    vm = IntCodeVM(tape, inputQ, outputQ)
+    vm.start('theseus')
+
+    droid = (0, 0)
+    explore = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+
+    while len(explore) > 0:
+        next_dest = explore.pop()
+        path = navigate(droid, next_dest)
+        for current_dir in path:
+            inputQ.put(DIRECTIONS[current_dir][-1])
+            status = outputQ.get(block = True)
+            next = step(droid, current_dir)
+
+            explore = [p for p in explore if p != next]
+
+            if status == 0:
+                maze[next] = WALL
+            else:
+                droid = next
+
+                if maze[droid] == UNKNOWN:
+                    explore += [p for p in [step(droid, dir) for dir in DIRECTIONS.keys()]
+                                if maze[p] == UNKNOWN]
+                if status == 2:
+                    maze[droid] = OXYGEN
+                    oxygen_system = droid
+                    oxy_path = navigate((0, 0), droid)
+                    yield len(oxy_path)
+                else:
+                    maze[droid] = EMPTY
+
+    vm.interrupt()
+
+    xs = [point[0] for point in maze.keys()]
+    ys = [point[1] for point in maze.keys()]
+    tiles = {UNKNOWN: U.lookup('LIGHT SHADE'), EMPTY: '.', WALL: U.lookup('FULL BLOCK'), OXYGEN: '*'}
+
+    for y in range(min(ys), max(ys)+1):
+        for x in range(min(xs), max(xs)+1):
+            print(tiles[maze[(x,y)]], end='')
+        print()
+
+    # Part 2
+    time = 0
+    while True:
+        oxygenated = [p for p,v in maze.items() if v == OXYGEN]
+        empty_neighbors = [step(p, dir) for p in oxygenated for dir in DIRECTIONS.keys()
+                           if maze[step(p, dir)] == EMPTY]
+        if len(empty_neighbors) == 0:
+            break
+        for p in empty_neighbors:
+            maze[p] = OXYGEN
+        time += 1
+
+    yield time
 
 
 @with_solutions('11833188', '55005000')
