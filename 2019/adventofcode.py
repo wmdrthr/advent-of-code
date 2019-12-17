@@ -156,7 +156,6 @@ class IntCodeVM():
         self.memory = collections.defaultdict(int)
         self.ip = 0
         self.base = 0
-        self.state = VMState.INIT
 
         if inputQ:
             self.inputQ = inputQ
@@ -165,7 +164,7 @@ class IntCodeVM():
 
         for idx, val in enumerate(program):
             self.memory[idx] = val
-
+        self.state = VMState.INIT
         return self
 
     def decode(self, opcode):
@@ -302,6 +301,11 @@ class IntCodeVM():
                 return self
 
         self.state = VMState.HALTED
+        return self
+
+    def start(self, name):
+        self.thread = threading.Thread(target=IntCodeVM.run, name=name, args=(self,))
+        self.thread.start()
         return self
 
 @with_solutions(3562672, 8250)
@@ -625,17 +629,17 @@ def solve10(data):
                 if counter == 200:
                     yield asteroid[0] * 100 + asteroid[1]
 
+DIRECTIONS = { '↑' : [( 0, -1), ['←', '→']],
+               '↓' : [( 0,  1), ['→', '←']],
+               '←' : [(-1,  0), ['↓', '↑']],
+               '→' : [( 1,  0), ['↑', '↓']]}
+
 @with_solutions(2211, 'EFCKUEGC')
 def solve11(data):
 
     # Space Police
 
     tape = [int(x) for x in data.split(',')]
-
-    DIRECTIONS = { '↑' : [( 0, -1), ['←', '→']],
-                   '↓' : [( 0,  1), ['→', '←']],
-                   '←' : [(-1,  0), ['↓', '↑']],
-                   '→' : [( 1,  0), ['↑', '↓']]}
 
     panels = collections.defaultdict(int)
     robot = ('↑', (0, 0))
@@ -651,7 +655,7 @@ def solve11(data):
     # Part 1
     vm = IntCodeVM(tape, outputQ, inputQ) # queues named from robot's perspective
     painted = set()
-    threading.Thread(target=IntCodeVM.run, name='mondrian', args=(vm,)).start()
+    vm.start('mondrian')
     while vm.state is not VMState.HALTED:
         outputQ.put(panels[robot[1]])
         color = inputQ.get(block = True, timeout = 1)
@@ -666,8 +670,7 @@ def solve11(data):
     vm.reset(tape)
     robot = ('↑', (0, 0))
     panels.clear(); panels[robot[1]] = 1
-
-    threading.Thread(target=IntCodeVM.run, name='mondrian', args=(vm,)).start()
+    vm.start('mondrian')
     while vm.state is not VMState.HALTED:
         outputQ.put(panels[robot[1]])
         color = inputQ.get(block = True, timeout = 1)
@@ -815,7 +818,7 @@ def solve13(data):
 
     # Part 1
     vm = IntCodeVM(tape, inputQ, outputQ)
-    threading.Thread(target=IntCodeVM.run, name='breakout', args=(vm,)).start()
+    vm.start('breakout')
     counter = 0
     while vm.state is VMState.RUNNING:
         x = outputQ.get(block = True, timeout = 1)
@@ -837,7 +840,7 @@ def solve13(data):
     tape[0] = 2
     vm.reset(tape)
     screen = collections.defaultdict(int)
-    threading.Thread(target=IntCodeVM.run, name='breakout', args=(vm,)).start()
+    vm.start('breakout')
     score, ball, paddle = 0, (0, 0), (0, 0)
     while vm.state is VMState.RUNNING:
         x = outputQ.get(block = True)
@@ -972,6 +975,128 @@ def solve16(data):
 
     print(''.join([chr(48 + d) for d in signal[skip:skip+8]]))
 
+
+@with_solutions(6000, 807320)
+def solve17(data):
+
+    # Set and Forget
+
+    tape = [int(x) for x in data.split(',')]
+
+    SCAFFOLD = 35
+    MAPPING = {'^':'↑', 'v':'↓', '<':'←', '>':'→', '→':'R','←':'L'}
+
+    inputQ, outputQ = IQueue(), IQueue()
+    vm = IntCodeVM(tape, inputQ, outputQ)
+    vm.start('camera')
+
+    def move(point, dir):
+        dx, dy = DIRECTIONS[dir][0]
+        return (point[0] + dx, point[1] + dy)
+
+    def all_neighbors(point):
+        for dir in DIRECTIONS:
+            dx, dy = DIRECTIONS[dir][0]
+            yield (point[0] + dx, point[1] + dy)
+
+    grid = collections.defaultdict(int)
+    row = []
+    x = y = maxx = 0
+    robot = None
+    robot_dir = None
+    while vm.state is VMState.RUNNING or not outputQ.empty():
+        output = outputQ.get()
+        grid[(x, y)]  = output
+        if output not in (35, 46, 10):
+            robot = (x, y)
+            grid[(x,y)] = SCAFFOLD
+            robot_dir = MAPPING[chr(output)]
+        x += 1
+        if output == 10:
+            if len(row) > 0:
+                print(f'{y}\t{"".join(row)}')
+            row = []
+            y += 1; x = 0; maxx = x
+        else:
+            row.append(chr(output))
+    maxy = y
+
+    # Part 1
+    intersections = []
+    scaffolding = {k:v for (k,v) in grid.items() if v == SCAFFOLD}
+    for point in scaffolding.keys():
+        intersection = True
+        for neighbor in all_neighbors(point):
+            if neighbor not in scaffolding or scaffolding[neighbor] != SCAFFOLD:
+                intersection = False
+                break
+        if intersection:
+            intersections.append(point)
+
+    yield sum([x * y for (x, y) in intersections])
+
+    # Part 2
+    def navigate():
+        current = robot
+        current_dir = robot_dir
+        path = []
+        while True:
+            next = move(current, current_dir)
+            if grid[next] == SCAFFOLD:
+                if path[-1] in ('L', 'R'):
+                    path.append(1)
+                else:
+                    path[-1] += 1
+                current = next
+            else:
+                # first, try turning right
+                dir = DIRECTIONS[current_dir][1][1]
+                next = move(current, dir)
+                if grid[next] == SCAFFOLD:
+                    path.append('R')
+                    current_dir = dir
+                    continue
+
+                # try turning left instead
+                dir = DIRECTIONS[current_dir][1][0]
+                next = move(current, dir)
+                if grid[next] == SCAFFOLD:
+                    path.append('L')
+                    current_dir = dir
+                    continue
+
+                # neither? maybe we have reached the end
+                break
+        return path
+
+    path = ','.join([str(p) for p in navigate()])
+    A = 'R,4,L,10,L,10'
+    B = 'L,8,R,12,R,10,R,4'
+    C = 'L,8,L,8,R,10,R,4'
+    main_routine = path.replace(A, 'A').replace(B, 'B').replace(C, 'C')
+
+    for ch in main_routine:
+        inputQ.put(ord(ch))
+    inputQ.put(10)
+
+    for func in (A, B, C):
+        for ch in func:
+            inputQ.put(ord(ch))
+        inputQ.put(10)
+
+    # continuous video feed?
+    inputQ.put(ord('n'))
+    inputQ.put(10)
+
+    tape = [int(x) for x in data.split(',')]
+    tape[0] = 2
+    vm.reset(tape)
+    vm.start('robot')
+    vm.thread.join()
+    while not outputQ.empty():
+        output = outputQ.get()
+
+    yield output
 
 ################################################################################
 
