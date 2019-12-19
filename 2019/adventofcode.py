@@ -180,6 +180,13 @@ class IQueue(queue.Queue):
             for it in iterable:
                 self.put(it)
 
+    def put(self, val_or_iterable):
+        try:
+            for val in val_or_iterable:
+                queue.Queue.put(self, val)
+        except TypeError:
+            queue.Queue.put(self, val_or_iterable)
+
 class VMState(Enum):
     START = 0
     INIT = 1
@@ -192,11 +199,9 @@ class IntCodeVM():
 
     def __init__(self, program = None, inputQ = None, outputQ = None):
         self.state = VMState.START
-        if program:
-            self.reset(program, inputQ, outputQ)
+        self.reset(program, inputQ, outputQ)
 
     def reset(self, program, inputQ = None, outputQ = None):
-        self.memory = collections.defaultdict(int)
         self.ip = 0
         self.base = 0
 
@@ -204,10 +209,9 @@ class IntCodeVM():
             self.inputQ = inputQ
         if outputQ:
             self.outputQ = outputQ
-
-        for idx, val in enumerate(program):
-            self.memory[idx] = val
-        self.state = VMState.INIT
+        if program:
+            self.memory = collections.defaultdict(int, dict(enumerate(program)))
+            self.state = VMState.INIT
         return self
 
     def decode(self, opcode):
@@ -253,7 +257,7 @@ class IntCodeVM():
         if self.inputQ is None:
             raise Exception('illegal instruction (no input)')
         try:
-            self.memory[destination] = self.inputQ.get(block = True)
+            self.memory[destination] = self.inputQ.get()
         except queue.Empty:
             if self.state is not VMState.INTERRUPTED:
                 raise
@@ -883,9 +887,9 @@ def solve13(data):
     vm.start('breakout')
     score, ball, paddle = 0, ORIGIN, ORIGIN
     while vm.state is VMState.RUNNING:
-        x = outputQ.get(block = True)
-        y = outputQ.get(block = True)
-        t = outputQ.get(block = True)
+        x = outputQ.get()
+        y = outputQ.get()
+        t = outputQ.get()
 
         if (x,y) == (-1, 0):
             score = t
@@ -1021,7 +1025,7 @@ def solve15(data):
         path = navigate(droid, next_dest)
         for current_dir in path:
             inputQ.put(DIRECTIONS[current_dir][-1])
-            status = outputQ.get(block = True)
+            status = outputQ.get()
             next = step(droid, current_dir)
 
             explore = [p for p in explore if p != next]
@@ -1226,6 +1230,47 @@ def solve17(data):
         output = outputQ.get()
 
     yield output
+
+
+@with_solutions(192, 8381082)
+def solve19(data):
+
+    # Tractor Beam
+
+    tape = [int(x) for x in data.split(',')]
+
+    grid = collections.defaultdict(int)
+
+    inputQ, outputQ = IQueue(), IQueue()
+    vm = IntCodeVM(tape, inputQ, outputQ)
+
+    def check(x, y):
+        vm.reset(tape)
+        inputQ.put([x, y])
+        vm.run()
+        return outputQ.get()
+
+    # Part 1
+    count = 1
+    for x in range(50):
+        for y in range(50):
+            if (x, y) == (0,0):
+                continue
+            if check(x, y):
+                count += 1
+
+    yield count
+
+    # Part 2
+    x, y = 0, 100
+    while True:
+        if check(x, y):
+            if check(x + 99, y - 99):
+                yield (10_000 * x) + (y - 99)
+            else:
+                y += 1
+        else:
+            x += 1
 
 ################################################################################
 
