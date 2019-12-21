@@ -1348,6 +1348,55 @@ def solve20(data):
 
     yield steps
 
+
+@with_solutions(19360288, 1143814750)
+def solve21(data):
+
+    # Springdroid Adventure
+
+    tape = [int(x) for x in data.split(',')]
+
+    inputQ, outputQ = IQueue(), IQueue()
+    vm = IntCodeVM(tape, inputQ, outputQ)
+
+    def springscript(program):
+        inputQ.put([ord(c) for c in program])
+        inputQ.put(10)
+
+    # Part 1
+    springscript('OR A J')
+    springscript('AND B J')
+    springscript('AND C J')
+    springscript('NOT J J')
+    springscript('AND D J')
+    springscript('WALK')
+
+    vm.run()
+    while True:
+        output = outputQ.get_nowait()
+        if output > 256:
+            yield output
+            break
+
+    # Part 2
+    springscript('OR A J')
+    springscript('AND B J')
+    springscript('AND C J')
+    springscript('NOT J J')
+    springscript('AND D J')
+    springscript('OR E T')
+    springscript('OR H T')
+    springscript('AND T J')
+    springscript('RUN')
+
+    vm.reset(tape).run()
+    while True:
+        output = outputQ.get_nowait()
+        if output > 256:
+            yield output
+            break
+
+
 ################################################################################
 
 if __name__ == '__main__':
