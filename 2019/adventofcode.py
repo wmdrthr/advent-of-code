@@ -7,6 +7,7 @@ from pprint import pprint
 from datetime import datetime
 
 import math
+from string import ascii_uppercase
 import collections
 from enum import Enum
 import itertools
@@ -20,6 +21,7 @@ import copy
 
 import pytz
 import requests
+import networkx as nx
 
 YEAR  = 2019
 
@@ -54,7 +56,6 @@ def get_data(day):
 
     if os.path.exists(inputfile):
         data = open(inputfile).read()
-        data = data.strip()
     else:
         # if trying to fetch the data for the current AoC, check if the
         # day's puzzle has unlocked yet
@@ -72,7 +73,7 @@ def get_data(day):
         if response.status_code != 200:
             raise Exception('Unexpected response: (status = {})\n{}'.format(response.status_code,
                                                                             response.content))
-        data = response.text.strip()
+        data = response.text
         print('Fetched data for day {}'.format(day))
         with open(inputfile, 'w') as output:
             output.write(data)
@@ -115,6 +116,17 @@ DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
                '↓' : [( 0,  1), ['→', '←'], 2],
                '←' : [(-1,  0), ['↓', '↑'], 3],
                '→' : [( 1,  0), ['↑', '↓'], 4]}
+
+def move(point, direction):
+    (dx, dy) = DIRECTIONS[direction][0]
+    return (point[0] + dx, point[1] + dy)
+
+def neighbors(point):
+    for dir in DIRECTIONS:
+        dx, dy = DIRECTIONS[dir][0]
+        yield (dir, (point[0] + dx, point[1] + dy))
+
+
 
 def display(grid, tiles):
     # Given a dict representing a point grid, print the grid, using
@@ -995,14 +1007,10 @@ def solve15(data):
     maze = collections.defaultdict(int, {(0,0): EMPTY})
     oxygen_system = None
 
-    def step(point, direction):
-        (dx, dy) = DIRECTIONS[direction][0]
-        return (point[0] + dx, point[1] + dy)
-
     def navigate(current, dest, prev = None):
         path = None
         for dir in DIRECTIONS.keys():
-            next = step(current, dir)
+            next = move(current, dir)
             if next == prev:
                 continue
             if next == dest:
@@ -1026,7 +1034,7 @@ def solve15(data):
         for current_dir in path:
             inputQ.put(DIRECTIONS[current_dir][-1])
             status = outputQ.get()
-            next = step(droid, current_dir)
+            next = move(droid, current_dir)
 
             explore = [p for p in explore if p != next]
 
@@ -1036,7 +1044,7 @@ def solve15(data):
                 droid = next
 
                 if maze[droid] == UNKNOWN:
-                    explore += [p for p in [step(droid, dir) for dir in DIRECTIONS.keys()]
+                    explore += [p for p in [move(droid, dir) for dir in DIRECTIONS.keys()]
                                 if maze[p] == UNKNOWN]
                 if status == 2:
                     maze[droid] = OXYGEN
@@ -1057,8 +1065,8 @@ def solve15(data):
     time = 0
     while True:
         oxygenated = [p for p,v in maze.items() if v == OXYGEN]
-        empty_neighbors = [step(p, dir) for p in oxygenated for dir in DIRECTIONS.keys()
-                           if maze[step(p, dir)] == EMPTY]
+        empty_neighbors = [move(p, dir) for p in oxygenated for dir in DIRECTIONS.keys()
+                           if maze[move(p, dir)] == EMPTY]
         if len(empty_neighbors) == 0:
             break
         for p in empty_neighbors:
@@ -1127,11 +1135,6 @@ def solve17(data):
         dx, dy = DIRECTIONS[dir][0]
         return (point[0] + dx, point[1] + dy)
 
-    def all_neighbors(point):
-        for dir in DIRECTIONS:
-            dx, dy = DIRECTIONS[dir][0]
-            yield (point[0] + dx, point[1] + dy)
-
     grid = collections.defaultdict(int)
     row = []
     x = y = maxx = 0
@@ -1159,7 +1162,7 @@ def solve17(data):
     scaffolding = {k:v for (k,v) in grid.items() if v == SCAFFOLD}
     for point in scaffolding.keys():
         intersection = True
-        for neighbor in all_neighbors(point):
+        for _,neighbor in neighbors(point):
             if neighbor not in scaffolding or scaffolding[neighbor] != SCAFFOLD:
                 intersection = False
                 break
@@ -1272,6 +1275,79 @@ def solve19(data):
         else:
             x += 1
 
+
+@with_solutions(686, 8384)
+def solve20(data):
+
+    # Donut Maze
+
+    data = [l for l in data.split('\n') if len(l) > 1]
+    grid = {(x,y):c for y,l in enumerate(data) for x,c in enumerate(l)}
+
+    maze = nx.Graph()
+    start, end = None, None
+    portals = {}
+    for y,row in enumerate(data):
+        for x,v in enumerate(row):
+            if v != '.':
+                continue
+            node = (x, y)
+            for dir, point in neighbors(node):
+                if grid[point] == '.':
+                    maze.add_edge(node, point, level=0)
+                elif grid[point] in ascii_uppercase:
+                    portal = ''.join(sorted([grid[point], grid[move(point, dir)]]))
+                    if portal == 'AA':
+                        start = node
+                        continue
+                    elif portal == 'ZZ':
+                        end = node
+                        continue
+
+                    if portal in portals:
+                        maze.add_edge(node, portals[portal], level=0)
+                        portals[portal] = (node, portals[portal])
+                    else:
+                        portals[portal] = node
+
+    # Part 1
+    path = nx.shortest_path(maze, source=start, target=end)
+    yield len(path) - 1
+
+    # Part 2
+    maze = maze.to_directed()
+
+    for portal, (a, b) in portals.items():
+        ax, ay = a
+        bx, by = b
+
+        if ax in (2, len(data[0]) - 3) or ay in (2, len(data) - 3):
+            maze.edges[a, b]['level'] = -1
+            maze.edges[b, a]['level'] =  1
+        else:
+            maze.edges[a, b]['level'] =  1
+            maze.edges[b, a]['level'] = -1
+
+    start = (start, 0)
+    target = (end, 0)
+    visited = set()
+    queue = {start}
+    steps = 0
+    while len(queue) > 0:
+        visited.update(queue)
+        _queue = set()
+        for point, level in queue:
+            for neighbor in maze.successors(point):
+                level_change = maze.edges[point, neighbor]['level']
+                if level + level_change >= 0:
+                    _queue.add((neighbor, level+level_change))
+        queue = _queue - visited
+        steps += 1
+        if target in queue:
+            break
+
+    yield steps
+
 ################################################################################
 
 if __name__ == '__main__':
@@ -1287,7 +1363,7 @@ if __name__ == '__main__':
             data = sys.stdin.read()
         else:
             if os.path.exists(sys.argv[2]):
-                data = open(sys.argv[2]).read().strip()
+                data = open(sys.argv[2]).read()
             else:
                 data = sys.argv[2]
         custom_data = True
@@ -1297,6 +1373,9 @@ if __name__ == '__main__':
     if not data:
         print('Cannot run solver without data. Bailing')
         sys.exit(0)
+
+    if day != 20:
+        data = data.strip()
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
