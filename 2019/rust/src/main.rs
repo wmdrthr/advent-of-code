@@ -24,6 +24,7 @@ pub mod amplifiers;
 pub mod spaceimageformat;
 pub mod sensorboost;
 pub mod asteroids;
+pub mod hullpaintingrobot;
 
 fn usage() {
     println!("usage: adventofcode <day>\n\t1 <= day <= 31");
@@ -68,16 +69,17 @@ fn get_data(day: u8) -> String {
 fn run(day: u8, data: String) {
 
     match day {
-        1  => { tsiolkovsky::solve(data);      }
-        2  => { programalarm::solve(data);     }
-        3  => { crossingwires::solve(data);    }
-        4  => { passwords::solve(data);        }
-        5  => { airconditioning::solve(data);  }
-        6  => { orbitalmap::solve(data);       }
-        7  => { amplifiers::solve(data);       }
-        8  => { spaceimageformat::solve(data); }
-        9  => { sensorboost::solve(data);      }
-        10 => { asteroids::solve(data);        }
+        1  => { tsiolkovsky::solve(data);       }
+        2  => { programalarm::solve(data);      }
+        3  => { crossingwires::solve(data);     }
+        4  => { passwords::solve(data);         }
+        5  => { airconditioning::solve(data);   }
+        6  => { orbitalmap::solve(data);        }
+        7  => { amplifiers::solve(data);        }
+        8  => { spaceimageformat::solve(data);  }
+        9  => { sensorboost::solve(data);       }
+        10 => { asteroids::solve(data);         }
+        11 => { hullpaintingrobot::solve(data); }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }

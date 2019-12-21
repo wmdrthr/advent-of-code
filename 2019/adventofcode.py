@@ -778,7 +778,10 @@ def solve11(data):
     chars = [U.lookup('LIGHT SHADE'), U.lookup('FULL BLOCK')]
     for y in range(locations[-1][1] + 1):
         for x in range(locations[-1][0] + 1):
-            print(chars[panel[(x, y)]], end='')
+            if (x, y) in panel:
+                print(chars[panel[(x, y)]], end='')
+            else:
+                print(' ', end='')
         print()
 
     yield 'EFCKUEGC'
