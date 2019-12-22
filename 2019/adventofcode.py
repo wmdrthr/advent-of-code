@@ -1400,6 +1400,53 @@ def solve21(data):
             break
 
 
+@with_solutions(4775, 37889219674304)
+def solve22(data):
+
+    # Slam Shuffle
+
+    def shuffle(number_of_cards, p):
+        for line in data.split('\n'):
+            if line == 'deal into new stack':
+                p = (number_of_cards - 1 - p) % number_of_cards
+            else:
+                n = int(line.split(' ')[-1])
+                if line[:3] == 'cut':
+                    p = (p - n) % number_of_cards
+                elif line[:4] == 'deal':
+                    p = (n * p) % number_of_cards
+        return p
+
+    def shuffle2(number_of_cards, p, reps):
+        increment = 1
+        offset = 0
+
+        def inv(n):
+            return pow(n, number_of_cards - 2, number_of_cards)
+
+        for line in data.split('\n'):
+            if line == 'deal into new stack':
+                increment = (increment * -1) % number_of_cards
+                offset = (offset + increment) % number_of_cards
+            else:
+                n = int(line.split(' ')[-1])
+                if line[:3] == 'cut':
+                    offset = (offset + n * increment) % number_of_cards
+                elif line[:4] == 'deal':
+                    increment = (increment * inv(n)) % number_of_cards
+
+        final_increment = pow(increment, reps, number_of_cards)
+        final_offset = offset * (1 - final_increment) * inv((1 - increment) % number_of_cards)
+        final_offset %= number_of_cards
+
+        return (final_offset + p * final_increment) % number_of_cards
+
+    # Part 1
+    yield shuffle(10007, 2019)
+
+    # Part 2
+    yield shuffle2(119315717514047, 2020, 101741582076661)
+
 ################################################################################
 
 if __name__ == '__main__':
