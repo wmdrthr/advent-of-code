@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns  #-}
 
-module Day8 (
+module Day08 (
   day8,
   solve
   ) where
@@ -46,21 +46,25 @@ parseLine (words->r:o:v:_:cr:op:cv:[]) = Instruction r operation (read v) cr ope
           "==" -> EQ
           "!=" -> NEQ
 
-get :: Memory -> String -> Int
-get m r = current $ M.findWithDefault (Vals 0 0)  r m
+getCurrent :: Memory -> String -> Int
+getCurrent m r = current $ M.findWithDefault (Vals 0 0) r m
+
+getHighest :: Memory -> String -> Int
+getHighest m r = highest $ M.findWithDefault (Vals 0 0) r m
 
 set :: Memory -> String -> (Int -> Int) -> Memory
-set m r f = let c = get m r
+set m r f = let c = getCurrent m r
+                h = getHighest m r
                 v = f c
-            in M.insert r (Vals v (max v c)) m
+            in M.insert r (Vals v (max v h)) m
 
 evaluate :: Memory -> Instruction -> Bool
-evaluate m (Instruction _ _ _ cr GT cv)  = (get m cr) > cv
-evaluate m (Instruction _ _ _ cr LT cv)  = (get m cr) < cv
-evaluate m (Instruction _ _ _ cr EQ cv)  = (get m cr) == cv
-evaluate m (Instruction _ _ _ cr NEQ cv) = (get m cr) /= cv
-evaluate m (Instruction _ _ _ cr GE cv)  = (get m cr) >= cv
-evaluate m (Instruction _ _ _ cr LE cv)  = (get m cr) <= cv
+evaluate m (Instruction _ _ _ cr GT cv)  = (getCurrent m cr) > cv
+evaluate m (Instruction _ _ _ cr LT cv)  = (getCurrent m cr) < cv
+evaluate m (Instruction _ _ _ cr EQ cv)  = (getCurrent m cr) == cv
+evaluate m (Instruction _ _ _ cr NEQ cv) = (getCurrent m cr) /= cv
+evaluate m (Instruction _ _ _ cr GE cv)  = (getCurrent m cr) >= cv
+evaluate m (Instruction _ _ _ cr LE cv)  = (getCurrent m cr) <= cv
 
 execute :: Memory -> Instruction -> Memory
 execute m i@(Instruction r Inc v _ _ _) = set m r (\x -> x + v)
@@ -78,6 +82,4 @@ solve input = (maximum (map current (M.elems result)),
 
 day8 :: [String] -> IO ()
 day8 input = do
-  let result = solve input
-  print $ (fst result)
-  print $ (snd result)
+  print $ solve input

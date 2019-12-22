@@ -1,7 +1,7 @@
 module Main where
 
 import Test.Hspec
-import Day3 as Day3
+import Day03 as Day03
 
 spec :: Spec
 spec = do
@@ -9,16 +9,16 @@ spec = do
     context "solve1" $ do
 
       it "returns 0 for 1" $ do
-        Day3.solve1 1 `shouldBe` 0
+        Day03.solve1 1 `shouldBe` 0
 
       it "returns 3 for 12" $ do
-        Day3.solve1 12 `shouldBe` 3
+        Day03.solve1 12 `shouldBe` 3
 
       it "returns 2 for 23" $ do
-        Day3.solve1 23 `shouldBe` 2
+        Day03.solve1 23 `shouldBe` 2
 
       it "returns 31 for 1024" $ do
-        Day3.solve1 1024 `shouldBe` 31
+        Day03.solve1 1024 `shouldBe` 31
 
 
 

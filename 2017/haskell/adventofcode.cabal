@@ -1,40 +1,39 @@
 name:                adventofcode
 version:             0.1.0.0
 synopsis:            Advent of Code 2017 Haskell Solutions
-homepage:            https://github.com/wmdrthr/adventofcode/2017/haskell
 license:             MIT
-author:              Shantanu Joshi
-maintainer:          weeemadarthur@yggdrasil.in
+author:              Shantanu Joshi <weeemadarthur@yggdrasil.in>
 copyright:           Copyright: (c) 2017 Shantanu Joshi
-category:            Miscellaneous
+
 build-type:          Simple
 cabal-version:       >=1.10
-
-description:         Advent of Code 2017 Haskell Solutions
 
 library
   hs-source-dirs:      src
   exposed-modules:     AdventOfCode,
-                       Day1, Day2, Day3, Day4, Day5
-                     , Day6, Day7, Day8, Day9
+                       Day01, Day02, Day03, Day04, Day05
+                     , Day06, Day07, Day08, Day09, Day10
+                     , Day11, Day12, Day13, Day14, Day15
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5.7.1
                      , time >= 1.6.0.1
+                     , split >= 0.2.3.3
                      , vector >= 0.12.0.1
+                     , directory >= 1.3.0.0
+                     , text >= 1.2.3.1
   default-language:    Haskell2010
 
-executable aoc
+executable aoc2017
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       adventofcode
                      , base
-                     , directory >= 1.3.0.0
   default-language:    Haskell2010
 
-test-suite day1
+test-suite day01
   hs-source-dirs:      test
-  main-is:             Day1Spec.hs
+  main-is:             Day01Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -42,9 +41,9 @@ test-suite day1
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day2
+test-suite day02
   hs-source-dirs:      test
-  main-is:             Day2Spec.hs
+  main-is:             Day02Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -52,9 +51,9 @@ test-suite day2
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day3
+test-suite day03
   hs-source-dirs:      test
-  main-is:             Day3Spec.hs
+  main-is:             Day03Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -62,9 +61,9 @@ test-suite day3
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day4
+test-suite day04
   hs-source-dirs:      test
-  main-is:             Day4Spec.hs
+  main-is:             Day04Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -72,9 +71,9 @@ test-suite day4
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day5
+test-suite day05
   hs-source-dirs:      test
-  main-is:             Day5Spec.hs
+  main-is:             Day05Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -82,9 +81,9 @@ test-suite day5
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day6
+test-suite day06
   hs-source-dirs:      test
-  main-is:             Day6Spec.hs
+  main-is:             Day06Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -92,9 +91,9 @@ test-suite day6
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day7
+test-suite day07
   hs-source-dirs:      test
-  main-is:             Day7Spec.hs
+  main-is:             Day07Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -102,9 +101,9 @@ test-suite day7
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day8
+test-suite day08
   hs-source-dirs:      test
-  main-is:             Day8Spec.hs
+  main-is:             Day08Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -112,9 +111,69 @@ test-suite day8
   ghc-options:         -threaded
   default-language:    Haskell2010
 
-test-suite day9
+test-suite day09
   hs-source-dirs:      test
-  main-is:             Day9Spec.hs
+  main-is:             Day09Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day10
+  hs-source-dirs:      test
+  main-is:             Day10Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day11
+  hs-source-dirs:      test
+  main-is:             Day11Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day12
+  hs-source-dirs:      test
+  main-is:             Day12Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day13
+  hs-source-dirs:      test
+  main-is:             Day13Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day14
+  hs-source-dirs:      test
+  main-is:             Day14Spec.hs
+  type:                exitcode-stdio-1.0
+  build-depends:       base
+                     , adventofcode
+                     , hspec >= 2.4.4
+  ghc-options:         -threaded
+  default-language:    Haskell2010
+
+test-suite day15
+  hs-source-dirs:      test
+  main-is:             Day15Spec.hs
   type:                exitcode-stdio-1.0
   build-depends:       base
                      , adventofcode
@@ -124,4 +183,5 @@ test-suite day9
 
 source-repository head
   type:     git
-  location: https://github.com/wmdrthr/adventofcode/haskell
+  location: https://github.com/wmdrthr/advent-of-code
+  subdir:   2017/haskell
