@@ -3,7 +3,6 @@ use crate::crossingwires::manhattan;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-// Day 11: Space Police
 
 type V2 = (i32, i32);
 
@@ -91,6 +90,8 @@ fn solve11(tape: Vec<i64>, panel: &mut HashMap<V2, Color>) -> HashSet<V2> {
 
     painted
 }
+
+// Day 11: Space Police
 
 pub fn solve(data: String) {
     let tape: Vec<i64> = data.split(",").map(|l| l.parse::<i64>().unwrap()).collect();

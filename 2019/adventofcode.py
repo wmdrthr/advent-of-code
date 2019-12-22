@@ -159,7 +159,9 @@ class V3:
     def __getitem__(self, dim):
         if not 0 <= dim <= 2:
             raise IndexError(f'invalid dimension: {dim}')
-        return (self.x, self.y, self.z)[dim]
+        if dim == 0: return self.x
+        elif dim == 1: return self.y
+        elif dim == 2: return self.z
 
     def __setitem__(self, dim, value):
         if not 0 <= dim <= 2:
@@ -856,8 +858,6 @@ def solve12(data):
                 self.steps += 1
                 if sum([int(moon.velocity) for moon in self.moons]) == 0:
                     self.steps *= 2
-                    break
-                if self.moons == original_state:
                     break
 
     simulations = []
