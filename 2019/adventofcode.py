@@ -380,6 +380,39 @@ class IntCodeVM():
         self.thread.start()
         return self
 
+class NetworkedIntCodeVM(IntCodeVM):
+
+    def __init__(self, program = None, inputQ = None,
+                 outputQ = None, interconnect = None):
+        IntCodeVM.__init__(self, program, inputQ, outputQ)
+        self.buffer = []
+        self.idle = False
+        self.interconnect = interconnect
+
+    def read(self, modes):
+        destination = self.dest(self.ip + 1, modes[0])
+        try:
+            val = self.inputQ.get(timeout=0.1)
+            self.idle = False
+        except queue.Empty:
+            val = -1
+            self.idle = True
+
+        self.memory[destination] = val
+        self.ip += 2
+
+    def write(self, modes):
+        value = self.fetch(self.ip + 1, modes[0])
+        self.buffer.append(value)
+        if len(self.buffer) == 3:
+            if self.buffer[0] == 255:
+                self.outputQ.put(self.buffer[1:])
+            else:
+                self.interconnect[self.buffer[0]].put(self.buffer[1:])
+            self.buffer = []
+        self.ip += 2
+
+
 ################################################################################
 # Solvers
 
@@ -1446,6 +1479,68 @@ def solve22(data):
 
     # Part 2
     yield shuffle2(119315717514047, 2020, 101741582076661)
+
+
+@with_solutions(27061 ,19406)
+def solve23(data):
+
+    # Category Six
+
+    tape = [int(x) for x in data.split(',')]
+
+    interconnect = [IQueue() for _ in range(50)]
+    outputQ = IQueue()
+
+    def stop_vms(vms):
+        for vm in vms:
+            vm.interrupt()
+            vm.thread.join()
+
+    def run(vms, nat=False):
+        buffer = []
+        history = set()
+        for n in range(50):
+            vms[n].start(f'node{n}')
+        while True:
+            try:
+                buffer.append(outputQ.get(timeout=0.1))
+                if len(buffer) % 2 == 0 and not nat:
+                    stop_vms(vms)
+                    return buffer
+            except queue.Empty:
+                pass
+
+            # check idle status for all VMs
+            if nat and all([vm.idle for vm in vms]):
+                packet = (buffer[-2], buffer[-1])
+                if packet in history:
+                    stop_vms(vms)
+                    return packet
+                history.add(packet)
+                interconnect[0].put(buffer[-2:])
+                buffer = []
+
+    # Part 1
+    vms = []
+    for n in range(50):
+        interconnect[n].put(n)
+        vm = NetworkedIntCodeVM(tape, interconnect[n], outputQ, interconnect)
+        vms.append(vm)
+
+    packet = run(vms)
+    yield packet[1]
+
+    # Part 2
+    vms = []
+    for n in range(50):
+        interconnect[n].put(n)
+        vm = NetworkedIntCodeVM(tape, interconnect[n], outputQ, interconnect)
+        vms.append(vm)
+
+
+    packet = run(vms, nat=True)
+    yield packet[1]
+
 
 ################################################################################
 
