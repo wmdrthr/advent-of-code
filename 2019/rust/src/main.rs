@@ -27,6 +27,7 @@ pub mod asteroids;
 pub mod hullpaintingrobot;
 pub mod nbodyproblem;
 pub mod carepackage;
+pub mod stoichiometry;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -81,6 +82,7 @@ fn run(day: u8, data: String) {
         11 => { hullpaintingrobot::solve(data); }
         12 => { nbodyproblem::solve(data);      }
         13 => { carepackage::solve(data);       }
+        14 => { stoichiometry::solve(data);     }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
