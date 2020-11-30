@@ -1,9 +1,9 @@
 # Advent of Code 2019
 
 ## Progress
-![Python Progress](http://weemadarthur.metapath.org/Python.svg)
-![Haskell Progress](http://weemadarthur.metapath.org/Haskell.svg)
-![Rust Progress](http://weemadarthur.metapath.org/Rust.svg)
+![Python Progress](http://weemadarthur.metapath.org/aoc/2019/Python.svg)
+![Haskell Progress](http://weemadarthur.metapath.org/aoc/2019/Haskell.svg)
+![Rust Progress](http://weemadarthur.metapath.org/aoc/2019/Rust.svg)
 
 ## Python
 
