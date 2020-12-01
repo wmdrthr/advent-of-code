@@ -6,6 +6,8 @@ import time
 from pprint import pprint
 from datetime import datetime
 
+import itertools
+
 import pytz
 import requests
 
@@ -117,6 +119,22 @@ def neighbors(point):
 ################################################################################
 # Solvers
 
+@with_solutions(703131, 272423970)
+def solve1(data):
+
+    # Report Repair
+
+    entries = [int(l) for l in data.splitlines()]
+
+    for a, b in itertools.combinations(entries, 2):
+        if a + b == 2020:
+            yield a * b
+            break
+
+    for a, b, c in itertools.combinations(entries, 3):
+        if a + b + c == 2020:
+            yield a * b * c
+            break
 
 ################################################################################
 
