@@ -10,6 +10,7 @@ use std::io::{self, Read};
 
 use chrono::prelude::*;
 
+pub mod reportrepair;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -48,9 +49,10 @@ fn get_data(day: u8) -> io::Result<String> {
     }
 }
 
-fn run(day: u8, _data: String) {
+fn run(day: u8, data: String) {
 
     match day {
+        1 => { reportrepair::solve(data);                  }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
@@ -71,7 +73,7 @@ fn main() {
     };
 
     let data = match get_data(day) {
-        Ok(contents) => contents,
+        Ok(contents) => contents.trim().to_string(),
         Err(_) => {
             println!("input not found for day {}", day);
             usage(); exit(5);
