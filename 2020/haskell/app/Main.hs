@@ -2,16 +2,14 @@ module Main where
 
 import System.Directory    (doesFileExist)
 import System.Environment  (getArgs)
-import System.Environment  (getArgs)
 import System.TimeIt       (timeIt)
 import Text.Printf         (printf)
-import Data.List.Split     (splitOn)
 import Data.Time.Clock     (getCurrentTime)
 import Data.Time.Calendar  (toGregorian)
 import Data.Time.LocalTime
 
-
 import AdventOfCode
+import ReportRepair (day01)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -42,6 +40,7 @@ guessDay = do
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
+solve 1 = day01 . parseInputNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()

@@ -7,8 +7,8 @@ module AdventOfCode (
   cardinality,
   count,
   maxKey,
-  manhattanDistance
-  ) where
+  manhattanDistance,
+  combinations) where
 
 import Data.List          (maximumBy)
 import Data.List.Split    (splitOn)
@@ -87,3 +87,20 @@ maxKey = fst . maximumBy (comparing snd) . M.toList
 -- Manhattan Distance between two points
 manhattanDistance :: Num a => (a,a) -> (a,a) -> a
 manhattanDistance (ax, ay) (bx, by) = abs (ax - bx) + abs (ay - by)
+
+-- | Generate all unique combinations of length k from the given sequence
+--
+-- >>> combinations 2 [0..2]
+-- [[0,1],[0,2],[1,2]]
+combinations :: Int -> [a] -> [[a]]
+combinations 1 as        = map pure as
+combinations k as@(_:xs) = run (l-1) (k-1) as $ combinations (k-1) xs
+                             where
+                             l = length as
+
+                             run :: Int -> Int -> [a] -> [[a]] -> [[a]]
+                             run n k ys cs | n == k    = map (ys ++) cs
+                                           | otherwise = map (q:) cs ++ run (n-1) k qs (drop dc cs)
+                                           where
+                                           (q:qs) = take (n-k+1) ys
+                                           dc     = product [(n-k+1)..(n-1)] `div` product [1..(k-1)]
