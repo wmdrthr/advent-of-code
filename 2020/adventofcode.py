@@ -136,6 +136,26 @@ def solve1(data):
             yield a * b * c
             break
 
+@with_solutions(528, 497)
+def solve2(data):
+
+    # Password Philosophy
+
+    valid1 = valid2 = 0
+    for line in data.splitlines():
+        rule, password = [r.strip() for r in line.split(':')]
+        counts, letter = rule.split(' ')
+        a, b = [int(d) for d in counts.split('-')]
+
+        if a <= password.count(letter) <= b:
+            valid1 += 1
+
+        if (password[a - 1] == letter) ^ (password[b - 1] == letter):
+            valid2 += 1
+
+    yield valid1
+    yield valid2
+
 ################################################################################
 
 if __name__ == '__main__':
