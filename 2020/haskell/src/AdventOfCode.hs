@@ -1,14 +1,4 @@
-module AdventOfCode (
-  parseInputSimple,
-  parseInputNumbers,
-  parseInputNumbersWithSign,
-  parseInputNumberLists,
-  parseCommaSeparatedNumbers,
-  cardinality,
-  count,
-  maxKey,
-  manhattanDistance,
-  combinations) where
+module AdventOfCode where
 
 import Data.List          (maximumBy)
 import Data.List.Split    (splitOn)
@@ -104,3 +94,15 @@ combinations k as@(_:xs) = run (l-1) (k-1) as $ combinations (k-1) xs
                                            where
                                            (q:qs) = take (n-k+1) ys
                                            dc     = product [(n-k+1)..(n-1)] `div` product [1..(k-1)]
+
+
+-- | Exclusive-or for booleans
+-- >>> True `xor` False
+-- True
+-- >>> True `xor` True
+-- False
+xor :: Bool -> Bool -> Bool
+xor True True = False
+xor True False = True
+xor False True = True
+xor False False = False

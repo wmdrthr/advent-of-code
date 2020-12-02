@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53d5c8e60f128789280a4c59148834e9876cc8f1e9ce46e9292e7b58dc8f6296
+-- hash: c144934ba2b8d3c0924cc2b72000787d6cd33d89f76bfef52936bdab86de8b29
 
 name:           adventofcode
 version:        2020.0.0
@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      PasswordPhilosophy
       ReportRepair
   other-modules:
       Paths_adventofcode
@@ -54,6 +55,7 @@ test-suite aoc-2020-test
   main-is: Spec.hs
   other-modules:
       AdventOfCodeSpec
+      PasswordPhilosophySpec
       ReportRepairSpec
       Paths_adventofcode
   hs-source-dirs:

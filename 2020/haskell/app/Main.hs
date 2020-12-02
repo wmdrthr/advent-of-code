@@ -10,6 +10,7 @@ import Data.Time.LocalTime
 
 import AdventOfCode
 import ReportRepair (day01)
+import PasswordPhilosophy (day02)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -41,6 +42,7 @@ guessDay = do
 -- expected format
 solve :: Int -> String -> IO ()
 solve 1 = day01 . parseInputNumbers
+solve 2 = day02 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()
