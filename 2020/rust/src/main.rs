@@ -1,3 +1,5 @@
+#[macro_use] extern crate lazy_static;
+
 extern crate elapsed;
 extern crate chrono;
 extern crate itertools;
@@ -11,6 +13,7 @@ use std::io::{self, Read};
 use chrono::prelude::*;
 
 pub mod reportrepair;
+pub mod passwordphilosophy;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -53,6 +56,7 @@ fn run(day: u8, data: String) {
 
     match day {
         1 => { reportrepair::solve(data);                  }
+        2 => { passwordphilosophy::solve(data);            }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
