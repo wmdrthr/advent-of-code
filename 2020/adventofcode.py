@@ -7,6 +7,7 @@ from pprint import pprint
 from datetime import datetime
 
 import itertools
+import collections
 
 import pytz
 import requests
@@ -155,6 +156,42 @@ def solve2(data):
 
     yield valid1
     yield valid2
+
+@with_solutions(162, 3064612320)
+def solve3(data):
+
+    # Toboggan Trajectory
+
+    data = [l.strip() for l in data.split('\n') if len(l) > 1]
+    trees = {(x, y):1 for y,l in enumerate(data) for x,c in enumerate(l) if c == '#'}
+    treemap = collections.defaultdict(int, trees)
+
+    right = len(data[0])
+    bottom = len(data)
+
+    def traverse(dx, dy):
+        current = ORIGIN
+        count = 0
+        while True:
+            if treemap[(current[0] % len(data[0]), current[1])]:
+                count += 1
+            if current[1] >= bottom:
+                break
+            current = (current[0] + dx, current[1] + dy)
+        return count
+
+    # Part 1
+    yield traverse(3, 1)
+
+    # Part 2
+    count = 1
+    for (dx, dy) in [(1, 1),
+                     (3, 1),
+                     (5, 1),
+                     (7, 1),
+                     (1, 2)]:
+        count *= traverse(dx, dy)
+    yield count
 
 ################################################################################
 
