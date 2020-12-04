@@ -15,6 +15,7 @@ use chrono::prelude::*;
 pub mod reportrepair;
 pub mod passwordphilosophy;
 pub mod toboggantrajectory;
+pub mod passportprocessing;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -66,6 +67,7 @@ fn run(day: u8, data: String) {
         1 => { reportrepair::solve(data);                  }
         2 => { passwordphilosophy::solve(data);            }
         3 => { toboggantrajectory::solve(data);            }
+        4 => { passportprocessing::solve(data);            }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
