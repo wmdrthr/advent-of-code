@@ -22,11 +22,18 @@ fn usage() {
 const YEAR: i32 = 2020;
 
 fn guess_day() -> Result<u8, i32> {
-    let today: Date<Local> = Local::today();
-    if today.year() != YEAR || today.month() != 12 || today.day() > 25 {
+    let now: DateTime<Local> = Local::now();
+    if now.year() != YEAR || now.month() != 12 || now.day() > 25 {
         Err(2)
     } else {
-        Ok(today.day() as u8)
+        let unlock = Local.ymd(now.year(), now.month(), now.day())
+            .and_hms_milli(10, 30, 0, 0);
+
+        if now > unlock {
+            Ok(now.day() as u8)
+        } else {
+            Ok((now.day() - 1) as u8)
+        }
     }
 }
 

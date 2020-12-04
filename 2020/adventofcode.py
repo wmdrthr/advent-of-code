@@ -4,7 +4,7 @@
 import os, sys, re
 import time
 from pprint import pprint
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import itertools
 import collections
@@ -33,10 +33,14 @@ def guess_day():
     Today's date, if it's during the Advent of Code. Happy Holidays!
     Raises exception otherwise.
     """
-    today = datetime.now(tz=pytz.timezone('Asia/Kolkata'))
-    if today.year != YEAR or today.month != 12 or today.day > 25:
+    now = datetime.now(tz=pytz.timezone('Asia/Kolkata'))
+    if now.year != YEAR or now.month != 12 or now.day > 25:
         raise Exception('AoC {%d} not currently running, day must be provided.'.format(YEAR))
-    return today.day
+    unlock = now.replace(hour = 10, minute = 30,
+                         second = 0, microsecond = 0) # Midnight EST -> 10:30 AM IST
+    if now < unlock:
+        now = now - timedelta(days = 1)
+    return now.day
 
 def get_data(day):
     "Get input data for day (1-25) and year (> 2015)"
@@ -50,7 +54,8 @@ def get_data(day):
         # day's puzzle has unlocked yet
         now = datetime.now(tz=pytz.timezone('Asia/Kolkata'))
         if now.year == YEAR and now.month == 12 and day < 25:
-            unlock = now.replace(hour = 10, minute = 30) # Midnight EST -> 10:30 AM IST
+            unlock = now.replace(hour = 10, minute = 30,
+                                 second = 0, microsecond = 0) # Midnight EST -> 10:30 AM IST
             if now < unlock:
                 print("Today's puzzle hasn't unlocked yet!")
                 return None
