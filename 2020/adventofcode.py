@@ -198,6 +198,64 @@ def solve3(data):
         count *= traverse(dx, dy)
     yield count
 
+@with_solutions(202, 137)
+def solve4(data):
+
+    # Passport Processing
+
+    passports = []
+    passport = {}
+    for line in data.split('\n'):
+        if line.strip() == '':
+            if len(passport) > 0:
+                passports.append(passport)
+                passport = {}
+            continue
+        for field in line.strip().split(' '):
+            key, val = field.split(':')
+            passport[key] = val
+    if len(passport) > 0:
+        passports.append(passport)
+
+    hcl_regex = re.compile(r'^#[0-9a-f]{6}$')
+    pid_regex = re.compile(r'^\d{9}$')
+    def valid_height(v):
+        if v[-2:] == 'cm':
+            return 150 <= int(v[:-2]) <= 193
+        elif v[-2:] == 'in':
+            return 59 <= int(v[:-2]) <= 76
+        else:
+            return False
+    validators = {
+        'byr': lambda v: 1920 <= int(v) <= 2002,
+        'iyr': lambda v: 2010 <= int(v) <= 2020,
+        'eyr': lambda v: 2020 <= int(v) <= 2030,
+        'hgt': valid_height,
+        'hcl': lambda v: hcl_regex.match(v) is not None,
+        'ecl': lambda v: v in {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'},
+        'pid': lambda v: pid_regex.match(v) is not None
+    }
+
+    def valid_passport(passport, validators=None):
+
+        for key in ['byr', 'iyr', 'eyr', 'hgt',
+                    'hcl', 'ecl', 'pid']:
+            if key not in passport:
+                return False
+            if validators is None:
+                continue
+            if not validators[key](passport[key]):
+                return False
+        return True
+
+    yield len(list(filter(valid_passport, passports)))
+
+    count = 0
+    for passport in passports:
+        if valid_passport(passport, validators):
+            count += 1
+    yield count
+
 ################################################################################
 
 if __name__ == '__main__':
