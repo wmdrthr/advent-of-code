@@ -9,8 +9,9 @@ import Data.Time.Calendar  (toGregorian)
 import Data.Time.LocalTime
 
 import AdventOfCode
-import ReportRepair (day01)
+import ReportRepair       (day01)
 import PasswordPhilosophy (day02)
+import TobogganTrajectory (day03)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -43,6 +44,7 @@ guessDay = do
 solve :: Int -> String -> IO ()
 solve 1 = day01 . parseInputNumbers
 solve 2 = day02 . lines
+solve 3 = day03 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()

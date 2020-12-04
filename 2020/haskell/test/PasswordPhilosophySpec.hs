@@ -7,7 +7,7 @@ spec :: Spec
 spec = do
 
   context "Part 1" $ do
-    it "1-3 a: abcde > True" $ do SUT.valid1 ("abcde", 'a', 1, 3) `shouldBe` True
+    it "1-3 a: abcde => True" $ do SUT.valid1 ("abcde", 'a', 1, 3) `shouldBe` True
     it "1-3 b: cdefg => False" $ do SUT.valid1 ("cdefg", 'b', 1, 3) `shouldBe` False
     it "2-9 c: ccccccccc => True" $ do SUT.valid1 ("ccccccccc", 'c', 2, 9) `shouldBe` True
 
