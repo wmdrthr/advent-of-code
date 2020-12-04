@@ -178,7 +178,7 @@ def solve3(data):
         current = ORIGIN
         count = 0
         while True:
-            if treemap[(current[0] % len(data[0]), current[1])]:
+            if treemap[(current[0] % right, current[1])]:
                 count += 1
             if current[1] >= bottom:
                 break

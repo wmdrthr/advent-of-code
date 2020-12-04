@@ -74,21 +74,21 @@ mod tests {
     }
 
     #[test]
-    fn passwordphilosophy_valid_ruleset1() {
+    fn valid_ruleset1() {
         assert_eq!(valid_part1("abcde", &'a', 1, 3), true);
         assert_eq!(valid_part1("cdefg", &'b', 1, 3), false);
         assert_eq!(valid_part1("ccccccccc", &'c', 2, 9), true);
     }
 
     #[test]
-    fn passwordphilosophy_valid_ruleset2() {
+    fn valid_ruleset2() {
         assert_eq!(valid_part2("abcde", 'a', 1, 3), true);
         assert_eq!(valid_part2("cdefg", 'b', 1, 3), false);
         assert_eq!(valid_part2("ccccccccc", 'c', 2, 9), false);
     }
 
     #[test]
-    fn passwordphilospohy_solution() {
+    fn solution() {
         let input = load_input_file("../inputs/input02.txt");
 
         let entries: Vec<&str> = input.split("\n").collect();

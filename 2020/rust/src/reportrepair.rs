@@ -46,12 +46,12 @@ mod tests {
     }
 
     #[test]
-    fn reportrepair_testinput() {
+    fn testinput() {
         assert_eq!(calculate(vec![1721, 979, 366, 299, 675, 1456]), (514579, 241861950));
     }
 
     #[test]
-    fn reportrepair_solution() {
+    fn solution() {
 
         let input = load_input_file("../inputs/input01.txt");
         let entries: Vec<u32> = input.split("\n").
