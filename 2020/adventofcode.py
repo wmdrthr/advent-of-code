@@ -256,6 +256,28 @@ def solve4(data):
             count += 1
     yield count
 
+@with_solutions(933, 711)
+def solve5(data):
+
+    # Binary Boarding
+
+    passes = data.split('\n')
+
+    table = str.maketrans('FBLR', '0101')
+    seats = [False for _ in range(1024)]
+
+    def seatid(bpass):
+        seatid = int(bpass.translate(table), 2)
+        seats[seatid] = True
+        return seatid
+
+    yield max([seatid(bpass) for bpass in passes])
+
+    for seat in range(1024):
+        if not seats[seat] and seats[seat - 1] and seats[seat + 1]:
+            yield seat
+            break
+
 ################################################################################
 
 if __name__ == '__main__':
