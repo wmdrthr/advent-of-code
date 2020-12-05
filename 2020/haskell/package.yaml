@@ -15,6 +15,7 @@ library:
   dependencies:
     - containers
     - split
+    - regex-pcre
 
 executables:
   aoc2020:

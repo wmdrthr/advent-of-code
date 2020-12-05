@@ -12,6 +12,7 @@ import AdventOfCode
 import ReportRepair       (day01)
 import PasswordPhilosophy (day02)
 import TobogganTrajectory (day03)
+import PassportProcessing (day04)
 
 getInput :: Int -> IO String
 getInput day = do
@@ -45,6 +46,7 @@ solve :: Int -> String -> IO ()
 solve 1 = day01 . parseInputNumbers
 solve 2 = day02 . lines
 solve 3 = day03 . lines
+solve 4 = day04
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()
