@@ -23,3 +23,36 @@ site), and save it in `~/.config/adventofcode/session`.
 
 * pytz
 * requests
+
+## Haskell
+
+The Haskell solution uses [Stack](https://www.haskellstack.org/) as
+the build tool.
+
+To run the Haskell solvers, install Stack, then run `stack build` in
+the haskell directory to build the project. This will download and
+install the GHC compiler, fetch and build all dependencies, then build
+the project.
+
+Run `stack run N` to run the solvers for any given day N. The solver
+looks for the input data in the `inputs` directory in the parent
+directory. Use the Python script to automatically download the input
+data.
+
+Run `stack test` to run the included tests for all solvers.
+
+## Rust
+
+The Rust solution is a simple Rust project, using the standard Rust
+build tools.
+
+First, [install Rust](https://www.rust-lang.org/learn/get-started) and
+the cargo build tool. Once installed, run `cargo build` in the rust
+directory to build the project.
+
+Run `cargo run N`  to run the solvers for any given day N. The solver
+looks for the input data in the `inputs` directory in the parent
+directory. Use the Python script to automatically download the input
+data.
+
+Run `cargo test` to run the included tests for all solvers.

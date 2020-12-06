@@ -60,6 +60,9 @@ def get_data(day):
                 print("Today's puzzle hasn't unlocked yet!")
                 return None
 
+        if not os.path.exists('inputs'):
+            os.mkdir('inputs')
+
         uri = 'http://adventofcode.com/{year}/day/{day}/input'.format(year=YEAR, day=day)
         response = requests.get(uri,
                                 cookies={'session': get_session_id()},
