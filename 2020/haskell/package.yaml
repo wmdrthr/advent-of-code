@@ -33,7 +33,7 @@ executables:
       - split
 
 tests:
-  aoc-2020-test:
+  aoc2020test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:

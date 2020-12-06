@@ -1,2 +1,8 @@
 cradle:
   stack:
+    - path: "./app"
+      component: "adventofcode:exe:aoc2020"
+    - path: "./src/"
+      component: "adventofcode:lib"
+    - path: "./test/"
+      component: "adventofcode:test:aoc2020test"

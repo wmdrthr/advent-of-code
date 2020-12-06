@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dae50f1a6924ba7c626c4c445da4f002b92f88a546b4c4c7a2929b53f569c6ad
+-- hash: 3d3bec945b169f0091d3295dd95e51c6d06d8283574c43dd4612401dead493ae
 
 name:           adventofcode
 version:        2020.0.0
@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      BinaryBoarding
       PassportProcessing
       PasswordPhilosophy
       ReportRepair
@@ -53,11 +54,13 @@ executable aoc2020
     , timeit
   default-language: Haskell2010
 
-test-suite aoc-2020-test
+test-suite aoc2020test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
       AdventOfCodeSpec
+      BinaryBoardingSpec
+      PassportProcessingSpec
       PasswordPhilosophySpec
       ReportRepairSpec
       TobogganTrajectorySpec
