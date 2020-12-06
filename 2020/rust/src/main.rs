@@ -16,6 +16,7 @@ pub mod reportrepair;
 pub mod passwordphilosophy;
 pub mod toboggantrajectory;
 pub mod passportprocessing;
+pub mod binaryboarding;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -68,6 +69,7 @@ fn run(day: u8, data: String) {
         2 => { passwordphilosophy::solve(data);            }
         3 => { toboggantrajectory::solve(data);            }
         4 => { passportprocessing::solve(data);            }
+        5 => { binaryboarding::solve(data);                }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }

@@ -124,7 +124,7 @@ mod tests {
     }
 
     #[test]
-    fn test_has_required_fields() {
+    fn required_fields() {
 
         assert_eq!(
             has_required_fields(
@@ -145,7 +145,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_passport() {
+    fn invalid_passports() {
 
         assert_eq!(
             valid_passport(
@@ -166,6 +166,10 @@ mod tests {
             valid_passport(
                 &parse_passport("hgt:59cm ecl:zzz\neyr:2038 hcl:74454a iyr:2023\npid:3556412378 byr:2007")),
             false);
+    }
+
+    #[test]
+    fn valid_passports() {
 
         assert_eq!(
             valid_passport(
