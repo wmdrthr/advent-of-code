@@ -1542,6 +1542,96 @@ def solve23(data):
     yield packet[1]
 
 
+@with_solutions(134807554, None)
+def solve25(data):
+
+    # Cryostasis
+
+    tape = [int(x) for x in data.split(',')]
+
+    inputQ, outputQ = IQueue(), IQueue()
+    vm = IntCodeVM(tape, inputQ, outputQ)
+
+    vm.start('droid')
+
+    def enter(command):
+        inputQ.put([ord(c) for c in command])
+        inputQ.put(10)
+
+    def read_output(print_output=False):
+        output = []
+        message = []
+        while True:
+            try:
+                val = outputQ.get(timeout=0.1)
+            except queue.Empty:
+                return ''.join(message)
+            output.append(chr(val))
+            if val == 10:
+                line = ''.join(output)
+                if print_output:
+                    print(line, end='')
+                message.extend(output)
+                output = []
+                if 'Command?' in line:
+                    return ''.join(message)
+
+    output = []
+
+    # Phase 1
+    commands = ["north",
+                "take sand",
+                "north", "north",
+                "take astrolabe",
+                "south", "south", "south",
+                "east",
+                "take klein bottle",
+                "north", "north", "north",
+                "take dehydrated water",
+                "south", "south", "south",
+                "east",
+                "take semiconductor",
+                "west", "west", "west",
+                "north",
+                "take shell",
+                "south", "south",
+                "west",
+                "take ornament",
+                "west",
+                "south",
+                "inv"]
+
+    read_output()
+    while vm.state is not VMState.HALTED and len(commands) > 0:
+        command = commands.pop(0)
+        enter(command)
+        read_output()
+
+    # Phase 2
+    items = ['ornament', 'astrolabe', 'sand', 'semiconductor',
+             'dehydrated water', 'shell', 'klein bottle']
+    commands = []
+    for item in items:
+        commands.append(f'drop {item}')
+    for i in range(1, len(items) + 1):
+        for comb in itertools.combinations(items, i):
+            for c in comb:
+                commands.append(f'take {c}')
+            commands.append('south')
+            for c in comb:
+                commands.append(f'drop {c}')
+
+    commands.reverse()
+    while vm.state is not VMState.HALTED:
+        command = commands.pop()
+        enter(command)
+        output = read_output()
+        if 'Santa' in output:
+            match = re.search('by typing (\d+) on the keypad', output)
+            code = int(match.group(1))
+            yield code
+
+
 ################################################################################
 
 if __name__ == '__main__':
