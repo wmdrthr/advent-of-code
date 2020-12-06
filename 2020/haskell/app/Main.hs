@@ -14,18 +14,21 @@ import PasswordPhilosophy (day02)
 import TobogganTrajectory (day03)
 import PassportProcessing (day04)
 import BinaryBoarding     (day05)
+import CustomCustoms      (day06)
+
+loadFile :: FilePath -> IO String
+loadFile filename = do
+  fileExists <- doesFileExist filename
+  if fileExists
+    then readFile filename
+    else errorWithoutStackTrace (printf "Input file " ++ filename ++ " not found")
 
 getInput :: Int -> IO String
 getInput day = do
   args <- getArgs
-  if (length args) > 1 then do return $ last args
+  if (length args) > 1 then loadFile (last args)
     else
-    do
-      let inputFile = printf "../inputs/input%02d.txt" day
-      fileExists <- doesFileExist inputFile
-      if fileExists
-        then readFile inputFile
-        else errorWithoutStackTrace (printf "Input not found for day %d." day)
+    loadFile (printf "../inputs/input%02d.txt" day)
 
 guessDay :: IO Int
 guessDay = do
@@ -49,10 +52,11 @@ solve 2 = day02 . lines
 solve 3 = day03 . lines
 solve 4 = day04
 solve 5 = day05 . lines
+solve 6 = day06
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 main :: IO ()
 main = do
   day <- guessDay
   input <- getInput day
-  timeIt $ solve day input
+  timeIt $ solve day (trim input)

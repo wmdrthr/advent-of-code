@@ -1,10 +1,12 @@
 module AdventOfCode where
 
-import Data.List          (maximumBy)
-import Data.List.Split    (splitOn)
-import Data.Ord           (comparing)
+import Data.List        (maximumBy, dropWhileEnd)
+import Data.List.Split  (splitOn)
+import Data.Ord         (comparing)
+import Data.Char        (isSpace)
 
 import qualified Data.Map.Strict as M
+
 
 toDigits :: Integer -> [Int]
 toDigits number
@@ -106,3 +108,10 @@ xor True True = False
 xor True False = True
 xor False True = True
 xor False False = False
+
+
+-- | Strip whitespace from end of string
+-- | trim "foo\n"
+-- "foo"
+trim :: String -> String
+trim = dropWhileEnd isSpace
