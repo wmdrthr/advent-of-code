@@ -7,6 +7,7 @@ import Text.Printf         (printf)
 import Data.Time.Clock     (getCurrentTime)
 import Data.Time.Calendar  (toGregorian)
 import Data.Time.LocalTime
+import Control.Applicative (liftA)
 
 import AdventOfCode
 import ReportRepair       (day01)
@@ -23,6 +24,7 @@ loadFile filename = do
     then readFile filename
     else errorWithoutStackTrace (printf "Input file " ++ filename ++ " not found")
 
+
 getInput :: Int -> IO String
 getInput day = do
   args <- getArgs
@@ -30,18 +32,33 @@ getInput day = do
     else
     loadFile (printf "../inputs/input%02d.txt" day)
 
+
+checkUnlocked :: IO Bool
+checkUnlocked = do
+  let now = getCurrentTime >>= return . localTimeOfDay . (utcToLocalTime (TimeZone 330 False "IST"))
+  hours <- (liftA todHour) now
+  minutes <- (liftA todMin) now
+  return ((hours * 60 + minutes) > 630)
+
 guessDay :: IO Int
 guessDay = do
+  (year, month, day) <- getCurrentTime >>= return . toGregorian . localDay
+                        . (utcToLocalTime (TimeZone 330 False "IST"))
+  if year /= 2020 || month /= 12 || day > 25
+    then errorWithoutStackTrace "AoC 2020 not currently running, day must be provided."
+    else return day
+
+
+getDay :: IO Int
+getDay = do
   args <- getArgs
   case args of
+    (day:_) -> return (read day)
     [] -> do
-      (year, month, day) <- getCurrentTime >>= return . toGregorian . localDay
-                            . (utcToLocalTime (TimeZone 330 False "IST"))
-      if year /= 2020 || month /= 12 || day > 25
-        then errorWithoutStackTrace "AoC 2020 not currently running, day must be provided."
-        else return day
-    (day:_) -> do
-      return (read day)
+      day <- guessDay
+      unlocked <- checkUnlocked
+      let currentDay = if unlocked then day else (pred day)
+      return currentDay
 
 
 -- solve calls the correct solver after parsing the input into the
@@ -55,8 +72,9 @@ solve 5 = day05 . lines
 solve 6 = day06
 solve n = error (printf "No solver for day %d yet.\n" n)
 
+
 main :: IO ()
 main = do
-  day <- guessDay
+  day <- getDay
   input <- getInput day
   timeIt $ solve day (trim input)
