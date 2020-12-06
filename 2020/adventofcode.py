@@ -278,6 +278,25 @@ def solve5(data):
             yield seat
             break
 
+@with_solutions(6742, 3447)
+def solve6(data):
+
+    # Custom Customs
+
+    anyone = everyone = 0
+    for group_data in data.split('\n\n'):
+        counter = collections.defaultdict(int)
+        responses = group_data.split('\n')
+        for response in responses:
+            for answer in response:
+                counter[answer] += 1
+
+        anyone += len([k for k,v in counter.items() if v > 0])
+        everyone += len([k for k,v in counter.items() if v == len(responses)])
+
+    yield anyone
+    yield everyone
+
 ################################################################################
 
 if __name__ == '__main__':
