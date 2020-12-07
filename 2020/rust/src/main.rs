@@ -18,6 +18,7 @@ pub mod toboggantrajectory;
 pub mod passportprocessing;
 pub mod binaryboarding;
 pub mod customcustoms;
+pub mod handyhaversacks;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -72,6 +73,7 @@ fn run(day: u8, data: String) {
         4 => { passportprocessing::solve(data);            }
         5 => { binaryboarding::solve(data);                }
         6 => { customcustoms::solve(data);                 }
+        7 => { handyhaversacks::solve(data);               }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }

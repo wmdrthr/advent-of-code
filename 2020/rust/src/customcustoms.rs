@@ -58,19 +58,17 @@ mod tests {
     #[test]
     fn testinputs() {
 
-        let input1 = load_input_file("../inputs/testinput06a.txt");
-        let groups1: Vec<Vec<&str>> = input1.split("\n\n")
-            .map(|g| g.split("\n").collect())
-            .collect();
+        let testcases = vec![("../inputs/testinput06a.txt", (6, 3)),
+                             ("../inputs/testinput06b.txt", (11, 6))];
 
-        assert_eq!(calculate(groups1), (6, 3));
+        for (testfile, expected_value) in testcases {
+            let input = load_input_file(testfile);
+            let groups: Vec<Vec<&str>> = input.split("\n\n")
+                .map(|g| g.split("\n").collect())
+                .collect();
 
-        let input2 = load_input_file("../inputs/testinput06b.txt");
-        let groups2: Vec<Vec<&str>> = input2.split("\n\n")
-            .map(|g| g.split("\n").collect())
-            .collect();
-
-        assert_eq!(calculate(groups2), (11, 6));
+            assert_eq!(calculate(groups), expected_value);
+        }
     }
 
     #[test]
