@@ -300,6 +300,40 @@ def solve6(data):
     yield anyone
     yield everyone
 
+@with_solutions(248, 57281)
+def solve7(data):
+
+    # Handy Haversacks
+
+    rules = collections.defaultdict(dict)
+    for line in data.split('\n'):
+        parent, children = line.split(' contain ')
+        parent = parent[:-5]
+        if children == 'no other bags.':
+            rules[parent] = {}
+        else:
+            for child in children.split(','):
+                count, colora, colorb, _ = child.strip().split(' ', 4)
+                count = int(count)
+                rules[parent][f'{colora} {colorb}'] = count
+
+    def bagcheck(color):
+        if 'shiny gold' in rules[color]:
+            return True
+        for child in rules[color]:
+            if bagcheck(child):
+                return True
+        return False
+
+    def bagcount(color):
+        count = 0
+        for child, childcount in rules[color].items():
+            count += childcount + (childcount * bagcount(child))
+        return count
+
+    yield len([color for color in rules.keys() if bagcheck(color)])
+    yield bagcount('shiny gold')
+
 ################################################################################
 
 if __name__ == '__main__':
