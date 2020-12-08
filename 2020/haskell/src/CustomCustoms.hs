@@ -1,4 +1,4 @@
-module CustomCustoms (solve6a, solve6b, day06) where
+module CustomCustoms where
 
 import qualified Data.Map        as M
 import           Data.List.Split (splitOn)

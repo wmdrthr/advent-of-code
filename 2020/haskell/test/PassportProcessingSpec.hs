@@ -3,7 +3,7 @@ module PassportProcessingSpec (spec) where
 import Test.Hspec
 import PassportProcessing as SUT
 
-validPassportStrings =
+testPassportStrings =
   [ "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd byr:1937 iyr:2017 cid:147 hgt:183cm"
   , "iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884 hcl:#cfa07d byr:1929"
   , "hcl:#ae17e1 iyr:2013 eyr:2024 ecl:brn pid:760753108 byr:1931 hgt:179cm"
@@ -22,17 +22,17 @@ spec :: Spec
 spec = do
 
   context "Valid Passports" $ do
-    it (head validPassportStrings) $ (SUT.validPassport . parsePassport) (head validPassportStrings) `shouldBe` True
-    it (validPassportStrings !! 2) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 2) `shouldBe` True
-    it (validPassportStrings !! 4) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 4) `shouldBe` True
-    it (validPassportStrings !! 5) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 5) `shouldBe` True
-    it (validPassportStrings !! 6) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 6) `shouldBe` True
-    it (validPassportStrings !! 7) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 7) `shouldBe` True
+    it (testPassportStrings !! 0) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 0) `shouldBe` True
+    it (testPassportStrings !! 2) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 2) `shouldBe` True
+    it (testPassportStrings !! 4) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 4) `shouldBe` True
+    it (testPassportStrings !! 5) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 5) `shouldBe` True
+    it (testPassportStrings !! 6) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 6) `shouldBe` True
+    it (testPassportStrings !! 7) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 7) `shouldBe` True
 
   context "Invalid Passports" $ do
-   it (validPassportStrings !! 1)  $ (SUT.validPassport . parsePassport) (validPassportStrings !! 1)  `shouldBe` False
-   it (validPassportStrings !! 3)  $ (SUT.validPassport . parsePassport) (validPassportStrings !! 3)  `shouldBe` False
-   it (validPassportStrings !! 8)  $ (SUT.validPassport . parsePassport) (validPassportStrings !! 8)  `shouldBe` False
-   it (validPassportStrings !! 9)  $ (SUT.validPassport . parsePassport) (validPassportStrings !! 9)  `shouldBe` False
-   it (validPassportStrings !! 10) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 10) `shouldBe` False
-   it (validPassportStrings !! 11) $ (SUT.validPassport . parsePassport) (validPassportStrings !! 11) `shouldBe` False
+   it (testPassportStrings !! 1)  $ (SUT.validPassport . parsePassport) (testPassportStrings !! 1)  `shouldBe` False
+   it (testPassportStrings !! 3)  $ (SUT.validPassport . parsePassport) (testPassportStrings !! 3)  `shouldBe` False
+   it (testPassportStrings !! 8)  $ (SUT.validPassport . parsePassport) (testPassportStrings !! 8)  `shouldBe` False
+   it (testPassportStrings !! 9)  $ (SUT.validPassport . parsePassport) (testPassportStrings !! 9)  `shouldBe` False
+   it (testPassportStrings !! 10) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 10) `shouldBe` False
+   it (testPassportStrings !! 11) $ (SUT.validPassport . parsePassport) (testPassportStrings !! 11) `shouldBe` False

@@ -1,4 +1,4 @@
-module PasswordPhilosophy (valid1, valid2, day02) where
+module PasswordPhilosophy where
 
 import AdventOfCode          (count, xor)
 

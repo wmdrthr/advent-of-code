@@ -1,4 +1,4 @@
-module ReportRepair (solve, day01) where
+module ReportRepair where
 
 import AdventOfCode (combinations)
 

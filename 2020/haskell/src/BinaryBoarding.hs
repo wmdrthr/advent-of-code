@@ -1,4 +1,4 @@
-module BinaryBoarding (getSeatId, day05) where
+module BinaryBoarding where
 
 import Data.Bool (bool)
 import Data.List (sort)

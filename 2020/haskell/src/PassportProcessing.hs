@@ -1,4 +1,4 @@
-module PassportProcessing (parsePassport, validPassport, day04) where
+module PassportProcessing where
 
 
 import Data.Maybe      (fromJust)

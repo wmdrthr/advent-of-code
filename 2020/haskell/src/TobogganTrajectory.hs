@@ -1,4 +1,4 @@
-module TobogganTrajectory (traverse, day03) where
+module TobogganTrajectory where
 
 import           Prelude  hiding (traverse)
 
