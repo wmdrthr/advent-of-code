@@ -16,6 +16,7 @@ import TobogganTrajectory (day03)
 import PassportProcessing (day04)
 import BinaryBoarding     (day05)
 import CustomCustoms      (day06)
+import HandyHaversacks    (day07)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -70,6 +71,7 @@ solve 3 = day03 . lines
 solve 4 = day04
 solve 5 = day05 . lines
 solve 6 = day06
+solve 7 = day07 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

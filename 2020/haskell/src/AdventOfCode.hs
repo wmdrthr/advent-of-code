@@ -110,8 +110,15 @@ xor False True = True
 xor False False = False
 
 
--- | Strip whitespace from end of string
--- | trim "foo\n"
+-- | Substring
+-- >>> substring 5 9 "This is a test"
+-- 'is a'
+substring :: Int -> Int -> String -> String
+substring start end string = take (end - start) (drop start string)
+
+
+-- | Remove whitespace from beginning and end of string
+-- >>> trim "  foo\n"
 -- "foo"
 trim :: String -> String
-trim = dropWhileEnd isSpace
+trim = dropWhileEnd isSpace . dropWhile isSpace
