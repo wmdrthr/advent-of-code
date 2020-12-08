@@ -334,6 +334,56 @@ def solve7(data):
     yield len([color for color in rules.keys() if bagcheck(color)])
     yield bagcount('shiny gold')
 
+@with_solutions(1915, 944)
+def solve8(data):
+
+    # Handheld Halting
+
+    def execute(program):
+        acc = 0
+        counter = [0 for _ in range(len(program))]
+        idx = 0
+        while True:
+            if idx == len(program):
+                return (True, acc)
+            if counter[idx] > 0:
+                return (False, acc)
+
+            counter[idx] += 1
+            instr, val = program[idx].split(' ')
+            val = int(val)
+            if instr == 'acc':
+                acc += val
+                idx += 1
+            elif instr == 'jmp':
+                idx += val
+            elif instr == 'nop':
+                idx += 1
+
+    # Part 1
+    program = data.split('\n')
+    _, res = execute(program)
+    yield res
+
+    # Part 2
+    for idx, line in enumerate(program):
+        if line[:3] == 'acc':
+            continue
+
+        fixed_program = program[:]
+        instr, val = line.split(' ')
+        if instr == 'nop':
+            fixed_step = f'jmp {val}'
+        else:
+            fixed_step = f'nop {val}'
+        fixed_program[idx] = fixed_step
+
+        halting, res = execute(fixed_program)
+        if halting:
+            yield res
+            break
+
+
 ################################################################################
 
 if __name__ == '__main__':
