@@ -20,6 +20,7 @@ pub mod binaryboarding;
 pub mod customcustoms;
 pub mod handyhaversacks;
 pub mod handheldhalting;
+pub mod encodingerror;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -76,6 +77,7 @@ fn run(day: u8, data: String) {
         6 => { customcustoms::solve(data);                 }
         7 => { handyhaversacks::solve(data);               }
         8 => { handheldhalting::solve(data);               }
+        9 => { encodingerror::solve(data);                 }
         _ => { println!("no solver for day {} yet.", day); }
     }
 }
