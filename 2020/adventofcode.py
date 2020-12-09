@@ -77,6 +77,14 @@ def get_data(day):
 
     return data
 
+def format_elapsed_time(elapsed):
+    for unit in ['ns', 'us', 'ms', 's']:
+        if elapsed > 1000:
+            elapsed /= 1000
+            continue
+        return f'Elapsed: {elapsed:4.3f} {unit}'
+
+
 def with_solutions(*expected):
     def wrapper(f):
         error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
@@ -383,6 +391,39 @@ def solve8(data):
             yield res
             break
 
+@with_solutions(258585477, 36981213)
+def solve9(data):
+
+    # Encoding Error
+
+    numbers = [int(l) for l in data.split('\n')]
+
+    target = 0
+
+    window = (0, 25)
+    while True:
+        sums = set()
+        for x,y in itertools.combinations(numbers[window[0]:window[1]], 2):
+            sums.add(x+y)
+        if numbers[window[1]] not in sums:
+            target = numbers[window[1]]
+            yield target
+            break
+        window = (window[0]+1,window[1]+1)
+
+    window = (0,1)
+    partial = numbers[0]
+    while True:
+        if partial == target:
+            values = sorted(numbers[window[0]:window[1]])
+            yield values[0] + values[-1]
+        elif partial < target:
+            partial += numbers[window[1]]
+            window = (window[0], window[1]+1)
+        elif partial > target:
+            partial -= numbers[window[0]]
+            window = (window[0]+1, window[1])
+
 
 ################################################################################
 
@@ -418,14 +459,10 @@ if __name__ == '__main__':
 
     solver = solvers.get('solve{}'.format(day), None)
     if solver is not None:
-        start = time.time()
+        start = time.monotonic_ns()
         solver(data, skip_verification=custom_data)
-        end = time.time()
+        end = time.monotonic_ns()
         elapsed = (end - start)
-        if elapsed > 0.001:
-            print('Elapsed: %4.3f s' % elapsed)
-        else:
-            elapsed *= 1000.0
-            print('Elapsed: %4.3f us' % elapsed)
+        print(format_elapsed_time(elapsed))
     else:
         print('No solver for day {}'.format(day))
