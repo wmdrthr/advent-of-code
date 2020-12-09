@@ -18,6 +18,7 @@ import BinaryBoarding     (day05)
 import CustomCustoms      (day06)
 import HandyHaversacks    (day07)
 import HandheldHalting    (day08)
+import EncodingError      (day09)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -74,6 +75,7 @@ solve 5 = day05 . lines
 solve 6 = day06
 solve 7 = day07 . lines
 solve 8 = day08 . lines
+solve 9 = day09 . parseInputNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 
