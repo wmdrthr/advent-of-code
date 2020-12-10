@@ -110,6 +110,47 @@ def with_solutions(*expected):
         return wrapped_method
     return wrapper
 
+def main():
+
+    if len(sys.argv) > 1:
+        day = int(sys.argv[1])
+    else:
+        day = guess_day()
+
+    custom_data = False
+    if len(sys.argv) > 2:
+        if sys.argv[2] == '-':
+            data = sys.stdin.read()
+        else:
+            if os.path.exists(sys.argv[2]):
+                data = open(sys.argv[2]).read()
+            else:
+                data = sys.argv[2]
+        custom_data = True
+    else:
+        data = get_data(day)
+
+    if not data:
+        print('Cannot run solver without data. Bailing')
+        sys.exit(0)
+
+    data = data.strip()
+
+    solvers = {}
+    solvers = dict([(fn, f) for fn, f in globals().items()
+                    if callable(f) and fn.startswith('solve')])
+
+    solver = solvers.get('solve{}'.format(day), None)
+    if solver is not None:
+        start = time.monotonic_ns()
+        solver(data, skip_verification=custom_data)
+        end = time.monotonic_ns()
+        elapsed = (end - start)
+        print(format_elapsed_time(elapsed))
+    else:
+        print('No solver for day {}'.format(day))
+
+
 ################################################################################
 # Common Code
 
@@ -153,6 +194,7 @@ def solve1(data):
             yield a * b * c
             break
 
+
 @with_solutions(528, 497)
 def solve2(data):
 
@@ -172,6 +214,7 @@ def solve2(data):
 
     yield valid1
     yield valid2
+
 
 @with_solutions(162, 3064612320)
 def solve3(data):
@@ -208,6 +251,7 @@ def solve3(data):
                      (1, 2)]:
         count *= traverse(dx, dy)
     yield count
+
 
 @with_solutions(202, 137)
 def solve4(data):
@@ -267,6 +311,7 @@ def solve4(data):
             count += 1
     yield count
 
+
 @with_solutions(933, 711)
 def solve5(data):
 
@@ -289,6 +334,7 @@ def solve5(data):
             yield seat
             break
 
+
 @with_solutions(6742, 3447)
 def solve6(data):
 
@@ -307,6 +353,7 @@ def solve6(data):
 
     yield anyone
     yield everyone
+
 
 @with_solutions(248, 57281)
 def solve7(data):
@@ -341,6 +388,7 @@ def solve7(data):
 
     yield len([color for color in rules.keys() if bagcheck(color)])
     yield bagcount('shiny gold')
+
 
 @with_solutions(1915, 944)
 def solve8(data):
@@ -391,6 +439,7 @@ def solve8(data):
             yield res
             break
 
+
 @with_solutions(258585477, 36981213)
 def solve9(data):
 
@@ -429,40 +478,4 @@ def solve9(data):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 1:
-        day = int(sys.argv[1])
-    else:
-        day = guess_day()
-
-    custom_data = False
-    if len(sys.argv) > 2:
-        if sys.argv[2] == '-':
-            data = sys.stdin.read()
-        else:
-            if os.path.exists(sys.argv[2]):
-                data = open(sys.argv[2]).read()
-            else:
-                data = sys.argv[2]
-        custom_data = True
-    else:
-        data = get_data(day)
-
-    if not data:
-        print('Cannot run solver without data. Bailing')
-        sys.exit(0)
-
-    data = data.strip()
-
-    solvers = {}
-    solvers = dict([(fn, f) for fn, f in globals().items()
-                    if callable(f) and fn.startswith('solve')])
-
-    solver = solvers.get('solve{}'.format(day), None)
-    if solver is not None:
-        start = time.monotonic_ns()
-        solver(data, skip_verification=custom_data)
-        end = time.monotonic_ns()
-        elapsed = (end - start)
-        print(format_elapsed_time(elapsed))
-    else:
-        print('No solver for day {}'.format(day))
+    main()
