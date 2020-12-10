@@ -19,6 +19,7 @@ import CustomCustoms      (day06)
 import HandyHaversacks    (day07)
 import HandheldHalting    (day08)
 import EncodingError      (day09)
+import AdapterArray       (day10)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -42,6 +43,7 @@ checkUnlocked = do
   hours <- (liftA todHour) now
   minutes <- (liftA todMin) now
   return ((hours * 60 + minutes) > 630)
+
 
 guessDay :: IO Int
 guessDay = do
@@ -67,15 +69,16 @@ getDay = do
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
-solve 1 = day01 . parseInputNumbers
-solve 2 = day02 . lines
-solve 3 = day03 . lines
-solve 4 = day04
-solve 5 = day05 . lines
-solve 6 = day06
-solve 7 = day07 . lines
-solve 8 = day08 . lines
-solve 9 = day09 . parseInputNumbers
+solve  1 = day01 . parseInputNumbers
+solve  2 = day02 . lines
+solve  3 = day03 . lines
+solve  4 = day04
+solve  5 = day05 . lines
+solve  6 = day06
+solve  7 = day07 . lines
+solve  8 = day08 . lines
+solve  9 = day09 . parseInputNumbers
+solve 10 = day10 . parseInputNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

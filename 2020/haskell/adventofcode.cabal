@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7eee0a955df52b0bb11636ef95906a93607c87862f7b968494f90d9012f656a2
+-- hash: e2d9e0e6da5507b5347c0cd2781e08aa6e21b27787868f74b7cad9de1233a2a9
 
 name:           adventofcode
 version:        2020.0.0
@@ -21,6 +21,7 @@ source-repository head
 
 library
   exposed-modules:
+      AdapterArray
       AdventOfCode
       BinaryBoarding
       CustomCustoms
@@ -62,6 +63,7 @@ test-suite aoc2020test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AdapterArraySpec
       AdventOfCodeSpec
       BinaryBoardingSpec
       CustomCustomsSpec
