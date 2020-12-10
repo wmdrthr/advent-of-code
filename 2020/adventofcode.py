@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 import itertools
 import collections
+import functools
 
 import pytz
 import requests
@@ -473,6 +474,39 @@ def solve9(data):
             partial -= numbers[window[0]]
             window = (window[0]+1, window[1])
 
+
+@with_solutions(2590, 226775649501184)
+def solve10(data):
+
+    # Adapter Array
+
+    ratings = set([int(r) for r in data.split('\n')])
+    max_rating = max(ratings)
+    builtin_rating = max_rating + 3
+
+    differences = []
+    current = 0
+    while current < max_rating:
+        for difference in (1,2,3):
+            if (current + difference) in ratings:
+                differences.append(difference)
+                break
+        current += difference
+    differences.append(builtin_rating - current)
+
+    yield differences.count(1) * differences.count(3)
+
+    @functools.lru_cache
+    def find_next_adapter(current):
+        if current == max_rating:
+            return 1
+        count = 0
+        for difference in (1, 2, 3):
+            if (current + difference) in ratings:
+                count += find_next_adapter(current + difference)
+        return count
+
+    yield find_next_adapter(0)
 
 ################################################################################
 
