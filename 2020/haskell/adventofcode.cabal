@@ -56,7 +56,6 @@ executable aoc2020
     , directory
     , split
     , time
-    , timeit
   default-language: Haskell2010
 
 test-suite aoc2020test

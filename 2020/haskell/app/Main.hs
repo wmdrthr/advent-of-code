@@ -1,13 +1,15 @@
 module Main where
 
-import System.Directory    (doesFileExist)
-import System.Environment  (getArgs)
-import System.TimeIt       (timeIt)
-import Text.Printf         (printf)
-import Data.Time.Clock     (getCurrentTime)
-import Data.Time.Calendar  (toGregorian)
+import System.Directory       (doesFileExist)
+import System.Environment     (getArgs)
+import System.CPUTime         (getCPUTime)
+import Text.Printf            (printf)
+import Data.Time.Clock        (getCurrentTime)
+import Data.Time.Calendar     (toGregorian)
 import Data.Time.LocalTime
-import Control.Applicative (liftA)
+import Control.Applicative    (liftA)
+import Control.Monad.IO.Class (MonadIO(liftIO))
+
 
 import AdventOfCode
 import ReportRepair       (day01)
@@ -66,6 +68,14 @@ getDay = do
       return currentDay
 
 
+formatElapsedTime :: Integral t => t -> String
+formatElapsedTime elapsed = let t :: Double
+                                t = fromIntegral elapsed in
+                              formatTime t ["ps", "ns", "us", "ms", "s"]
+  where formatTime t units
+          | t >= 1000.0 = formatTime (t / 1000.0) (tail units)
+          | otherwise   = printf "Elapsed: %4.2f %s" t (head units)
+
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
@@ -86,4 +96,8 @@ main :: IO ()
 main = do
   day <- getDay
   input <- getInput day
-  timeIt $ solve day (trim input)
+  start <- liftIO getCPUTime
+  res <- solve day (trim input)
+  end <- liftIO getCPUTime
+  putStrLn $ formatElapsedTime (end - start)
+  return res

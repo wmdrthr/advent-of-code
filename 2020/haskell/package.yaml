@@ -27,7 +27,6 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - adventofcode
-      - timeit
       - directory
       - time
       - split
