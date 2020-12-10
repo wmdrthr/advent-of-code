@@ -9,8 +9,10 @@ from datetime import datetime
 import collections
 import itertools
 import hashlib
+import functools
 
 import requests
+import networkx as nx
 
 YEAR  = 2015
 
@@ -229,6 +231,195 @@ def solve5(data):
     strings = data.split('\n')
     yield len([string for string in strings if nice(string, ruleset1)])
     yield len([string for string in strings if nice(string, ruleset2)])
+
+@with_solutions(400410, 15343601)
+def solve6(data):
+
+    # Probably a Fire Hazard
+
+    def gen_points(topx, topy, bottomx, bottomy):
+
+        for y in range(topy, bottomy+1):
+            for x in range(topx, bottomx+1):
+                yield (x, y)
+
+    instructions = []
+    for instr in data.split('\n'):
+        parts = instr.split(' ')
+        if len(parts) == 4:
+            command, top, _, bottom = parts
+        else:
+            a, b, top, _, bottom = parts
+            command = f'{a} {b}'
+        topx, topy = [int(v) for v in top.split(',')]
+        bottomx, bottomy = [int(v) for v in bottom.split(',')]
+        instructions.append((command, topx, topy, bottomx, bottomy))
+
+
+    # Part 1
+    lights = [[False for _ in range(1000)] for _ in range(1000)]
+
+    for command, topx, topy, bottomx, bottomy in instructions:
+        for px, py in gen_points(topx, topy, bottomx, bottomy):
+            if command == 'turn on':
+                lights[py][px] = True
+            elif command == 'turn off':
+                lights[py][px] = False
+            else:
+                lights[py][px] = not lights[py][px]
+
+    yield sum([1 for y in range(1000) for x in range(1000) if lights[y][x]])
+
+    # Part 2
+    lights = [[0 for _ in range(1000)] for _ in range(1000)]
+
+    for command, topx, topy, bottomx, bottomy in instructions:
+        for px, py in gen_points(topx, topy, bottomx, bottomy):
+            if command == 'turn on':
+                lights[py][px] += 1
+            elif command == 'turn off':
+                if lights[py][px] > 0:
+                    lights[py][px] -= 1
+            else:
+                lights[py][px] += 2
+
+    yield sum([lights[y][x] for y in range(1000) for x in range(1000)])
+
+@with_solutions(3176, 14710)
+def solve7(data):
+
+    # Some Assembly Required
+
+    wiring = {}
+    for line in sorted(data.split('\n'), key = lambda l: len(l)):
+        left, wire = line.split(' -> ')
+        instr = left.split(' ')
+        wiring[wire] = instr
+
+    signals = {}
+
+    def get_signal(wire):
+
+        if wire in signals:
+            return signals[wire]
+        if wire in '01':
+            return int(wire)
+        signal = 0
+
+        instr = wiring[wire]
+        if len(instr) == 1:
+            try:
+                signal = int(instr[0])
+            except ValueError:
+                signal = get_signal(instr[0])
+        elif len(instr) == 2 and instr[0] == 'NOT':
+            signal = ~get_signal(instr[1]) & 0xffff
+        elif len(instr) == 3:
+            x, instr, y = instr
+            if instr == 'AND':
+                 signal = get_signal(x) & get_signal(y)
+            elif instr == 'OR':
+                signal = get_signal(x) | get_signal(y)
+            elif instr == 'LSHIFT':
+                signal = get_signal(x) << int(y)
+            elif instr == 'RSHIFT':
+                signal = get_signal(x) >> int(y)
+        else:
+            raise Exception('world gone mad')
+
+        signals[wire] = signal
+        return signal
+
+    wire_a = get_signal('a')
+    yield wire_a
+
+    signals = {}
+    wiring['b'] = [str(wire_a)]
+    yield get_signal('a')
+
+@with_solutions(1350, 2085)
+def solve8(data):
+
+    # Matchsticks
+
+    strings = data.split('\n')
+
+    # Part 1
+    code, memory = 0, 0
+    for string in strings:
+        code += len(string)
+        memory += len(eval(string))
+
+    yield (code - memory)
+
+    # Part 1
+    encoded, original = 0, 0
+    for string in strings:
+        encoded += 2
+        original += len(string)
+        for c in string:
+            if c in r'\"':
+                encoded += 2
+            else:
+                encoded += 1
+    yield (encoded - original)
+
+@with_solutions(117, 909)
+def solve9(data):
+
+    # All in a Single Night
+
+    G = nx.Graph()
+    for line in data.split('\n'):
+        start, _, end, _, distance = line.split(' ')
+        G.add_edge(start, end, distance=int(distance))
+
+    def all_routes():
+        for start, end in itertools.combinations(G.nodes(), 2):
+            for path in nx.all_simple_edge_paths(G, start, end):
+                if len(path) == len(G.nodes()) - 1:
+                    yield path
+            for path in nx.all_simple_edge_paths(G, end, start):
+                if len(path) == len(G.nodes()) - 1:
+                    yield path
+
+    yield min([sum([G[a][b]['distance'] for (a,b) in route]) for route in all_routes()])
+    yield max([sum([G[a][b]['distance'] for (a,b) in route]) for route in all_routes()])
+
+@with_solutions(252594, 3579328)
+def solve10(data):
+
+    # Elves Look, Elves Say
+
+    def look_and_say(sequence):
+
+        if len(sequence) == 1:
+            sequence = sequence[0] * 2
+            return sequence
+
+        output = []
+        current = [sequence[0]]
+        for pair in zip(sequence, sequence[1:]):
+            if pair[0] == pair[1]:
+                current.append(pair[1])
+            else:
+                output.append(current)
+                current = [pair[1]]
+
+        if len(current) > 0:
+            output.append(current)
+
+        return ''.join([str(len(c)) + c[0] for c in output])
+
+    sequence = data
+    for _ in range(40):
+        sequence = look_and_say(sequence)
+    yield len(sequence)
+
+    for _ in range(10):
+        sequence = look_and_say(sequence)
+    yield len(sequence)
+
 
 ################################################################################
 
