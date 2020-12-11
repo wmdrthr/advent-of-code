@@ -159,20 +159,46 @@ ORIGIN = (0, 0)
 def manhattan(a, b = ORIGIN):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
-               '↓' : [( 0,  1), ['→', '←'], 2],
-               '←' : [(-1,  0), ['↓', '↑'], 3],
-               '→' : [( 1,  0), ['↑', '↓'], 4]}
+DIRECTIONS = { '↑' : ( 0, -1),
+               '↓' : ( 0,  1),
+               '←' : (-1,  0),
+               '→' : ( 1,  0),
+               '↖' : (-1, -1),
+               '↗' : ( 1, -1),
+               '↘' : ( 1,  1),
+               '↙' : (-1,  1)}
 
 def move(point, direction):
-    (dx, dy) = DIRECTIONS[direction][0]
+    (dx, dy) = DIRECTIONS[direction]
     return (point[0] + dx, point[1] + dy)
 
-def neighbors(point):
+def neighbors(_, point, rows, cols):
     for dir in DIRECTIONS:
-        dx, dy = DIRECTIONS[dir][0]
-        yield (dir, (point[0] + dx, point[1] + dy))
+        dx, dy = DIRECTIONS[dir]
+        if 0 <= point[0] + dx < cols and 0 <= point[1] + dy < rows:
+            yield (dir, (point[0] + dx, point[1] + dy))
 
+def raytraced_neighbors(grid, point, rows, cols):
+    for dir in DIRECTIONS:
+        dx, dy = DIRECTIONS[dir]
+        for n in itertools.count(1):
+            new_point = (point[0] + (dx * n), point[1] + (dy * n))
+            if 0 <= new_point[0] < cols and 0 <= new_point[1] < rows:
+                if grid[new_point] != 0:
+                    yield (dir, new_point)
+                    break
+            else:
+                break
+
+def display(grid, rows, cols, tiles):
+    # Given a dict representing a point grid, print the grid, using
+    # the given tileset.
+
+    for y in range(rows):
+        row = []
+        for x in range(cols):
+            row.append(tiles[grid[(x, y)]])
+        print(''.join(row))
 
 
 ################################################################################
@@ -507,6 +533,51 @@ def solve10(data):
         return count
 
     yield find_next_adapter(0)
+
+@with_solutions(2481, 2227)
+def solve11(data):
+
+    # Seating System
+    data = data.split('\n')
+    rows, cols = len(data), len(data[0])
+    data = {(x, y):1 for y,l in enumerate(data)
+            for x,c in enumerate(l) if c == 'L'}
+    grid = collections.defaultdict(int, data)
+
+    def step(current_grid, neighbor_function, max_occupancy):
+        newgrid = collections.defaultdict(int, current_grid)
+        changes = 0
+        for y in range(rows):
+            for x in range(cols):
+                point = (x, y)
+                if current_grid[point] == 1:
+                    for (_, p) in neighbor_function(current_grid, point, rows, cols):
+                        if current_grid[p] == 2:
+                            break
+                    else:
+                        newgrid[point] = 2
+                        changes += 1
+                elif grid[point] == 2:
+                    if sum([1 for (_, p) in neighbor_function(current_grid, point, rows, cols)
+                            if current_grid[p] == 2]) >= max_occupancy:
+                        newgrid[point] = 1
+                        changes += 1
+        return newgrid, changes
+
+    # Part 1
+    while True:
+        grid, changes = step(grid, neighbors, 4)
+        if changes == 0:
+            yield len([p for p,v in grid.items() if v == 2])
+            break
+
+    # Part 2
+    grid = collections.defaultdict(int, data)
+    while True:
+        grid, changes = step(grid, raytraced_neighbors, 5)
+        if changes == 0:
+            yield len([p for p,v in grid.items() if v == 2])
+            break
 
 ################################################################################
 
