@@ -22,6 +22,7 @@ pub mod handyhaversacks;
 pub mod handheldhalting;
 pub mod encodingerror;
 pub mod adapterarray;
+pub mod seatingsystem;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -80,6 +81,7 @@ fn run(day: u8, data: String) {
         8  => { handheldhalting::solve(data);               }
         9  => { encodingerror::solve(data);                 }
         10 => { adapterarray::solve(data);                  }
+        11 => { seatingsystem::solve(data);                 }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
