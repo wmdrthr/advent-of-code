@@ -21,6 +21,7 @@ pub mod customcustoms;
 pub mod handyhaversacks;
 pub mod handheldhalting;
 pub mod encodingerror;
+pub mod adapterarray;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -69,16 +70,17 @@ fn get_data(day: u8) -> io::Result<String> {
 fn run(day: u8, data: String) {
 
     match day {
-        1 => { reportrepair::solve(data);                  }
-        2 => { passwordphilosophy::solve(data);            }
-        3 => { toboggantrajectory::solve(data);            }
-        4 => { passportprocessing::solve(data);            }
-        5 => { binaryboarding::solve(data);                }
-        6 => { customcustoms::solve(data);                 }
-        7 => { handyhaversacks::solve(data);               }
-        8 => { handheldhalting::solve(data);               }
-        9 => { encodingerror::solve(data);                 }
-        _ => { println!("no solver for day {} yet.", day); }
+        1  => { reportrepair::solve(data);                  }
+        2  => { passwordphilosophy::solve(data);            }
+        3  => { toboggantrajectory::solve(data);            }
+        4  => { passportprocessing::solve(data);            }
+        5  => { binaryboarding::solve(data);                }
+        6  => { customcustoms::solve(data);                 }
+        7  => { handyhaversacks::solve(data);               }
+        8  => { handheldhalting::solve(data);               }
+        9  => { encodingerror::solve(data);                 }
+        10 => { adapterarray::solve(data);                  }
+        _  => { println!("no solver for day {} yet.", day); }
     }
 }
 
