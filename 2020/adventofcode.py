@@ -159,28 +159,44 @@ ORIGIN = (0, 0)
 def manhattan(a, b = ORIGIN):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-DIRECTIONS = { '↑' : ( 0, -1),
-               '↓' : ( 0,  1),
-               '←' : (-1,  0),
-               '→' : ( 1,  0),
-               '↖' : (-1, -1),
-               '↗' : ( 1, -1),
-               '↘' : ( 1,  1),
-               '↙' : (-1,  1)}
+DIRECTIONS = { '↑' : (( 0, -1), ('←', '→')),
+               '↓' : (( 0,  1), ('→', '←')),
+               '←' : ((-1,  0), ('↓', '↑')),
+               '→' : (( 1,  0), ('↑', '↓')),
+               '↖' : ((-1, -1), ('←', '↑')),
+               '↗' : (( 1, -1), ('↑', '→')),
+               '↘' : (( 1,  1), ('→', '↓')),
+               '↙' : ((-1,  1), ('↓', '←'))}
 
-def move(point, direction):
-    (dx, dy) = DIRECTIONS[direction]
-    return (point[0] + dx, point[1] + dy)
+def move(point, direction, distance = 1):
+    (dx, dy) = DIRECTIONS[direction][0]
+    return (point[0] + (dx * distance), point[1] + (dy * distance))
+
+def turn(heading, direction, angle):
+    for _ in range(angle // 90):
+        if direction == 'L':
+            heading = DIRECTIONS[heading][1][0]
+        elif direction == 'R':
+            heading = DIRECTIONS[heading][1][1]
+    return heading
+
+def rotate(position, direction, angle):
+    for _ in range(angle // 90):
+        if direction == 'L':
+            position = (position[1], -1 * position[0])
+        elif direction == 'R':
+            position = (-1 * position[1], position[0])
+    return position
 
 def neighbors(_, point, rows, cols):
     for dir in DIRECTIONS:
-        dx, dy = DIRECTIONS[dir]
+        dx, dy = DIRECTIONS[dir][0]
         if 0 <= point[0] + dx < cols and 0 <= point[1] + dy < rows:
             yield (dir, (point[0] + dx, point[1] + dy))
 
 def raytraced_neighbors(grid, point, rows, cols):
     for dir in DIRECTIONS:
-        dx, dy = DIRECTIONS[dir]
+        dx, dy = DIRECTIONS[dir][0]
         for n in itertools.count(1):
             new_point = (point[0] + (dx * n), point[1] + (dy * n))
             if 0 <= new_point[0] < cols and 0 <= new_point[1] < rows:
@@ -578,6 +594,49 @@ def solve11(data):
         if changes == 0:
             yield len([p for p,v in grid.items() if v == 2])
             break
+
+@with_solutions(439, 12385)
+def solve12(data):
+
+    # Rain Risk
+
+    compass_directions = {'N':'↑', 'S':'↓', 'E':'→', 'W':'←'}
+
+    # Part 1
+    heading, position = compass_directions['E'], ORIGIN
+    for line in data.split('\n'):
+        command = line[0]
+        value = int(line[1:])
+
+        if command == 'F':
+            position = move(position, heading, value)
+        elif command in 'NSEW':
+            position = move(position, compass_directions[command], value)
+        elif command in 'LR':
+            heading = turn(heading, command, value)
+        else:
+            raise Exception("invalid input")
+
+    print(manhattan(position))
+
+    # Part 2
+    heading, position = compass_directions['E'], ORIGIN
+    waypoint = (10, -1)
+    for line in data.split('\n'):
+        command = line[0]
+        value = int(line[1:])
+
+        if command == 'F':
+            position = move(position, compass_directions['E'], waypoint[0] * value)
+            position = move(position, compass_directions['N'], waypoint[1] * value)
+        elif command in 'NSEW':
+            waypoint = move(waypoint, compass_directions[command], value)
+        elif command in 'LR':
+            waypoint = rotate(waypoint, command, value)
+        else:
+            raise Exception("invalid input")
+
+    print(manhattan(position))
 
 ################################################################################
 
