@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e2d9e0e6da5507b5347c0cd2781e08aa6e21b27787868f74b7cad9de1233a2a9
+-- hash: 38e0c2c9b93262bdd8044bd8cff3e968692c2d770783f1947a52a7cb19b65cce
 
 name:           adventofcode
 version:        2020.0.0
@@ -30,6 +30,7 @@ library
       HandyHaversacks
       PassportProcessing
       PasswordPhilosophy
+      RainRisk
       ReportRepair
       TobogganTrajectory
   other-modules:
@@ -71,6 +72,7 @@ test-suite aoc2020test
       HandyHaversacksSpec
       PassportProcessingSpec
       PasswordPhilosophySpec
+      RainRiskSpec
       ReportRepairSpec
       TobogganTrajectorySpec
       Paths_adventofcode

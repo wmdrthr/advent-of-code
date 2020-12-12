@@ -23,6 +23,8 @@ import HandheldHalting    (day08)
 import EncodingError      (day09)
 import AdapterArray       (day10)
 
+import RainRisk           (day12)
+
 loadFile :: FilePath -> IO String
 loadFile filename = do
   fileExists <- doesFileExist filename
@@ -89,6 +91,7 @@ solve  7 = day07 . lines
 solve  8 = day08 . lines
 solve  9 = day09 . parseInputNumbers
 solve 10 = day10 . parseInputNumbers
+solve 12 = day12 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 
