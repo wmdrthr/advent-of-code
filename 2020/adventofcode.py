@@ -13,7 +13,7 @@ import functools
 import pytz
 import requests
 
-YEAR  = 2020
+YEAR = 2020
 
 SESSIONID_FILE = '~/.config/adventofcode/session'
 USER_AGENT     = 'wmdrthr/advent-of-code'
@@ -637,6 +637,39 @@ def solve12(data):
             raise Exception("invalid input")
 
     print(manhattan(position))
+
+@with_solutions(3606, 379786358533423)
+def solve13(data):
+
+    # Shuttle Search
+
+    data = data.split('\n')
+    start_ts = int(data[0])
+    buses = [int(x) for x in data[1].split(',') if x != 'x']
+
+    def shortest_delay():
+        for ts in itertools.count(start_ts):
+            for bus in buses:
+                if (ts + 1) % bus == 0:
+                    delay = (ts + 1) - start_ts
+                    return delay * bus
+
+    yield shortest_delay()
+
+    def chinese_remainder(pairs):
+        total = 0
+        product = 1
+        for _,busid in pairs:
+            product *= busid
+        for idx, busid in pairs:
+            d = product // busid
+            total += idx * d * pow(d, busid - 2, busid)
+            total %= product
+        return total
+
+    buses = [(int(n) - i, int(n)) for (i, n) in enumerate(data[1].split(',')) if n != 'x']
+
+    yield chinese_remainder(buses)
 
 ################################################################################
 
