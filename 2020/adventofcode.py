@@ -671,6 +671,61 @@ def solve13(data):
 
     yield chinese_remainder(buses)
 
+@with_solutions(14925946402938, 3706820676200)
+def solve14(data):
+
+    # Docking Data
+
+    memory = collections.defaultdict(int)
+
+    # Part 1
+    and_mask = or_mask = None
+    for line in data.split('\n'):
+        if line.startswith('mask'):
+            line = line.strip()
+            or_mask = int(line[7:].replace('X', '0'), 2)
+            and_mask = int(line[7:].replace('X', '1'), 2)
+        else:
+            address, value = line.split(' = ')
+            address = int(address[4:-1])
+            value = int(value)
+            value = (value | or_mask) & and_mask
+            memory[address] = value
+
+    def floating_addresses(pos, mask):
+        if not mask:
+            yield 0
+        else:
+            if mask[-1] == '0':
+                for a in floating_addresses(pos // 2, mask[:-1]):
+                    yield 2*a + pos % 2
+            elif mask[-1] == '1':
+                for a in floating_addresses(pos // 2, mask[:-1]):
+                    yield 2*a + 1
+            elif mask[-1] == 'X':
+                for a in floating_addresses(pos // 2, mask[:-1]):
+                    yield 2*a + 0
+                    yield 2*a + 1
+
+    yield sum(memory.values())
+
+    # Part 2
+    memory.clear()
+    mask = None
+    for line in data.split('\n'):
+        if line.startswith('mask'):
+            line = line.strip()
+            mask = line[7:].strip()
+        else:
+            address, value = line.split(' = ')
+            address = int(address[4:-1])
+            value = int(value)
+            for addr in floating_addresses(address, mask):
+                memory[addr] = value
+
+    print(sum(memory.values()))
+
+
 ################################################################################
 
 if __name__ == '__main__':
