@@ -26,6 +26,7 @@ pub mod seatingsystem;
 pub mod rainrisk;
 pub mod shuttlesearch;
 pub mod dockingdata;
+pub mod rambunctiousrecitation;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -88,6 +89,7 @@ fn run(day: u8, data: String) {
         12 => { rainrisk::solve(data);                      }
         13 => { shuttlesearch::solve(data);                 }
         14 => { dockingdata::solve(data);                   }
+        15 => { rambunctiousrecitation::solve(data);        }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::slice::Iter;
 use self::Direction::*;
+use std::io::{stdout, Write};
 
 type Position = (usize, usize);
 
@@ -270,6 +271,10 @@ pub fn solve(data: String) {
     let layout = SeatingLayout::from(data);
 
     println!("Part 1: {}", solve11a(layout.clone()));
+    if cfg!(debug_assertions) {
+        println!("Part 2 is going to take some time.");
+        stdout().flush().unwrap();
+    }
     println!("Part 2: {}", solve11b(layout));
 }
 
@@ -310,5 +315,16 @@ mod tests {
 
         assert_eq!(solve11a(layout.clone()), 37);
         assert_eq!(solve11b(layout), 26);
+    }
+
+    #[test]
+    fn solution() {
+        let input = load_input_file("../inputs/input11.txt");
+        let layout = SeatingLayout::from(input);
+
+        assert_eq!(solve11a(layout.clone()), 2481);
+        if cfg!(feature="slow_tests") {
+            assert_eq!(solve11b(layout), 2227);
+        }
     }
 }
