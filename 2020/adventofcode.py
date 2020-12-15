@@ -725,6 +725,30 @@ def solve14(data):
 
     print(sum(memory.values()))
 
+@with_solutions(706, 19331)
+def solve15(data):
+
+    # Rambunctious Recitation
+
+    numbers = [int(v) for v in data.split(',')]
+
+    def memory_game(limit):
+        history = {n:i for i,n in enumerate(numbers)}
+        last_number = numbers[-1]
+        for turn in range(len(numbers), limit):
+            try:
+                last_turn = history[last_number]
+                number = turn - last_turn - 1
+            except KeyError:
+                number = 0
+            history[last_number] = turn - 1
+            last_number = number
+
+        return number
+
+    yield memory_game(2020)
+    yield memory_game(30000000)
+
 
 ################################################################################
 
