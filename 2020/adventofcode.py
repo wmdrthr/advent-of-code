@@ -692,6 +692,9 @@ def solve14(data):
             value = (value | or_mask) & and_mask
             memory[address] = value
 
+    yield sum(memory.values())
+
+    # Part 2
     def floating_addresses(pos, mask):
         if not mask:
             yield 0
@@ -707,9 +710,6 @@ def solve14(data):
                     yield 2*a + 0
                     yield 2*a + 1
 
-    yield sum(memory.values())
-
-    # Part 2
     memory.clear()
     mask = None
     for line in data.split('\n'):
