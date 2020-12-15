@@ -24,6 +24,7 @@ pub mod encodingerror;
 pub mod adapterarray;
 pub mod seatingsystem;
 pub mod rainrisk;
+pub mod shuttlesearch;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -84,6 +85,7 @@ fn run(day: u8, data: String) {
         10 => { adapterarray::solve(data);                  }
         11 => { seatingsystem::solve(data);                 }
         12 => { rainrisk::solve(data);                      }
+        13 => { shuttlesearch::solve(data);                 }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
