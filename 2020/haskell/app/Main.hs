@@ -24,6 +24,7 @@ import EncodingError      (day09)
 import AdapterArray       (day10)
 
 import RainRisk           (day12)
+import ShuttleSearch      (day13)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -92,6 +93,7 @@ solve  8 = day08 . lines
 solve  9 = day09 . parseInputNumbers
 solve 10 = day10 . parseInputNumbers
 solve 12 = day12 . lines
+solve 13 = day13 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

@@ -665,8 +665,7 @@ def solve13(data):
         for idx, busid in pairs:
             d = product // busid
             total += idx * d * pow(d, busid - 2, busid)
-            total %= product
-        return total
+        return total % product
 
     buses = [(int(n) - i, int(n)) for (i, n) in enumerate(data[1].split(',')) if n != 'x']
 

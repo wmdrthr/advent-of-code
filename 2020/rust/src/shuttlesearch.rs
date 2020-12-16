@@ -26,7 +26,6 @@ fn solve13a(input: String) -> u64 {
 
 fn mod_pow(mut base: i64, mut exp: i64, modulus: i64) -> i64 {
 
-
     if exp == 0 {
         return 1;
     }
@@ -41,6 +40,7 @@ fn mod_pow(mut base: i64, mut exp: i64, modulus: i64) -> i64 {
         exp = exp / 2;
         base = base * base % modulus
     }
+
     result
 }
 
