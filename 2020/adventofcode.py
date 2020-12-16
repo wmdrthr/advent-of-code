@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import itertools
 import collections
 import functools
+import math
 
 import pytz
 import requests
@@ -748,6 +749,67 @@ def solve15(data):
 
     yield memory_game(2020)
     yield memory_game(30000000)
+
+
+@with_solutions(23954, 453459307723)
+def solve16(data):
+
+    # Ticket Translation
+
+    data = data.split('\n')
+
+    rules = collections.defaultdict(set)
+
+    idx = 0
+    while True:
+        line = data[idx].strip()
+        if line == '':
+            break
+        field, values = line.split(':')
+        for rule in values.split(' or '):
+            a,b = [int(v) for v in rule.strip().split('-')]
+            rules[field].update(x for x in range(a, b+1))
+        idx += 1
+
+    idx += 2
+    line = data[idx].strip()
+    my_ticket = [int(v) for v in line.split(',')]
+
+    tickets = []
+    idx += 3
+    while idx < len(data):
+        line = data[idx].strip()
+        tickets.append([int(v) for v in line.split(',')])
+        idx += 1
+
+    # Part 1
+    all_valid_values = {x for value in rules.values() for x in value}
+    invalid_values = [t for ticket in tickets for t in ticket if t not in all_valid_values]
+    yield sum(invalid_values)
+
+    # Part 2
+    valid_tickets = [ticket for ticket in tickets if set(ticket).issubset(all_valid_values)]
+
+    matched_rules = [None] * len(my_ticket)
+    while None in matched_rules:
+        for rule_key, rule_values in rules.items():
+            if rule_key in matched_rules:
+                continue
+            possible_rules = set()
+            for idx, key in enumerate(matched_rules):
+                if key is not None:
+                    continue
+                for ticket in valid_tickets:
+                    if ticket[idx] not in rule_values:
+                        break
+                else:
+                    possible_rules.add(idx)
+            if len(possible_rules) == 1:
+                matched_rules[possible_rules.pop()] = rule_key
+                break
+
+    values = [my_ticket[idx] for idx,name in enumerate(matched_rules) if name.startswith('departure')]
+    yield math.prod(values)
 
 
 ################################################################################
