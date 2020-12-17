@@ -1,6 +1,6 @@
 module BinaryBoarding where
 
-import Data.Bool (bool)
+import AdventOfCode
 import Data.List (sort)
 
 translate :: Char -> Bool
@@ -8,9 +8,6 @@ translate 'F' = False
 translate 'B' = True
 translate 'L' = False
 translate 'R' = True
-
-bin2Dec :: [Bool] -> Int
-bin2Dec = foldl (\a -> (+) (2*a) . bool 0 1) 0
 
 getSeatId :: String -> Int
 getSeatId = bin2Dec . map translate

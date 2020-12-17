@@ -25,6 +25,7 @@ import AdapterArray       (day10)
 import SeatingSystem      (day11)
 import RainRisk           (day12)
 import ShuttleSearch      (day13)
+import DockingData        (day14)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -95,6 +96,7 @@ solve 10 = day10 . parseInputNumbers
 solve 11 = day11
 solve 12 = day12 . lines
 solve 13 = day13 . lines
+solve 14 = day14 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

@@ -4,6 +4,7 @@ import Data.List        (maximumBy, dropWhileEnd)
 import Data.List.Split  (splitOn)
 import Data.Ord         (comparing)
 import Data.Char        (isSpace)
+import Data.Bool        (bool)
 
 import qualified Data.Map.Strict as M
 
@@ -122,3 +123,8 @@ substring start end string = take (end - start) (drop start string)
 -- "foo"
 trim :: String -> String
 trim = dropWhileEnd isSpace . dropWhile isSpace
+
+
+-- Convert binary to decimal
+bin2Dec :: [Bool] -> Int
+bin2Dec = foldl (\a -> (+) (2*a) . bool 0 1) 0
