@@ -816,6 +816,43 @@ def solve16(data):
     yield math.prod(values)
 
 
+@with_solutions(391, 2264)
+def solve17(data):
+
+    # Conway Cubes
+
+    def step(active_cubes, dimensions):
+        neighbors = collections.defaultdict(int)
+        for cube in active_cubes:
+            for offset in itertools.product(range(-1,2), repeat=dimensions):
+                if offset == (0,) * dimensions:
+                    continue
+                neighbors[tuple(x + y for x, y in zip(cube, offset))] += 1
+        new_active_cubes = set()
+        for cube, count in neighbors.items():
+            if cube in active_cubes:
+                if count == 2 or count == 3:
+                    new_active_cubes.add(cube)
+            elif count == 3:
+                new_active_cubes.add(cube)
+
+        return new_active_cubes
+
+    cubes = {(x, y, 0) for y,l in enumerate(data.split('\n'))
+            for x,c in enumerate(l) if c == '#'}
+    for _ in range(6):
+        cubes = step(cubes, 3)
+
+    yield len(cubes)
+
+    cubes = {(x, y, 0, 0) for y,l in enumerate(data.split('\n'))
+            for x,c in enumerate(l) if c == '#'}
+    for _ in range(6):
+        cubes = step(cubes, 4)
+
+    yield len(cubes)
+
+
 ################################################################################
 
 if __name__ == '__main__':
