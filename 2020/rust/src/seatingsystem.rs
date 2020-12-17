@@ -198,7 +198,6 @@ fn step(layout: SeatingLayout,
 
     for y in 0..layout.rows {
         for x in 0..layout.columns {
-            //println!("Checking {},{}", x, y);
             if layout.grid.get(&(x, y)).unwrap() == &Seat::Empty {
                 let mut empty_neighbors: u32 = 0;
                 let mut total_neighbors: u32 = 0;
