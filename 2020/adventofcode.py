@@ -86,7 +86,6 @@ def format_elapsed_time(elapsed):
             continue
         return f'Elapsed: {elapsed:4.3f} {unit}'
 
-
 def with_solutions(*expected):
     def wrapper(f):
         error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
@@ -551,10 +550,12 @@ def solve10(data):
 
     yield find_next_adapter(0)
 
+
 @with_solutions(2481, 2227)
 def solve11(data):
 
     # Seating System
+
     data = data.split('\n')
     rows, cols = len(data), len(data[0])
     data = {(x, y):1 for y,l in enumerate(data)
@@ -595,6 +596,7 @@ def solve11(data):
         if changes == 0:
             yield len([p for p,v in grid.items() if v == 2])
             break
+
 
 @with_solutions(439, 12385)
 def solve12(data):
@@ -639,6 +641,7 @@ def solve12(data):
 
     print(manhattan(position))
 
+
 @with_solutions(3606, 379786358533423)
 def solve13(data):
 
@@ -670,6 +673,7 @@ def solve13(data):
     buses = [(int(n) - i, int(n)) for (i, n) in enumerate(data[1].split(',')) if n != 'x']
 
     yield chinese_remainder(buses)
+
 
 @with_solutions(14925946402938, 3706820676200)
 def solve14(data):
@@ -724,6 +728,7 @@ def solve14(data):
                 memory[addr] = value
 
     print(sum(memory.values()))
+
 
 @with_solutions(706, 19331)
 def solve15(data):
