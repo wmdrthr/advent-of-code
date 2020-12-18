@@ -28,6 +28,7 @@ pub mod shuttlesearch;
 pub mod dockingdata;
 pub mod rambunctiousrecitation;
 pub mod tickettranslation;
+pub mod conwaycubes;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -92,6 +93,7 @@ fn run(day: u8, data: String) {
         14 => { dockingdata::solve(data);            }
         15 => { rambunctiousrecitation::solve(data); }
         16 => { tickettranslation::solve(data);      }
+        17 => { conwaycubes::solve(data);            }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
