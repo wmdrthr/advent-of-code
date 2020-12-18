@@ -853,6 +853,70 @@ def solve17(data):
     yield len(cubes)
 
 
+@with_solutions(11297104473091, 185348874183674)
+def solve18(data):
+
+    # Operation Order
+
+    def simple_evaluate_ltr(expr):
+
+        elements = expr.split()
+        result = int(elements[0])
+        idx = 1
+        while idx < len(elements):
+            if elements[idx] == '+':
+                idx += 1
+                result += int(elements[idx])
+            elif elements[idx] == '*':
+                idx += 1
+                result *= int(elements[idx])
+            idx += 1
+
+        return result
+
+    def simple_evaluate_am(expr):
+
+        elements = expr.split()
+        while '+' in elements:
+            idx = elements.index('+')
+            result = int(elements[idx-1]) + int(elements[idx+1])
+            elements[idx-1:idx+2] = [str(result)]
+
+        while '*' in elements:
+            idx = elements.index('*')
+            result = int(elements[idx-1]) * int(elements[idx+1])
+            elements[idx-1:idx+2] = [str(result)]
+
+        return int(elements[0])
+
+
+    def paren_evaluate(expr, evaluate):
+        if '(' not in expr:
+            return evaluate(expr)
+
+        start = expr.index('(')
+        count = 0
+        end = 0
+        for end in range(start+1, len(expr)):
+            if expr[end] == ')' and count == 0:
+                break
+            elif expr[end] == ')' and count > 0:
+                count -= 1
+            elif expr[end] == '(':
+                count += 1
+        return paren_evaluate(expr[:start] +
+                              str(paren_evaluate(expr[start+1:end], evaluate)) +
+                              expr[end+1:],
+                              evaluate)
+
+
+    sum1 = sum2 = 0
+    for expr in data.split('\n'):
+        sum1 += paren_evaluate(expr, simple_evaluate_ltr)
+        sum2 += paren_evaluate(expr, simple_evaluate_am)
+    yield sum1
+    yield sum2
+
 ################################################################################
 
 if __name__ == '__main__':
