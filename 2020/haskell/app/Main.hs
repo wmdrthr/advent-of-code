@@ -12,20 +12,21 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 
 
 import AdventOfCode
-import ReportRepair       (day01)
-import PasswordPhilosophy (day02)
-import TobogganTrajectory (day03)
-import PassportProcessing (day04)
-import BinaryBoarding     (day05)
-import CustomCustoms      (day06)
-import HandyHaversacks    (day07)
-import HandheldHalting    (day08)
-import EncodingError      (day09)
-import AdapterArray       (day10)
-import SeatingSystem      (day11)
-import RainRisk           (day12)
-import ShuttleSearch      (day13)
-import DockingData        (day14)
+import ReportRepair           (day01)
+import PasswordPhilosophy     (day02)
+import TobogganTrajectory     (day03)
+import PassportProcessing     (day04)
+import BinaryBoarding         (day05)
+import CustomCustoms          (day06)
+import HandyHaversacks        (day07)
+import HandheldHalting        (day08)
+import EncodingError          (day09)
+import AdapterArray           (day10)
+import SeatingSystem          (day11)
+import RainRisk               (day12)
+import ShuttleSearch          (day13)
+import DockingData            (day14)
+import RambunctiousRecitation (day15)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -97,6 +98,7 @@ solve 11 = day11
 solve 12 = day12 . lines
 solve 13 = day13 . lines
 solve 14 = day14 . lines
+solve 15 = day15 . parseCommaSeparatedNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

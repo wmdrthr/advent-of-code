@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1e598bf9b73855bd07beea507b82903a4ea51c42252e8cbf1e007487705532b2
+-- hash: 06b87a858cde342a61ab30085b613d230bf7d28478a7d0b703e4d58ffdc670ed
 
 name:           adventofcode
 version:        2020.0.0
@@ -32,6 +32,7 @@ library
       PassportProcessing
       PasswordPhilosophy
       RainRisk
+      RambunctiousRecitation
       ReportRepair
       SeatingSystem
       ShuttleSearch
@@ -77,6 +78,7 @@ test-suite aoc2020test
       PassportProcessingSpec
       PasswordPhilosophySpec
       RainRiskSpec
+      RambunctiousRecitationSpec
       ReportRepairSpec
       SeatingSystemSpec
       ShuttleSearchSpec
