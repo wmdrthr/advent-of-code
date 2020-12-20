@@ -917,6 +917,77 @@ def solve18(data):
     yield sum1
     yield sum2
 
+
+@with_solutions(203, 304)
+def solve19(data):
+
+    # Monster Messages
+
+    rules = {}
+    terminals = {}
+    messages = []
+    cache = {}
+
+    for line in data.split('\n'):
+        if ':' in line:
+            key, rule = line.split(': ')
+            if rule in ('"a"', '"b"'):
+                terminals[key] = rule[1]
+            else:
+                options = rule.split(' | ')
+                rules[key] = [r.split(' ') for r in options]
+        elif line:
+            messages.append(line)
+
+    def match_subrule(message, start, end, subrules):
+
+        if start == end and not subrules:
+            return True
+        if start == end or not subrules:
+            return False
+
+        result = False
+        for idx in range(start+1, end+1):
+            if match(message, start, idx, subrules[0]) and\
+               match_subrule(message, idx, end, subrules[1:]):
+                result = True
+
+        return result
+
+    def match(message, start, end, rule):
+        key = (start, end, rule)
+        if key in cache:
+            return cache[key]
+
+        result = False
+        if rule in terminals:
+            result = (message[start:end] == terminals[rule])
+        else:
+            for option in rules[rule]:
+                if match_subrule(message, start, end, option):
+                    result = True
+
+        cache[key] = result
+        return result
+
+    def check():
+        total = 0
+        for message in messages:
+            cache.clear()
+            if match(message, 0, len(message), '0'):
+                total += 1
+        return total
+
+    # Part 1
+    yield check()
+
+    # Part 2
+    rules['8'] = [['42'], ['42', '8']]
+    rules['11'] = [['42', '31'], ['42', '11', '31']]
+
+    yield check()
+
+
 ################################################################################
 
 if __name__ == '__main__':
