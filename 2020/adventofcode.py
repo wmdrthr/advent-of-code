@@ -988,6 +988,55 @@ def solve19(data):
     yield check()
 
 
+@with_solutions(2389,'fsr,skrxt,lqbcg,mgbv,dvjrrkv,ndnlm,xcljh,zbhp')
+def solve21(data):
+
+    # Allergen Assessment
+
+    foods = []
+    all_ingredients, all_allergens = set(), set()
+    for line in data.split('\n'):
+        ingredients, allergens = line.split('(contains ')
+        ingredients = set(ingredients.split())
+        allergens = set(allergens[:-1].split(', '))
+        foods.append((ingredients, allergens))
+        all_ingredients |= set(ingredients)
+        all_allergens |= set(allergens)
+
+    candidates = {i:set(all_allergens) for i in all_ingredients}
+    counter = collections.defaultdict(int)
+    for ingredients, allergens in foods:
+        for ingredient in ingredients:
+            counter[ingredient] += 1
+
+        for allergen in allergens:
+            for ingredient in all_ingredients:
+                if ingredient not in ingredients:
+                    candidates[ingredient].discard(allergen)
+
+    # Part 1
+    total = 0
+    for ingredient in all_ingredients:
+        if len(candidates[ingredient]) == 0:
+            total += counter[ingredient]
+    yield total
+
+    # Part 2
+    allergen_map = {}
+    used = set()
+
+    while len(allergen_map) < len(all_allergens):
+        for ingredient in all_ingredients:
+            possible = [a for a in candidates[ingredient] if a not in used]
+            if len(possible) == 1:
+                allergen_map[ingredient] = possible[0]
+                used.add(possible[0])
+    dangerous_ingredients = [k for k,v in sorted(allergen_map.items(), key=lambda kv:kv[1])]
+    yield ','.join(dangerous_ingredients)
+
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
