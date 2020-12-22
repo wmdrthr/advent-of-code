@@ -1036,6 +1036,72 @@ def solve21(data):
 
 
 
+@with_solutions(31455, None)
+def solve22(data):
+
+    # Crab Combat
+
+    hands = data.split('\n\n')
+    decks = [collections.deque([int(v) for v in hands[0].split('\n')[1:]]),
+             collections.deque([int(v) for v in hands[1].split('\n')[1:]])]
+
+    def score(winner):
+        return sum([card * (len(winner) - idx) for idx, card in enumerate(winner)])
+
+    def combat(deck1, deck2):
+        winner = None
+        while True:
+            card1, card2 = deck1.popleft(), deck2.popleft()
+            if card1 > card2:
+                deck1.extend([card1, card2])
+            else:
+                deck2.extend([card2, card1])
+
+            if len(deck1) == 0:
+                return deck2
+            elif len(deck2) == 0:
+                return deck1
+
+    def copy_deck(deck, n):
+        return collections.deque(list(deck)[:n])
+
+    def recursive_combat(deck1, deck2):
+        history = set()
+
+        while len(deck1) > 0 and len(deck2) > 0:
+            round_hash = (tuple(deck1), tuple(deck2))
+            if round_hash in history:
+                return 1, deck1, deck2
+            else:
+                history.add(round_hash)
+
+            card1, card2 = deck1.popleft(), deck2.popleft()
+            winner = 0
+
+            if len(deck1) >= card1 and len(deck2) >= card2:
+                winner, _, _ = recursive_combat(copy_deck(deck1, card1), copy_deck(deck2, card2))
+            elif card1 > card2:
+                winner = 1
+            else:
+                winner = 2
+
+            if winner == 1:
+                deck1.extend([card1, card2])
+            else:
+                deck2.extend([card2, card1])
+
+        if len(deck1) == 0:
+            return 2, deck1, deck2
+        else:
+            return 1, deck1, deck2
+
+    yield score(combat(*decks))
+
+    decks = [collections.deque([int(v) for v in hands[0].split('\n')[1:]]),
+             collections.deque([int(v) for v in hands[1].split('\n')[1:]])]
+    winner, *finaldecks = recursive_combat(*decks)
+    print(score(finaldecks[winner - 1]))
+
 
 ################################################################################
 
