@@ -1188,6 +1188,75 @@ def solve23(data):
     yield links[1] * links[links[1]]
 
 
+@with_solutions(512, 4120)
+def solve24(data):
+
+    # Lobby Layout
+
+    origin = (0, 0, 0)
+    directions = {'e' :(1, -1, 0), 'w' :(-1, 1, 0),
+                  'sw':(-1, 0, 1), 'se':(0, -1, 1),
+                  'nw':(0, 1, -1), 'ne':(1, 0, -1)}
+
+    def hexmove(pos, direction):
+        x, y, z = pos
+        dx, dy, dz = directions[direction]
+        return (x + dx, y + dy, z + dz)
+
+    # Part 1
+    def traverse(position, instructions):
+        if len(instructions) == 0:
+            return position
+
+        if instructions[0] in 'ew':
+            new_position = hexmove(position, instructions[0])
+            instructions = instructions[1:]
+        else:
+            new_position = hexmove(position, instructions[:2])
+            instructions = instructions[2:]
+
+        return traverse(new_position, instructions)
+
+    black_tiles = set()
+
+    for line in data.split('\n'):
+        final_position = traverse(origin, line[:])
+        if final_position in black_tiles:
+            black_tiles.remove(final_position)
+        else:
+            black_tiles.add(final_position)
+
+    yield len(black_tiles)
+
+    # Part 2
+    def step(tileset):
+        new_tileset = set()
+        check_tiles = set()
+        for tile in tileset:
+            check_tiles.add(tile)
+            check_tiles.update([hexmove(tile, d) for d in directions.keys()])
+
+        for tile in check_tiles:
+            count = 0
+            for neighbor in [hexmove(tile, d) for d in directions.keys()]:
+                if neighbor in tileset:
+                    count += 1
+            if tile in tileset and count in (1, 2):
+                new_tileset.add(tile)
+            elif tile not in tileset and count == 2:
+                new_tileset.add(tile)
+        return new_tileset
+
+    for _ in range(100):
+        black_tiles = step(black_tiles)
+
+    yield len(black_tiles)
+
+
+
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
