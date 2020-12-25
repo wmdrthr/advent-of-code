@@ -988,6 +988,45 @@ def solve19(data):
     yield check()
 
 
+@with_solutions(15006909892229, 2190)
+def solve20(data):
+
+    # Jurassic Jigsaw
+
+    ROWS, COLS = 10, 10
+
+    TILES = {}
+    for lines in data.split('\n\n'):
+        tileid = lines[5:lines.find(':')]
+        TILES[tileid] = [list(l) for l in lines.split('\n')[1:]]
+
+    EDGES = {}
+    for tileid, tilegrid in TILES.items():
+        left, right, top, bottom = [], [], [], []
+        for idx in range(ROWS):
+            left.append(tilegrid[idx][0])
+            right.append(tilegrid[idx][COLS-1])
+            top.append(tilegrid[0][idx])
+            bottom.append(tilegrid[ROWS-1][idx])
+        edges = [tuple(e) for e in [left, right, top, bottom]]
+        EDGES[tileid] = set([e for e in edges] + [tuple(reversed(e)) for e in edges])
+
+    # Part 1
+    adjacent = collections.defaultdict(set)
+    for ((t1,e1),(t2,e2)) in itertools.product(EDGES.items(), repeat=2):
+        if t1 == t2:
+            continue
+        if e1 & e2: # if edge sets of any 2 tiles intersect
+            adjacent[t1].add(t2)
+
+    product = 1
+    for tileid,_ in EDGES.items():
+        if len(adjacent[tileid]) == 2:
+            product *= int(tileid)
+
+    yield product
+
+
 @with_solutions(2389,'fsr,skrxt,lqbcg,mgbv,dvjrrkv,ndnlm,xcljh,zbhp')
 def solve21(data):
 
