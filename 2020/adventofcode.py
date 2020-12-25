@@ -1074,7 +1074,6 @@ def solve21(data):
     yield ','.join(dangerous_ingredients)
 
 
-
 @with_solutions(31455, 32528)
 def solve22(data):
 
@@ -1141,6 +1140,52 @@ def solve22(data):
     winner, *finaldecks = recursive_combat(*decks)
     yield score(finaldecks[winner - 1])
 
+
+@with_solutions('89573246', 2029056128)
+def solve23(data):
+
+    # Crab Cups
+
+    cups = [int(v) for v in data]
+
+    def solve(moves):
+
+        number_of_cups = len(cups) if moves == 100 else int(1e6)
+        links = [None for _ in range(number_of_cups + 1)]
+
+        for idx, cup in enumerate(cups):
+            links[cups[idx]] = cups[(idx + 1) % len(cups)]
+        if moves > 1e6:
+            links[cups[-1]] = len(cups) + 1
+            for idx in range(len(cups) + 1, number_of_cups + 1):
+                links[idx] = idx + 1
+            links[-1] = cups[0]
+
+        current = cups[0]
+        for _ in range(moves):
+            pickup = links[current]
+            links[current] = links[links[links[pickup]]]
+
+            dest = number_of_cups if current == 1 else current - 1
+            while dest in (pickup, links[pickup], links[links[pickup]]):
+                dest = number_of_cups if dest == 1 else dest - 1
+
+            links[links[links[pickup]]] = links[dest]
+            links[dest] = pickup
+            current = links[current]
+
+        return links
+
+    # Part 1
+    links = solve(100)
+    answer, x = [], 1
+    while (x := links[x]) != 1:
+        answer.append(x)
+    yield ''.join([str(x) for x in answer])
+
+    # Part 2
+    links = solve(int(1e7))
+    yield links[1] * links[links[1]]
 
 
 ################################################################################
