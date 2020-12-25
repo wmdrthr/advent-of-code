@@ -1253,9 +1253,25 @@ def solve24(data):
     yield len(black_tiles)
 
 
+@with_solutions(17032383, None)
+def solve25(data):
 
+    # Combo Breaker
 
+    card_public_key, door_public_key = [int(l) for l in data.split('\n')]
 
+    def transform(subject_number, loop_size = 0, public_key = None):
+        value = 1
+        for n in itertools.count():
+            value = (value * subject_number) % 20201227
+
+            if loop_size > 0 and n == loop_size:
+                return value
+            if public_key and value == public_key:
+                return n + 1
+
+    card_loop_size = transform(7, public_key=card_public_key)
+    yield pow(door_public_key, card_loop_size, 20201227)
 
 ################################################################################
 
