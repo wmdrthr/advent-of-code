@@ -1036,7 +1036,7 @@ def solve21(data):
 
 
 
-@with_solutions(31455, None)
+@with_solutions(31455, 32528)
 def solve22(data):
 
     # Crab Combat
@@ -1100,7 +1100,8 @@ def solve22(data):
     decks = [collections.deque([int(v) for v in hands[0].split('\n')[1:]]),
              collections.deque([int(v) for v in hands[1].split('\n')[1:]])]
     winner, *finaldecks = recursive_combat(*decks)
-    print(score(finaldecks[winner - 1]))
+    yield score(finaldecks[winner - 1])
+
 
 
 ################################################################################
