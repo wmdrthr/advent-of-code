@@ -5,13 +5,14 @@ import os, sys, re
 import time
 from pprint import pprint
 from datetime import datetime
-import json
 
 import collections
 import itertools
 import hashlib
 import functools
 import operator
+import json
+import math
 
 import requests
 import networkx as nx
@@ -86,14 +87,14 @@ ORIGIN = (0, 0)
 def manhattan(a, b = ORIGIN):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-DIRECTIONS = { '↑' : [( 0, -1), ['←', '→'], 1],
-               '↓' : [( 0,  1), ['→', '←'], 2],
-               '←' : [(-1,  0), ['↓', '↑'], 3],
-               '→' : [( 1,  0), ['↑', '↓'], 4],
-               '^' : [( 0, -1), ['<', '>'], 1],
-               'v' : [( 0,  1), ['>', '<'], 2],
-               '<' : [(-1,  0), ['v', '^'], 3],
-               '>' : [( 1,  0), ['^', 'v'], 4]}
+DIRECTIONS = { '↑' : (( 0, -1), ('←', '→')),
+               '↓' : (( 0,  1), ('→', '←')),
+               '←' : ((-1,  0), ('↓', '↑')),
+               '→' : (( 1,  0), ('↑', '↓')),
+               '↖' : ((-1, -1), ('←', '↑')),
+               '↗' : (( 1, -1), ('↑', '→')),
+               '↘' : (( 1,  1), ('→', '↓')),
+               '↙' : ((-1,  1), ('↓', '←'))}
 
 def move(point, direction):
     (dx, dy) = DIRECTIONS[direction][0]
@@ -123,6 +124,7 @@ def display(grid, tiles):
         for x in range(min_x, max_x + 1):
             row.append(tiles[grid[(x, y)]])
         print(''.join(row))
+    print()
 
 
 
@@ -168,6 +170,8 @@ def solve2(data):
 def solve3(data):
 
     # Perfectly Spherical Houses in a Vacuum
+
+    data = data.translate(str.maketrans('^v<>', '↑↓←→'))
 
     current = ORIGIN
     presents_counter = collections.defaultdict(int)
@@ -606,6 +610,175 @@ def solve15(data):
     yield max(map(score, recipes))
     yield max(map(lambda r: score(r, 500), recipes))
 
+@with_solutions(40, 241)
+def solve16(data):
+
+    # Aunt Sue
+
+    # Part 1
+    aunts = []
+    for line in data.split('\n'):
+        _, things = line.split(':', 1)
+        aunt = set()
+        for thing in things.split(','):
+            aunt.add(thing.strip())
+        aunts.append(aunt)
+
+    detected = set(['children: 3', 'cats: 7', 'goldfish: 5', 'trees: 3', 'cars: 2', 'perfumes: 1',
+                    'samoyeds: 2', 'pomeranians: 3', 'akitas: 0', 'vizslas: 0'])
+    for index, aunt in enumerate(aunts):
+        if aunt <= detected:
+            yield index + 1
+            break
+
+    # Part 2
+    aunts = []
+    for line in data.split('\n'):
+        _, things = line.split(':', 1)
+        aunt = {}
+        for thing in things.split(','):
+            name, count = thing.split(':')
+            aunt[name.strip()] = int(count.strip())
+        aunts.append(aunt)
+
+    detected = {'children': lambda x: x == 3,
+                'cats': lambda x: x > 7,
+                'goldfish': lambda x: x < 5,
+                'trees': lambda x: x > 3,
+                'cars': lambda x: x == 2,
+                'perfumes': lambda x: x == 1,
+                'samoyeds': lambda x: x == 2,
+                'pomeranians': lambda x: x < 3,
+                'akitas': lambda x: x == 0,
+                'vizslas': lambda x: x == 0}
+    def check(aunt):
+        for thing in aunt:
+            if not detected[thing](aunt[thing]):
+                return False
+        return True
+    for index, aunt in enumerate(aunts):
+        if check(aunt):
+            yield index + 1
+            break
+
+@with_solutions(1638, 17)
+def solve17(data):
+
+    # No Such Thing as Too Much
+
+    containers = [int(v) for v in data.split('\n')]
+    total = 150
+    #total = 25
+
+    count = 0
+    minimum, lengths = 1e6, []
+    for r in range(1, len(containers)):
+        for c in itertools.combinations(containers, r):
+            if sum(c) == total:
+                count += 1
+                lengths.append(len(c))
+                if len(c) < minimum:
+                    minimum = len(c)
+    yield count
+    yield len([c for c in lengths if c == minimum])
+
+@with_solutions(768, 781)
+def solve18(data):
+
+    # Like a GIF For Your Yard
+
+    data = data.split('\n')
+    rows, cols = len(data), len(data[0])
+    grid = collections.defaultdict(int, {(x, y):1 for y,l in enumerate(data)
+                                         for x,c in enumerate(l) if c == '#'})
+
+    def step(current_grid, stuck_leds = []):
+        new_grid = collections.defaultdict(int, current_grid)
+        for y in range(rows):
+            for x in range(cols):
+                point = (x, y)
+                if stuck_leds and point in stuck_leds:
+                    new_grid[point] = 1
+                    continue
+                adjacent = sum([current_grid[p[1]] for p in neighbors(point)])
+                if current_grid[point]:
+                    if adjacent not in (2, 3):
+                        new_grid[point] = 0
+                else:
+                    if adjacent == 3:
+                        new_grid[point] = 1
+        return new_grid
+
+    for _ in range(100):
+        grid = step(grid)
+    yield sum(grid.values())
+
+    grid = collections.defaultdict(int, {(x, y):1 for y,l in enumerate(data)
+                                         for x,c in enumerate(l) if c == '#'})
+    stuck_leds = [(0, 0), (cols - 1, 0), (0, rows - 1), (rows - 1, cols - 1)]
+    for point in stuck_leds:
+        grid[point] = 1
+
+    for _ in range(100):
+        grid = step(grid, stuck_leds)
+    yield sum(grid.values())
+
+@with_solutions(576, 207)
+def solve19(data):
+
+    # Medicine for Rudolph
+
+    lines = data.split('\n')
+    pattern = re.compile(r'(\S+) => (\S+)')
+
+    rules = []
+    for line in lines[:-2]:
+        m = pattern.findall(line)
+        rules.append(m[0])
+
+    target = lines[-1]
+
+    # Part 1
+    molecules = set()
+    for left, right in rules:
+        for i in range(len(target)):
+            if target[i:i+len(left)] == left:
+                replacement = target[:i] + right + target[i+len(left):]
+                molecules.add(replacement)
+    yield len(molecules)
+
+    # Part 2
+    molecule = target[::-1]
+    rules = {m[1][::-1]: m[0][::-1] for m in pattern.findall(data)}
+
+    count = 0
+    while molecule != 'e':
+        molecule = re.sub('|'.join(rules.keys()), lambda m: rules[m.group()], molecule, 1)
+        count += 1
+    yield count
+
+@with_solutions(665280, 705600)
+def solve20(data):
+
+    # Infinite Elves and Infinite Houses
+
+    def divisors(n):
+        for divisor in range(1, int(math.sqrt(n)) + 1):
+            if n % divisor == 0:
+                yield divisor
+                yield n / divisor
+
+    target = int(data)
+    for i in itertools.count(1):
+        if sum(divisors(i)) * 10 >= target:
+            yield i
+            break
+
+    for i in itertools.count(1):
+        if sum(d for d in divisors(i) if i / d <= 50) * 11 >= target:
+            yield i
+            break
+
 
 ################################################################################
 
@@ -614,7 +787,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         day = int(sys.argv[1])
     else:
-        day = guess_day()
+        print('Usage: %s <day>')
+        sys.exit(2)
 
     custom_data = False
     if len(sys.argv) > 2:
