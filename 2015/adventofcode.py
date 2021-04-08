@@ -5,11 +5,13 @@ import os, sys, re
 import time
 from pprint import pprint
 from datetime import datetime
+import json
 
 import collections
 import itertools
 import hashlib
 import functools
+import operator
 
 import requests
 import networkx as nx
@@ -419,6 +421,190 @@ def solve10(data):
     for _ in range(10):
         sequence = look_and_say(sequence)
     yield len(sequence)
+
+@with_solutions('hepxxyzz', 'heqaabcc')
+def solve11(data):
+
+    # Corporate Policy
+
+    def valid_password(password):
+
+        vals = [ord(c) for c in password]
+        trips = zip(vals, vals[1:], vals[2:])
+        for a,b,c in trips:
+            if a + 1 == b and b + 1 == c:
+                break
+        else:
+            return False
+
+        # Rule 2
+        chars = set(password)
+        for invalid in 'iol':
+            if invalid in chars:
+                return False
+
+        # Rule 3
+        pairs = zip(password, password[1:])
+        count = 0
+        dup = None
+        for x,y in pairs:
+            if x == y and x != dup:
+                dup = x
+                count += 1
+        if count != 2:
+            return False
+
+        return True
+
+    def next_password(password):
+
+        vals = [ord(c) for c in password]
+        index = -1
+        while True:
+            if vals[index] == 122:
+                vals[index] = 97
+                index -= 1
+            else:
+                vals[index] += 1
+                break
+
+        return ''.join([chr(v) for v in vals])
+
+    # Part 1
+    current_password = data
+    while True:
+        if valid_password(new_password := next_password(current_password)):
+            yield new_password
+            break
+        else:
+            current_password = new_password
+
+    # Part 2
+    current_password = new_password
+    while True:
+        if valid_password(new_password := next_password(current_password)):
+            yield new_password
+            break
+        else:
+            current_password = new_password
+
+@with_solutions(191164, 87842)
+def solve12(data):
+
+    # JSAbacusFramework.io
+
+    numbers = [int(match) for match in re.findall('-?\d+', data)]
+    yield sum(numbers)
+
+    def calc(expr):
+
+        if type(expr) == int:
+            return expr
+        elif type(expr) == list:
+            return sum([calc(e) for e in expr])
+        elif type(expr) != dict:
+            return 0
+        elif 'red' in expr.values():
+            return 0
+        else:
+            return calc(list(expr.values()))
+
+    yield calc(json.loads(data))
+
+@with_solutions(618, 601)
+def solve13(data):
+
+    # Knights of the Dinner Table
+
+    happiness = collections.defaultdict(dict)
+    for line in data.split('\n'):
+        words = line.split(' ')
+        a, b = words[0], words[-1][:-1] # drop period at end of each line
+        if words[2] == 'gain':
+            happiness[a][b] = int(words[3])
+        else:
+            happiness[a][b] = (-1) * int(words[3])
+
+    def calculate_happiness(order):
+        total = 0
+        for a, b in zip(order, order[1:]):
+            total += (happiness[a][b] + happiness[b][a])
+        return total
+
+    def total_happiness(host, people):
+        max_happiness = 0
+        for p in itertools.permutations(list(people)):
+            total = calculate_happiness([host] + list(p) + [host])
+            if total >= max_happiness:
+                max_happiness = total
+        return max_happiness
+
+
+    people = list(happiness.keys())
+    host = people.pop(0)
+    yield total_happiness(host, people)
+
+    people = list(happiness.keys())
+    for guest in people:
+        happiness[guest]['host'] = 0
+        happiness['host'][guest] = 0
+    yield total_happiness('host', people)
+
+@with_solutions(2655, 1059)
+def solve14(data):
+
+    # Reindeer Olympics
+
+    pattern = re.compile(r'(\w+) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.')
+    history = collections.defaultdict(list)
+    for who, speed, duration, rest in pattern.findall(data):
+        steps = itertools.cycle([int(speed)]*int(duration) + [0]*int(rest))
+        history[who] = list(itertools.accumulate(next(steps) for _ in range(2503)))
+
+    yield max(h[-1] for h in history.values())
+
+    scores = [i for a in zip(*history.values()) for i, v in enumerate(a) if v == max(a)]
+    points = max(collections.Counter(scores).values())
+    yield points
+
+@with_solutions(13882464, 11171160)
+def solve15(data):
+
+    # Science for Hungry People
+
+    pattern = re.compile(r'(\w+): capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)')
+
+    ingredients = []
+    for ing, cap, dur, fl, tx, cal in pattern.findall(data):
+        ingredients.append([int(cap), int(dur), int(fl), int(tx), int(cal)])
+
+    def mixtures(n, total):
+
+        start = total if n == 1 else 0
+
+        for i in range(start, total + 1):
+            left = total - i
+            if n - 1:
+                for y in mixtures(n - 1, left):
+                    yield [i] + y
+            else:
+                yield [i]
+
+    def score(recipe, calorie_count = 0):
+
+        n = len(ingredients)
+        capacity, durability, flavor, texture, calories = [sum([recipe[i] * ingredients[i][p] for i in range(n)])
+                                                           for p in range(5)]
+        if calorie_count and calories != 500:
+            return 0
+        if capacity <= 0 or durability <= 0 or flavor <= 0 or texture <= 0:
+            return 0
+        return capacity * durability * flavor * texture
+
+    recipes = list(mixtures(len(ingredients), 100))
+
+    yield max(map(score, recipes))
+    yield max(map(lambda r: score(r, 500), recipes))
 
 
 ################################################################################
