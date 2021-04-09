@@ -779,6 +779,220 @@ def solve20(data):
             yield i
             break
 
+@with_solutions(78, 148)
+def solve21(data):
+
+    # RPG Simulator 20XX
+
+    weapons = [(8, 4, 0), (10, 5, 0), (25, 6, 0), (40, 7, 0), (74, 8, 0)]
+    armor   = [(13, 0, 1), (31, 0, 2), (53, 0, 3), (75, 0, 4), (102, 0, 5),
+               (0, 0, 0)]
+    rings   = [(25, 1, 0), (50, 2, 0), (100, 3, 0), (20, 0, 1), (40, 0, 2), (80, 0, 3),
+               (0, 0, 0), (0, 0, 0)]
+
+    BOSS_HP, BOSS_DAMAGE, BOSS_ARMOR = [int(m) for m in re.findall('\d+', data)]
+
+    def fight(player_hp, player_damage, player_armor):
+        boss_hp = BOSS_HP
+        while True:
+            boss_hp -= max(player_damage - BOSS_ARMOR, 1)
+            if boss_hp <= 0:
+                return True
+            player_hp -= max(BOSS_DAMAGE - player_armor, 1)
+            if player_hp <= 0:
+                return False
+
+    # Part 1
+    wins = []
+    for weapon_cost, weapon_damage, _ in weapons:
+        for armor_cost, _, armor_protection in armor:
+            for ring1, ring2 in itertools.combinations(rings, 2):
+                if fight(100,
+                         weapon_damage + ring1[1] + ring2[1],
+                         armor_protection + ring1[2] + ring2[2]):
+                    wins.append(weapon_cost + armor_cost + ring1[0] + ring2[0])
+    yield min(wins)
+
+    # Part 2
+    losses = []
+    for weapon_cost, weapon_damage, _ in weapons:
+        for armor_cost, _, armor_protection in armor:
+            for ring1, ring2 in itertools.combinations(rings, 2):
+                if not fight(100,
+                             weapon_damage + ring1[1] + ring2[1],
+                             armor_protection + ring1[2] + ring2[2]):
+                    losses.append(weapon_cost + armor_cost + ring1[0] + ring2[0])
+
+    yield max(losses)
+
+@with_solutions(900, 1216)
+def solve22(data):
+
+    # Wizard Simulator 20XX
+
+    BOSS_HP, BOSS_DAMAGE = [int(m) for m in re.findall('\d+', data)]
+
+    SPELLS = { 'magic_missile': 53,
+               'drain': 73,
+               'shield': 113,
+               'poison': 173,
+               'recharge': 229}
+    EFFECTS = {'shield': 6, 'poison': 6, 'recharge': 5}
+
+    def fight(actions, part):
+
+        boss_hp = BOSS_HP
+        player_hp, player_mana, player_armor = 50, 500, 0
+        mana_spent, turn_counter = 0, 0
+        effect_counters = {'shield': 0, 'poison': 0, 'recharge': 0}
+        player_turn = True
+
+        while True:
+            if len(actions) - 1 < turn_counter:
+                return 0
+            if effect_counters['poison']:
+                effect_counters['poison'] = max(effect_counters['poison'] - 1, 0)
+                boss_hp -= 3
+            if effect_counters['shield']:
+                effect_counters['shield'] = max(effect_counters['shield'] - 1, 0)
+                player_armor = 7
+            else:
+                player_armor = 0
+            if effect_counters['recharge']:
+                effect_counters['recharge'] = max(effect_counters['recharge'] - 1, 0)
+                player_mana += 101
+
+            if player_turn:
+                if part == 2:
+                    player_hp -= 1
+                    if player_hp <= 0:
+                        return 0
+                action = actions[turn_counter]
+                player_mana -= SPELLS[action]
+                mana_spent += SPELLS[action]
+
+                if action == 'magic_missile':
+                    boss_hp -= 4
+                elif action == 'drain':
+                    boss_hp -= 2
+                    player_hp += 2
+                elif action in ('shield', 'poison', 'recharge'):
+                    if effect_counters[action]:
+                        return 0
+                    effect_counters[action] = EFFECTS[action]
+                if player_mana < 0:
+                    return 0
+            if boss_hp <= 0:
+                return mana_spent
+            if not player_turn:
+                player_hp -= max(BOSS_DAMAGE - player_armor, 1)
+                if player_hp <= 0:
+                    return 0
+            if player_turn:
+                turn_counter += 1
+            player_turn = not player_turn
+
+    ACTIONS = {'D': 'drain', 'S':'shield', 'P':'poison', 'R':'recharge', 'M':'magic_missile'}
+    actions = ['M'] * 20
+
+    def iterate_actions(pos):
+        actions[pos] = 'DSPRM'['MDSPR'.index(actions[pos])]
+        if actions[pos] == 'M':
+            if pos + 1 <= len(actions):
+                iterate_actions(pos + 1)
+
+    for part in (1, 2):
+        minimum_mana = 10000000
+        max_range = 1000 if part == 1 else 100000
+        for _ in range(max_range):
+            result = fight(list([ACTIONS[a] for a in actions]), part)
+            if result:
+                minimum_mana = min(result, minimum_mana)
+            iterate_actions(0)
+        yield minimum_mana
+
+@with_solutions(307, 160)
+def solve23(data):
+
+    # Opening the Turing Lock
+
+    program = []
+
+    for line in data.split('\n'):
+        instr, rest = line.split(' ', 1)
+        reg, offset = None, None
+        if instr in ('hlf', 'tpl', 'inc'):
+            reg = rest.strip()
+        elif instr == 'jmp':
+            offset = int(rest)
+        elif instr in ('jie', 'jio'):
+            reg, offset = rest.split(', ')
+            offset = int(offset)
+        program.append((instr, reg, offset))
+
+
+    def execute(registers):
+
+        pc = 0
+
+        while 0 <= pc < len(program):
+
+            instr, reg, offset = program[pc]
+
+            if instr == 'hlf':
+                registers[reg] //= 2
+            elif instr == 'tpl':
+                registers[reg] *= 3
+            elif instr == 'inc':
+                registers[reg] += 1
+            elif instr == 'jmp':
+                pc += offset
+                continue
+            elif instr == 'jie':
+                if registers[reg] % 2 == 0:
+                    pc += offset
+                    continue
+            elif instr == 'jio':
+                if registers[reg] == 1:
+                    pc += offset
+                    continue
+            pc += 1
+
+        return registers['b']
+
+    yield execute({'a': 0, 'b': 0})
+    yield execute({'a': 1, 'b': 0})
+
+@with_solutions(11266889531, 77387711)
+def solve24(data):
+
+    # It Hangs in the Balance
+
+    weights = [int(l) for l in data.split('\n')]
+
+    def divide(bins):
+
+        subtotal = sum(weights) // bins
+
+        for i in range(len(weights)):
+            divisions = [c for c in itertools.combinations(weights, i) if sum(c) == subtotal]
+            if not divisions:
+                continue
+            return min(functools.reduce(operator.mul, d) for d in divisions)
+
+    yield divide(3)
+    yield divide(4)
+
+@with_solutions(19980801, None)
+def solve25(data):
+
+    code_row, code_column = [int(m) for m in re.findall('\d+', data)]
+    code_index = sum(range(code_row + code_column - 1)) + code_column
+    current_code = 20151125
+    for _ in range(code_index - 1):
+        current_code = (current_code * 252533) % 33554393
+
+    yield current_code
 
 ################################################################################
 
