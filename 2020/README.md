@@ -1,9 +1,9 @@
-# Advent of Code 2019
+# Advent of Code 2020
 
 ## Progress
-![Python Progress](http://weemadarthur.metapath.org/aoc/2019/Python.svg)
-![Haskell Progress](http://weemadarthur.metapath.org/aoc/2019/Haskell.svg)
-![Rust Progress](http://weemadarthur.metapath.org/aoc/2019/Rust.svg)
+![Python Progress](http://weemadarthur.metapath.org/aoc/2020/Python.svg)
+![Haskell Progress](http://weemadarthur.metapath.org/aoc/2020/Haskell.svg)
+![Rust Progress](http://weemadarthur.metapath.org/aoc/2020/Rust.svg)
 
 ## Python
 
@@ -34,7 +34,10 @@ the haskell directory to build the project. This will download and
 install the GHC compiler, fetch and build all dependencies, then build
 the project.
 
-Run `stack run N` to run the solvers for any given day N.
+Run `stack run N` to run the solvers for any given day N. The solver
+looks for the input data in the `inputs` directory in the parent
+directory. Use the Python script to automatically download the input
+data.
 
 Run `stack test` to run the included tests for all solvers.
 
@@ -47,6 +50,9 @@ First, [install Rust](https://www.rust-lang.org/learn/get-started) and
 the cargo build tool. Once installed, run `cargo build` in the rust
 directory to build the project.
 
-Run `cargo run N`  to run the solvers for any given day N.
+Run `cargo run N`  to run the solvers for any given day N. The solver
+looks for the input data in the `inputs` directory in the parent
+directory. Use the Python script to automatically download the input
+data.
 
 Run `cargo test` to run the included tests for all solvers.

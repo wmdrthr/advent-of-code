@@ -1,0 +1,95 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 06b87a858cde342a61ab30085b613d230bf7d28478a7d0b703e4d58ffdc670ed
+
+name:           adventofcode
+version:        2020.0.0
+description:    Advent of Code 2020: Haskell Solutions
+author:         Shantanu Joshi
+maintainer:     weeemadarthur@yggdrasil.in
+copyright:      Copyright: (c) 2020 Shantanu Joshi
+license:        MIT
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://git.sr.ht/weemadarthur/advent-of-code
+
+library
+  exposed-modules:
+      AdapterArray
+      AdventOfCode
+      BinaryBoarding
+      CustomCustoms
+      DockingData
+      EncodingError
+      HandheldHalting
+      HandyHaversacks
+      PassportProcessing
+      PasswordPhilosophy
+      RainRisk
+      RambunctiousRecitation
+      ReportRepair
+      SeatingSystem
+      ShuttleSearch
+      TobogganTrajectory
+  other-modules:
+      Paths_adventofcode
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , regex-pcre
+    , split
+  default-language: Haskell2010
+
+executable aoc2020
+  main-is: Main.hs
+  other-modules:
+      Paths_adventofcode
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      adventofcode
+    , base >=4.7 && <5
+    , directory
+    , split
+    , time
+  default-language: Haskell2010
+
+test-suite aoc2020test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      AdapterArraySpec
+      AdventOfCodeSpec
+      BinaryBoardingSpec
+      CustomCustomsSpec
+      DockingDataSpec
+      EncodingErrorSpec
+      HandheldHaltingSpec
+      HandyHaversacksSpec
+      PassportProcessingSpec
+      PasswordPhilosophySpec
+      RainRiskSpec
+      RambunctiousRecitationSpec
+      ReportRepairSpec
+      SeatingSystemSpec
+      ShuttleSearchSpec
+      TobogganTrajectorySpec
+      Paths_adventofcode
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      adventofcode
+    , base >=4.7 && <5
+    , containers
+    , hspec
+  default-language: Haskell2010
