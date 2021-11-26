@@ -1,0 +1,13 @@
+[package]
+name = "adventofcode"
+version = "2021.0.0"
+authors = ["Shantanu Joshi <mail@weemadarthur.dev>"]
+
+[dependencies]
+regex = "1.5.4"
+elapsed = "0.1.2"
+chrono = "0.4.19"
+itertools = "0.10.1"
+
+[features]
+slow_tests = []

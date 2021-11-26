@@ -1,0 +1,43 @@
+name:                adventofcode
+version:             2021.0.0.0
+git:                 "https://git.sr.ht/weemadarthur/advent-of-code"
+license:             MIT
+author:              "Shantanu Joshi"
+maintainer:          "mail@weemadarthur.dev"
+copyright:           "2021 Shantanu Joshi"
+description:         "Advent of Code 2021: Haskell Solutions"
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - containers
+  - split
+
+executables:
+  aoc2021:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - adventofcode
+    - directory
+    - time
+    - split
+
+tests:
+  aoc2021test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - adventofcode
+    - hspec
