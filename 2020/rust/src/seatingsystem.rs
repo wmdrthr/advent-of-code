@@ -316,14 +316,13 @@ mod tests {
         assert_eq!(solve11b(layout), 26);
     }
 
+    #[cfg(feature="slow_tests")]
     #[test]
     fn solution() {
         let input = load_input_file("../inputs/input11.txt");
         let layout = SeatingLayout::from(input);
 
         assert_eq!(solve11a(layout.clone()), 2481);
-        if cfg!(feature="slow_tests") {
-            assert_eq!(solve11b(layout), 2227);
-        }
+        assert_eq!(solve11b(layout), 2227);
     }
 }
