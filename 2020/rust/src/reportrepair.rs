@@ -26,9 +26,10 @@ fn calculate(entries: Vec<u32>) -> (u32, u32) {
 // Day 1 : Report Repair
 pub fn solve(data: String) {
 
-    let entries: Vec<u32> = data.split("\n").
+    let mut entries: Vec<u32> = data.split("\n").
         map(|e| e.parse::<u32>().unwrap())
         .collect();
+    entries.sort_unstable();
 
     let (product1, product2) = calculate(entries);
 
