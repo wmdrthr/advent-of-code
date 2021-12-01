@@ -6,6 +6,8 @@ import time
 from pprint import pprint
 from datetime import datetime, timedelta
 
+import itertools
+
 import pytz
 import requests
 
@@ -159,7 +161,8 @@ def main():
             return 23
         end = time.monotonic_ns()
         elapsed = (end - start)
-        print(*solutions, sep='\n')
+        if solutions:
+            print(*solutions, sep='\n')
         print(format_elapsed_time(elapsed))
     else:
         print(f'No solver for day {day}')
@@ -233,6 +236,26 @@ def display(grid, rows, cols, tiles):
 
 ################################################################################
 # Solvers
+
+@with_solutions(1162, 1190)
+def solve1(data):
+
+    # Sonar Sweep
+
+    readings = [int(l) for l in data.splitlines()]
+
+    count = 0
+    for a, b in zip(readings, readings[1:]):
+        if b > a:
+            count += 1
+    yield count
+
+    count = 0
+    sums = [a + b + c for a, b, c in zip(readings, readings[1:], readings[2:])]
+    for a, b in zip(sums, sums[1:]):
+        if b > a:
+            count += 1
+    yield count
 
 
 ################################################################################
