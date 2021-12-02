@@ -258,6 +258,39 @@ def solve1(data):
     yield count
 
 
+@with_solutions(1648020, 1759818555)
+def solve2(data):
+
+    # Dive!
+
+    data = [line.split() for line in data.splitlines()]
+    course = [(move, int(val)) for move, val in data]
+
+    def navigate(using_aim):
+
+        aim, depth, position = 0, 0, 0
+
+        for move, val in course:
+            if move == 'forward':
+                position += val
+                if using_aim:
+                    depth += aim * val
+            elif move == 'down':
+                if using_aim:
+                    aim += val
+                else:
+                    depth += val
+            elif move == 'up':
+                if using_aim:
+                    aim -= val
+                else:
+                    depth -= val
+        return depth * position
+
+    yield navigate(False)
+    yield navigate(True)
+
+
 ################################################################################
 
 if __name__ == '__main__':
