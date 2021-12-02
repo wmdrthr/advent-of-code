@@ -11,6 +11,7 @@ use std::io::{self, Read};
 use chrono::prelude::*;
 
 pub mod sonarsweep;
+pub mod dive;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -60,6 +61,7 @@ fn run(day: u8, data: String) {
 
     match day {
         1  => { sonarsweep::solve(data);                    }
+        2  => { dive::solve(data);                          }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
