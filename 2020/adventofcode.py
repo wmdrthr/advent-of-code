@@ -80,38 +80,46 @@ def get_data(day):
     return data
 
 def format_elapsed_time(elapsed):
-    for unit in ['ns', 'us', 'ms', 's']:
+    for unit in ['ns', 'us', 'ms', 's', 'm']:
         if elapsed > 1000:
             elapsed /= 1000
             continue
         return f'Elapsed: {elapsed:4.3f} {unit}'
 
+
+custom_data = False
+
+class SolutionMismatch(Exception):
+    pass
+
 def with_solutions(*expected):
     def wrapper(f):
         error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
-        def wrapped_method(*args, **kwargs):
+        def wrapped_method(*args):
             fgen = f(*args)
-            try:
-                for index in range(2):
+            values = []
+            for index in range(2):
+                try:
                     actual = next(fgen)
-                    if expected[index] is not None and not kwargs['skip_verification']:
-                        if actual != expected[index]:
-                            print(error_msg.format(index + 1, expected[index], actual))
-                            sys.exit(23)
-                    print(actual)
-                return
-            except StopIteration:
-                return
-            except TypeError as e:
-                if e.args[0] == "'NoneType' object is not an iterator":
-                    return
-                else:
-                    raise e
+                except (StopIteration, TypeError) as e:
+                    if expected[index] is not None:
+                        raise SolutionMismatch(f'No solution found for part {index + 1}')
+                    if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
+                        raise e
+                    actual = None
+
+                if actual and not custom_data and expected[index] is not None:
+                    if actual != expected[index]:
+                        raise SolutionMismatch(error_msg.format(index + 1, expected[index], actual))
+                values.append(actual)
+            return tuple(values)
 
         return wrapped_method
     return wrapper
 
 def main():
+
+    global custom_data
 
     if len(sys.argv) > 1:
         day = int(sys.argv[1])
@@ -144,12 +152,49 @@ def main():
     solver = solvers.get('solve{}'.format(day), None)
     if solver is not None:
         start = time.monotonic_ns()
-        solver(data, skip_verification=custom_data)
+        try:
+            solutions = solver(data)
+        except SolutionMismatch as s:
+            print(s.args[0])
+            return 23
         end = time.monotonic_ns()
         elapsed = (end - start)
+        if solutions:
+            print(*solutions, sep='\n')
         print(format_elapsed_time(elapsed))
     else:
         print('No solver for day {}'.format(day))
+
+def test():
+
+    solvers = {}
+    solvers = dict([(fn, f) for fn, f in globals().items()
+                    if callable(f) and fn.startswith('solve')])
+
+    errors = []
+    start = time.monotonic_ns()
+    for day in range(1, 26):
+        solver = solvers.get(f'solve{day}', None)
+        if solver is not None:
+            try:
+                data = get_data(day).strip()
+                solutions = solver(data)
+                print('.', end='', flush=True)
+            except SolutionMismatch as s:
+                print('E', end='', flush=True)
+                errors.append((day, s.args[0]))
+        else:
+            print('_', end='', flush=True)
+    elapsed = (time.monotonic_ns() - start)
+
+    print()
+
+    if errors:
+        for day, error in errors:
+            print(f'Day {day} failed ({error}).')
+
+    print(f'Total elapsed time: {format_elapsed_time(elapsed)}.')
+
 
 
 ################################################################################
@@ -620,7 +665,7 @@ def solve12(data):
         else:
             raise Exception("invalid input")
 
-    print(manhattan(position))
+    yield manhattan(position)
 
     # Part 2
     heading, position = compass_directions['E'], ORIGIN
@@ -639,7 +684,7 @@ def solve12(data):
         else:
             raise Exception("invalid input")
 
-    print(manhattan(position))
+    yield manhattan(position)
 
 
 @with_solutions(3606, 379786358533423)
@@ -727,7 +772,7 @@ def solve14(data):
             for addr in floating_addresses(address, mask):
                 memory[addr] = value
 
-    print(sum(memory.values()))
+    yield sum(memory.values())
 
 
 @with_solutions(706, 19331)
@@ -1277,4 +1322,7 @@ def solve25(data):
 
 if __name__ == '__main__':
 
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        test()
+        sys.exit(0)
+    sys.exit(main())
