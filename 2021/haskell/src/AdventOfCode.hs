@@ -126,5 +126,14 @@ trim = dropWhileEnd isSpace . dropWhile isSpace
 
 
 -- Convert binary to decimal
+-- >>> bin2Dec [True, False, True, True, False]
+-- 22
 bin2Dec :: [Bool] -> Int
 bin2Dec = foldl (\a -> (+) (2*a) . bool 0 1) 0
+
+
+-- Convert binary string to decimal
+-- >>> binS2Dec "01001"
+-- 9
+binS2Dec :: String -> Int
+binS2Dec = bin2Dec . map (=='1')

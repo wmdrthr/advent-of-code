@@ -14,6 +14,7 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import AdventOfCode
 import SonarSweep       (day01)
 import Dive             (day02)
+import BinaryDiagnostic (day03)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -73,6 +74,7 @@ formatElapsedTime elapsed = let t :: Double
 solve :: Int -> String -> IO ()
 solve 1 = day01 . parseInputNumbers
 solve 2 = day02 . lines
+solve 3 = day03 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 
