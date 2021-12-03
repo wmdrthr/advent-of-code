@@ -79,7 +79,7 @@ def get_data(day):
     return data
 
 def format_elapsed_time(elapsed):
-    for unit in ['ns', 'us', 'ms', 's']:
+    for unit in ['ns', 'us', 'ms', 's', 'm']:
         if elapsed > 1000:
             elapsed /= 1000
             continue
@@ -87,7 +87,6 @@ def format_elapsed_time(elapsed):
 
 
 custom_data = False
-
 
 class SolutionMismatch(Exception):
     pass
@@ -103,7 +102,7 @@ def with_solutions(*expected):
                     actual = next(fgen)
                 except (StopIteration, TypeError) as e:
                     if expected[index] is not None:
-                        raise SolutionMismatch(f'No solution found for part {index}')
+                        raise SolutionMismatch(f'No solution found for part {index + 1}')
                     if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
                         raise e
                     actual = None
@@ -169,6 +168,35 @@ def main():
         print(f'No solver for day {day}')
         return 5
 
+def test():
+
+    solvers = {}
+    solvers = dict([(fn, f) for fn, f in globals().items()
+                    if callable(f) and fn.startswith('solve')])
+
+    errors = []
+    start = time.monotonic_ns()
+    for day in range(1, 26):
+        solver = solvers.get(f'solve{day}', None)
+        if solver is not None:
+            try:
+                data = get_data(day).strip()
+                solutions = solver(data)
+                print('.', end='', flush=True)
+            except SolutionMismatch as s:
+                print('E', end='', flush=True)
+                errors.append((day, s.args[0]))
+        else:
+            print('_', end='', flush=True)
+    elapsed = (time.monotonic_ns() - start)
+
+    print()
+
+    if errors:
+        for day, error in errors:
+            print(f'Day {day} failed ({error}).')
+
+    print(f'Total elapsed time: {format_elapsed_time(elapsed)}.')
 
 ################################################################################
 # Common Code
@@ -337,4 +365,7 @@ def solve3(data):
 
 if __name__ == '__main__':
 
+    if len(sys.argv) > 0 and sys.argv[1] == 'test':
+        test()
+        sys.exit(0)
     sys.exit(main())
