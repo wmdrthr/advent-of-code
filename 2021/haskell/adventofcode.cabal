@@ -20,6 +20,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      Dive
       SonarSweep
   other-modules:
       Paths_adventofcode
@@ -50,6 +51,7 @@ test-suite aoc2021test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      DiveSpec
       SonarSweepSpec
       Paths_adventofcode
   hs-source-dirs:
