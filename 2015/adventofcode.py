@@ -1,10 +1,11 @@
 #! /usr/bin/env python3
 # encoding: utf-8
 
-import os, sys, re
+import os, sys, re, io
 import time
 from pprint import pprint
 from datetime import datetime
+import contextlib
 
 import collections
 import itertools
@@ -55,30 +56,155 @@ def get_data(day):
 
     return data
 
+def format_elapsed_time(elapsed):
+    for unit in ['ns', 'us', 'ms', 's']:
+        if elapsed > 1000:
+            elapsed /= 1000
+            continue
+        return f'{elapsed:4.3f} {unit}'
+
+custom_data = False
+
+class SolutionMismatch(Exception):
+    pass
+
 def with_solutions(*expected):
     def wrapper(f):
         error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
-        def wrapped_method(*args, **kwargs):
+        def wrapped_method(*args):
             fgen = f(*args)
-            try:
-                for index in range(2):
+            values = []
+            for index in range(2):
+                try:
                     actual = next(fgen)
-                    if expected[index] is not None and not kwargs['skip_verification']:
-                        if actual != expected[index]:
-                            print(error_msg.format(index + 1, expected[index], actual))
-                            sys.exit(23)
-                    print(actual)
-                return
-            except StopIteration:
-                return
-            except TypeError as e:
-                if e.args[0] == "'NoneType' object is not an iterator":
-                    return
-                else:
-                    raise e
+                except (StopIteration, TypeError) as e:
+                    if expected[index] is not None:
+                        raise SolutionMismatch(f'No solution found for part {index + 1}')
+                    if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
+                        raise e
+                    actual = None
+
+                if actual and not custom_data and expected[index] is not None:
+                    if actual != expected[index]:
+                        raise SolutionMismatch(error_msg.format(index + 1, expected[index], actual))
+                values.append(actual)
+            return tuple(values)
 
         return wrapped_method
     return wrapper
+
+def main():
+
+    global custom_data
+
+    if len(sys.argv) > 1:
+        day = int(sys.argv[1])
+    else:
+        print('Usage: %s <day>')
+        sys.exit(2)
+
+    custom_data = False
+    if len(sys.argv) > 2:
+        if sys.argv[2] == '-':
+            data = sys.stdin.read()
+        else:
+            if os.path.exists(sys.argv[2]):
+                data = open(sys.argv[2]).read()
+            else:
+                data = sys.argv[2]
+        custom_data = True
+    else:
+        data = get_data(day)
+
+    if not data:
+        print('Cannot run solver without data. Bailing')
+        sys.exit(0)
+
+    data = data.strip()
+
+    solvers = {}
+    solvers = dict([(fn, f) for fn, f in globals().items()
+                    if callable(f) and fn.startswith('solve')])
+
+    solver = solvers.get('solve{}'.format(day), None)
+    if solver is not None:
+        start = time.monotonic_ns()
+        try:
+            solutions = solver(data)
+        except SolutionMismatch as s:
+            print(s.args[0])
+            return 23
+        end = time.monotonic_ns()
+        elapsed = (end - start)
+        if solutions:
+            print(*solutions, sep='\n')
+        print(f'Time: format_elapsed_time(elapsed)')
+    else:
+        print(f'No solver for day {day}')
+        return 5
+
+
+def test():
+
+    print('Running tests', flush=True)
+
+    solvers = {}
+    solvers = dict([(fn, f) for fn, f in globals().items()
+                    if callable(f) and fn.startswith('solve')])
+
+    errors = []
+    timings = []
+    passed = failed = 0
+
+    total_start = time.monotonic_ns()
+    for day in range(1, 26):
+        solver = solvers.get(f'solve{day}', None)
+        if solver is not None:
+            try:
+                data = get_data(day).strip()
+
+                test_start = time.monotonic_ns()
+                with contextlib.redirect_stdout(io.StringIO()) as f:
+                    with contextlib.redirect_stderr(f):
+                        solutions = solver(data)
+                test_elapsed = time.monotonic_ns() - test_start
+
+                print('\033[1;32m.\033[0m', end='', flush=True)
+                passed += 1
+                timings.append(test_elapsed)
+            except SolutionMismatch as s:
+                print('\033[1;31mE\033[0m', end='', flush=True)
+                errors.append((day, s.args[0]))
+                failed += 1
+                timings.append(None)
+        else:
+            print('_', end='', flush=True)
+            timings.append(None)
+
+    total_elapsed = time.monotonic_ns() - total_start
+    print(f'\nTest result: {passed} passed, {failed} failed; finished in {format_elapsed_time(total_elapsed)}.')
+
+    if errors:
+        for day, error in errors:
+            print(f'Day {day:>2} failed ({error}).')
+    else:
+        # print stats only if all tests passed
+
+        for idx, timing in enumerate(timings):
+            print(f'Day {idx + 1:>2}', end='\t')
+            if timing is not None:
+                elapsed_ms = timing / (1000 * 1000)
+                elapsed_s  = timing / (1000 * 1000 * 1000)
+                if elapsed_s > 1:
+                    color = '\033[1;31m'
+                elif elapsed_ms > 100:
+                    color = '\033[1;33m'
+                else:
+                    color = '\033[1;32m'
+                print(f'{color}{format_elapsed_time(timing):>10}\033[0m')
+            else:
+                print('      -')
+
 
 ################################################################################
 # Common Code
@@ -998,45 +1124,7 @@ def solve25(data):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 1:
-        day = int(sys.argv[1])
-    else:
-        print('Usage: %s <day>')
-        sys.exit(2)
-
-    custom_data = False
-    if len(sys.argv) > 2:
-        if sys.argv[2] == '-':
-            data = sys.stdin.read()
-        else:
-            if os.path.exists(sys.argv[2]):
-                data = open(sys.argv[2]).read()
-            else:
-                data = sys.argv[2]
-        custom_data = True
-    else:
-        data = get_data(day)
-
-    if not data:
-        print('Cannot run solver without data. Bailing')
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        test()
         sys.exit(0)
-
-    data = data.strip()
-
-    solvers = {}
-    solvers = dict([(fn, f) for fn, f in globals().items()
-                    if callable(f) and fn.startswith('solve')])
-
-    solver = solvers.get('solve{}'.format(day), None)
-    if solver is not None:
-        start = time.time()
-        solver(data, skip_verification=custom_data)
-        end = time.time()
-        elapsed = (end - start)
-        if elapsed > 0.001:
-            print('Elapsed: %4.3f s' % elapsed)
-        else:
-            elapsed *= 1000.0
-            print('Elapsed: %4.3f us' % elapsed)
-    else:
-        print('No solver for day {}'.format(day))
+    sys.exit(main())
