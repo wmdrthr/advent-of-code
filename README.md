@@ -13,4 +13,5 @@ solution that completes in at most 15 seconds on ten-year-old
 hardware.
 
 This repository contains solutions to Advent of Code, organized by
-year. Refer to each year's README for more details.
+year. Refer to each year's README for more details (the solutions for
+the current year are in [a branch](https://github.com/wmdrthr/advent-of-code/tree/AOC/2021/2021)).
