@@ -7,6 +7,7 @@ from pprint import pprint
 from datetime import datetime, timedelta
 
 import itertools
+import collections
 
 import pytz
 import requests
@@ -103,7 +104,7 @@ def with_solutions(*expected):
                 except (StopIteration, TypeError) as e:
                     if expected[index] is not None:
                         raise SolutionMismatch(f'No solution found for part {index}')
-                    if e.args[0] != "'NoneType' object is not an iterator":
+                    if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
                         raise e
                     actual = None
 
@@ -290,6 +291,47 @@ def solve2(data):
     yield navigate(False)
     yield navigate(True)
 
+
+@with_solutions(2035764, 2817661)
+def solve3(data):
+
+    # Binary Diagnostic
+
+    numbers = data.splitlines()
+
+    gamma = []
+    epsilon = []
+
+    for col in range(len(numbers[0])):
+        c = collections.Counter(number[col] for number in numbers)
+        if c['1'] > c['0']:
+            gamma.append('1')
+            epsilon.append('0')
+        else:
+            gamma.append('0')
+            epsilon.append('1')
+
+    gamma = ''.join(gamma)
+    epsilon = ''.join(epsilon)
+    yield int(gamma, 2) * int(epsilon, 2)
+
+    def life_support_rating(numbers, rating):
+        col = 0
+        while len(numbers) > 1 and col < len(numbers[0]):
+            c = collections.Counter(number[col] for number in numbers)
+            if rating == 'oxygen':
+                selected_bit = max(['1', '0'], key=lambda k: c[k])
+            else:
+                selected_bit = min(['0', '1'], key=lambda k: c[k])
+            numbers = [number for number in numbers if number[col] == selected_bit]
+            col += 1
+
+        return int(numbers[0], 2)
+
+    oxygen = life_support_rating(numbers[:], 'oxygen')
+    carbondioxide = life_support_rating(numbers[:], 'carbondioxide')
+
+    yield oxygen * carbondioxide
 
 ################################################################################
 
