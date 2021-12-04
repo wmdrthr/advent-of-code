@@ -79,7 +79,7 @@ def get_data(day):
     return data
 
 def format_elapsed_time(elapsed):
-    for unit in ['ns', 'us', 'ms', 's', 'm']:
+    for unit in ['ns', 'us', 'ms', 's']:
         if elapsed > 1000:
             elapsed /= 1000
             continue
@@ -361,11 +361,82 @@ def solve3(data):
 
     yield oxygen * carbondioxide
 
+
+@with_solutions(50008, 17408)
+def solve4(data):
+
+    # Giant Squid
+
+    lines = data.splitlines()
+    called_numbers = [int(n) for n in lines[0].split(',')]
+
+    class BingoBoard:
+
+        def __init__(self, lines):
+
+            self.marked = [[False, False, False, False, False] for _ in range(5)]
+            self.numbers = [[int(n) for n in l.split(' ') if n != ''] for l in lines]
+
+            self.lookup = {}
+            for row in range(5):
+                for col in range(5):
+                    self.lookup[self.numbers[row][col]] = (row, col)
+
+        def call(self, number):
+
+            row, col = self.lookup.get(number, (None, None))
+            if row is not None:
+                self.marked[row][col] = True
+
+        def unmarked_numbers(self):
+
+            for row in range(5):
+                for col in range(5):
+                    if not self.marked[row][col]:
+                        yield self.numbers[row][col]
+
+        def winner(self):
+
+            return any(all(row) for row in self.marked) or \
+                any(all(col) for col in zip(*self.marked))
+
+        def print(self):
+
+            for row in range(5):
+                for col in range(5):
+                    if self.marked[row][col]:
+                        print(f'{self.numbers[row][col]:>3}', end='*')
+                    else:
+                        print(f'{self.numbers[row][col]:>3}', end=' ')
+                print()
+            print()
+
+    boards = []
+    for n in range(2, len(lines), 6):
+        board = BingoBoard(lines[n:n+5])
+        boards.append(board)
+
+    first_winner = None
+    winning_boards = set()
+    for number in called_numbers:
+        for board in boards:
+            board.call(number)
+            if board.winner():
+                if first_winner is None:
+                    yield sum(board.unmarked_numbers()) * number
+                    first_winner = board
+
+                winning_boards.add(board)
+
+                if len(winning_boards) == len(boards):
+                    yield sum(board.unmarked_numbers()) * number
+                    return
+
 ################################################################################
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 0 and sys.argv[1] == 'test':
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
         test()
         sys.exit(0)
     sys.exit(main())
