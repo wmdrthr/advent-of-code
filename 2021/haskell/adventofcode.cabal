@@ -22,6 +22,7 @@ library
       AdventOfCode
       BinaryDiagnostic
       Dive
+      GiantSquid
       SonarSweep
   other-modules:
       Paths_adventofcode
@@ -54,6 +55,7 @@ test-suite aoc2021test
   other-modules:
       BinaryDiagnosticSpec
       DiveSpec
+      GiantSquidSpec
       SonarSweepSpec
       Paths_adventofcode
   hs-source-dirs:

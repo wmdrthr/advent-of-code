@@ -118,6 +118,12 @@ substring :: Int -> Int -> String -> String
 substring start end string = take (end - start) (drop start string)
 
 
+-- | Slice of list
+-- >>> slice 2 7 [0, 1, 2, 3, 4, 5,6, 7, 8, 9, 10]
+-- [2, 3, 4, 5, 6]
+slice begin end = take (end - begin) . drop begin
+
+
 -- | Remove whitespace from beginning and end of string
 -- >>> trim "  foo\n"
 -- "foo"
