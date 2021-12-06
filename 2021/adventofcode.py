@@ -432,6 +432,49 @@ def solve4(data):
                     yield sum(board.unmarked_numbers()) * number
                     return
 
+
+@with_solutions(5306, None)
+def solve5(data):
+
+    # Hydrothermal Venture
+
+    lines = []
+    for line in data.splitlines():
+        a, b = line.split(' -> ')
+        x1, y1 = [int(v) for v in a.split(',')]
+        x2, y2 = [int(v) for v in b.split(',')]
+        lines.append(((x1, y1), (x2, y2)))
+
+    # Part 1
+    def mark_points(skip_diagonals = True):
+
+        grid = collections.defaultdict(int)
+
+        for line in lines:
+            ((x1, y1), (x2, y2)) = line
+            if skip_diagonals and not (x1 == x2 or y1 == y2):
+                continue
+
+            dx, dy = x2 - x1, y2 - y1
+            length = max(abs(dx), abs(dy))
+            step_x, step_y = dx // length, dy // length
+            for i in range(length + 1):
+                grid[(x1 + i * step_x, y1 + i * step_y)] += 1
+        return grid
+
+    # Part 1
+    grid = mark_points()
+    if custom_data:
+        display(grid, 10, 10, '.123456789')
+    yield sum(1 for v in grid.values() if v > 1)
+
+    # Part 2
+    grid = mark_points(False)
+    if custom_data:
+        display(grid, 10, 10, '.123456789')
+    yield sum(1 for v in grid.values() if v > 1)
+
+
 ################################################################################
 
 if __name__ == '__main__':
