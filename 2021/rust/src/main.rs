@@ -13,6 +13,7 @@ use chrono::prelude::*;
 pub mod sonarsweep;
 pub mod dive;
 pub mod binarydiagnostic;
+pub mod giantsquid;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -64,6 +65,7 @@ fn run(day: u8, data: String) {
         1  => { sonarsweep::solve(data);                    }
         2  => { dive::solve(data);                          }
         3  => { binarydiagnostic::solve(data);              }
+        4  => { giantsquid::solve(data);                    }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
