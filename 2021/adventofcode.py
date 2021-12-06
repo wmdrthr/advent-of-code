@@ -475,6 +475,34 @@ def solve5(data):
     yield sum(1 for v in grid.values() if v > 1)
 
 
+@with_solutions(361169, None)
+def solve6(data):
+
+    # Lanternfish
+
+    lanternfish = [int(v) for v in data.split(',')]
+
+    def simulate(days):
+
+        population = collections.defaultdict(int)
+        for fish in lanternfish:
+            population[fish] += 1
+
+        for _ in range(days):
+            new_population = collections.defaultdict(int)
+            for age, count in population.items():
+                if age > 0:
+                    new_population[age - 1] += count
+                else:
+                    new_population[6] += count
+                    new_population[8] += count
+            population = new_population
+
+        return sum(population.values())
+
+    yield simulate(80)
+    yield simulate(256)
+
 ################################################################################
 
 if __name__ == '__main__':
