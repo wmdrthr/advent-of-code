@@ -14,6 +14,7 @@ pub mod sonarsweep;
 pub mod dive;
 pub mod binarydiagnostic;
 pub mod giantsquid;
+pub mod hydrothermalventure;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -66,6 +67,7 @@ fn run(day: u8, data: String) {
         2  => { dive::solve(data);                          }
         3  => { binarydiagnostic::solve(data);              }
         4  => { giantsquid::solve(data);                    }
+        5  => { hydrothermalventure::solve(data);           }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
