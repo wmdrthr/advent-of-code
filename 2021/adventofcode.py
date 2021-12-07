@@ -450,7 +450,15 @@ def solve5(data):
         x2, y2 = [int(v) for v in b.split(',')]
         lines.append(((x1, y1), (x2, y2)))
 
-    # Part 1
+    def generate_points(line):
+
+        ((x1, y1), (x2, y2)) = line
+        dx, dy = x2 - x1, y2 - y1
+        length = max(abs(dx), abs(dy))
+        step_x, step_y = dx // length, dy // length
+        for i in range(length + 1):
+            yield (x1 + i * step_x, y1 + i * step_y)
+
     def mark_points(skip_diagonals = True):
 
         grid = collections.defaultdict(int)
@@ -460,23 +468,21 @@ def solve5(data):
             if skip_diagonals and not (x1 == x2 or y1 == y2):
                 continue
 
-            dx, dy = x2 - x1, y2 - y1
-            length = max(abs(dx), abs(dy))
-            step_x, step_y = dx // length, dy // length
-            for i in range(length + 1):
-                grid[(x1 + i * step_x, y1 + i * step_y)] += 1
+            for point in generate_points(line):
+                grid[point] += 1
+
         return grid
 
     # Part 1
     grid = mark_points()
-    if custom_data:
-        display(grid, 10, 10, '.123456789')
+    #if custom_data:
+    #    display(grid, 10, 10, '.123456789')
     yield sum(1 for v in grid.values() if v > 1)
 
     # Part 2
     grid = mark_points(False)
-    if custom_data:
-        display(grid, 10, 10, '.123456789')
+    #if custom_data:
+    #    display(grid, 10, 10, '.123456789')
     yield sum(1 for v in grid.values() if v > 1)
 
 

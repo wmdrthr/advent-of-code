@@ -23,6 +23,7 @@ library
       BinaryDiagnostic
       Dive
       GiantSquid
+      HydrothermalVenture
       SonarSweep
   other-modules:
       Paths_adventofcode
@@ -56,6 +57,7 @@ test-suite aoc2021test
       BinaryDiagnosticSpec
       DiveSpec
       GiantSquidSpec
+      HydrothermalVentureSpec
       SonarSweepSpec
       Paths_adventofcode
   hs-source-dirs:
