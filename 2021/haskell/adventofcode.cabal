@@ -24,6 +24,7 @@ library
       Dive
       GiantSquid
       HydrothermalVenture
+      Lanternfish
       SonarSweep
   other-modules:
       Paths_adventofcode
@@ -58,6 +59,7 @@ test-suite aoc2021test
       DiveSpec
       GiantSquidSpec
       HydrothermalVentureSpec
+      LanternfishSpec
       SonarSweepSpec
       Paths_adventofcode
   hs-source-dirs:

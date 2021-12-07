@@ -17,6 +17,7 @@ import Dive                (day02)
 import BinaryDiagnostic    (day03)
 import GiantSquid          (day04)
 import HydrothermalVenture (day05)
+import Lanternfish         (day06)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -79,6 +80,7 @@ solve 2 = day02 . lines
 solve 3 = day03 . lines
 solve 4 = day04 . lines
 solve 5 = day05 . lines
+solve 6 = day06 . parseCommaSeparatedNumbers
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 
