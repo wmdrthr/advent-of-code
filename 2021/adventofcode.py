@@ -90,11 +90,14 @@ def format_elapsed_time(elapsed):
 custom_data = False
 
 class SolutionMismatch(Exception):
-    pass
+
+    def __init__(self, message, values):
+
+        self.values = values
+        super().__init__(message)
 
 def with_solutions(*expected):
     def wrapper(f):
-        error_msg = 'Incorrect solution for Part {}: Expected "{}", Actual "{}"'
         def wrapped_method(*args):
             fgen = f(*args)
             values = []
@@ -102,15 +105,20 @@ def with_solutions(*expected):
                 try:
                     actual = next(fgen)
                 except (StopIteration, TypeError) as e:
-                    if expected[index] is not None:
-                        raise SolutionMismatch(f'No solution found for part {index + 1}')
+                    if len(expected) > index and expected[index] is not None:
+                        raise SolutionMismatch(f'No solution found for part {index + 1}', tuple(values))
                     if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
                         raise e
                     actual = None
 
-                if actual and not custom_data and expected[index] is not None:
+                if actual and not custom_data and len(expected) > index:
+                    if expected[index] is None:
+                        raise SolutionMismatch(f'Could not verify solution for part {index + 1}', tuple(values))
                     if actual != expected[index]:
-                        raise SolutionMismatch(error_msg.format(index + 1, expected[index], actual))
+                        raise SolutionMismatch('Incorrect solution for Part {}: Expected "{}", Actual "{}"'.format(index + 1,
+                                                                                                                   expected[index],
+                                                                                                                   actual),
+                                               tuple(values))
                 values.append(actual)
             return tuple(values)
 
@@ -158,6 +166,8 @@ def main():
         try:
             solutions = solver(data)
         except SolutionMismatch as s:
+            if s.values:
+                print(*s.values, sep='\n')
             print(s.args[0])
             return 23
         end = time.monotonic_ns()
@@ -438,7 +448,7 @@ def solve4(data):
                     return
 
 
-@with_solutions(5306, None)
+@with_solutions(5306, 17787)
 def solve5(data):
 
     # Hydrothermal Venture
@@ -486,7 +496,7 @@ def solve5(data):
     yield sum(1 for v in grid.values() if v > 1)
 
 
-@with_solutions(361169, None)
+@with_solutions(361169, 1634946868992)
 def solve6(data):
 
     # Lanternfish
