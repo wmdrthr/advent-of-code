@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 import itertools
 import collections
+import statistics
 
 import pytz
 import requests
@@ -83,7 +84,7 @@ def format_elapsed_time(elapsed):
         if elapsed > 1000:
             elapsed /= 1000
             continue
-        return f'Elapsed: {elapsed:4.3f} {unit}'
+        return f'{elapsed:4.3f} {unit}'
 
 
 custom_data = False
@@ -163,12 +164,14 @@ def main():
         elapsed = (end - start)
         if solutions:
             print(*solutions, sep='\n')
-        print(format_elapsed_time(elapsed))
+        print(f'Time: {format_elapsed_time(elapsed)}')
     else:
         print(f'No solver for day {day}')
         return 5
 
 def test():
+
+    passed = failed = 0
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
@@ -183,9 +186,11 @@ def test():
                 data = get_data(day).strip()
                 solutions = solver(data)
                 print('.', end='', flush=True)
+                passed += 1
             except SolutionMismatch as s:
                 print('E', end='', flush=True)
                 errors.append((day, s.args[0]))
+                failed += 1
         else:
             print('_', end='', flush=True)
     elapsed = (time.monotonic_ns() - start)
@@ -196,7 +201,7 @@ def test():
         for day, error in errors:
             print(f'Day {day} failed ({error}).')
 
-    print(f'Total elapsed time: {format_elapsed_time(elapsed)}.')
+    print(f'Test result: {passed} passed, {failed} failed; finished in {format_elapsed_time(elapsed)}.')
 
 ################################################################################
 # Common Code
@@ -502,6 +507,29 @@ def solve6(data):
 
     yield simulate(80)
     yield simulate(256)
+
+
+@with_solutions(349812, 99763899)
+def solve7(data):
+
+    # The Treachery of Whales
+
+    positions = [int(v) for v in data.split(',')]
+    positions.sort()
+    median = int(statistics.median(positions))
+    mean = int(statistics.mean(positions))
+
+    def fuel_cost(move):
+        return move * (move + 1) // 2
+
+    # Part 1
+    yield sum(abs(x - median) for x in positions)
+
+    # Part 2
+    minfuel = 1e9
+    for p in range(mean - 1, mean + 2):
+        minfuel = min(minfuel, sum(fuel_cost(abs(x-p)) for x in positions))
+    yield minfuel
 
 ################################################################################
 
