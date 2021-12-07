@@ -26,6 +26,7 @@ library
       HydrothermalVenture
       Lanternfish
       SonarSweep
+      TreacheryOfWhales
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
@@ -61,6 +62,7 @@ test-suite aoc2021test
       HydrothermalVentureSpec
       LanternfishSpec
       SonarSweepSpec
+      TreacheryOfWhalesSpec
       Paths_adventofcode
   hs-source-dirs:
       test
