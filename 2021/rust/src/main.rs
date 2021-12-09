@@ -18,6 +18,7 @@ pub mod hydrothermalventure;
 pub mod lanternfish;
 pub mod treacheryofwhales;
 pub mod sevensegmentsearch;
+pub mod smokebasin;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -74,6 +75,7 @@ fn run(day: u8, data: String) {
         6  => { lanternfish::solve(data);                   }
         7  => { treacheryofwhales::solve(data);             }
         8  => { sevensegmentsearch::solve(data);            }
+        9  => { smokebasin::solve(data);                    }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
