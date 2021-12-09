@@ -228,58 +228,56 @@ def manhattan(a, b = ORIGIN):
 DIRECTIONS = { '↑' : (( 0, -1), ('←', '→')),
                '↓' : (( 0,  1), ('→', '←')),
                '←' : ((-1,  0), ('↓', '↑')),
-               '→' : (( 1,  0), ('↑', '↓')),
-               '↖' : ((-1, -1), ('←', '↑')),
-               '↗' : (( 1, -1), ('↑', '→')),
-               '↘' : (( 1,  1), ('→', '↓')),
-               '↙' : ((-1,  1), ('↓', '←'))}
+               '→' : (( 1,  0), ('↑', '↓'))}
+
+DIAGONALS = {'↖' : ((-1, -1), ('←', '↑')),
+             '↗' : (( 1, -1), ('↑', '→')),
+             '↘' : (( 1,  1), ('→', '↓')),
+             '↙' : ((-1,  1), ('↓', '←'))}
+
+ALL_DIRECTIONS = DIRECTIONS | DIAGONALS
 
 def move(point, direction, distance = 1):
     (dx, dy) = DIRECTIONS[direction][0]
     return (point[0] + (dx * distance), point[1] + (dy * distance))
 
-def turn(heading, direction, angle):
-    for _ in range(angle // 90):
+def diagonal_move(point, direction, distance = 1):
+    (dx, dy) = DIAGONALS[direction][0]
+    return (point[0] + (dx * distance), point[1] + (dy * distance))
+
+ROTATIONS = {'45': ALL_DIRECTIONS, '90': DIRECTIONS}
+
+def turn(heading, direction, angle, base_angle = 90):
+    directions = ROTATIONS[base_angle]
+    for _ in range(angle // base_angle):
         if direction == 'L':
-            heading = DIRECTIONS[heading][1][0]
+            heading = directions[heading][1][0]
         elif direction == 'R':
-            heading = DIRECTIONS[heading][1][1]
+            heading = directions[heading][1][1]
     return heading
 
-def rotate(position, direction, angle):
-    for _ in range(angle // 90):
-        if direction == 'L':
-            position = (position[1], -1 * position[0])
-        elif direction == 'R':
-            position = (-1 * position[1], position[0])
-    return position
 
-def neighbors(_, point, rows, cols):
+def neighbors(point, rows = None, cols = None):
     for dir in DIRECTIONS:
         dx, dy = DIRECTIONS[dir][0]
-        if 0 <= point[0] + dx < cols and 0 <= point[1] + dy < rows:
-            yield (dir, (point[0] + dx, point[1] + dy))
+        nx, ny = point[0] + dx, point[1] + dy
+        if nx < 0 or ny < 0:
+            continue
+        if rows is not None and nx >= rows:
+            continue
+        if cols is not None and ny >= cols:
+            continue
+        yield (dir, (nx, ny))
 
-def raytraced_neighbors(grid, point, rows, cols):
-    for dir in DIRECTIONS:
-        dx, dy = DIRECTIONS[dir][0]
-        for n in itertools.count(1):
-            new_point = (point[0] + (dx * n), point[1] + (dy * n))
-            if 0 <= new_point[0] < cols and 0 <= new_point[1] < rows:
-                if grid[new_point] != 0:
-                    yield (dir, new_point)
-                    break
-            else:
-                break
 
 def display(grid, rows, cols, tiles):
-    # Given a dict representing a point grid, print the grid, using
-    # the given tileset.
+    # Given a dict (not a 2d array) representing a point grid, print
+    # the grid, using the given tileset.
 
-    for y in range(rows):
+    for r in range(rows):
         row = []
-        for x in range(cols):
-            row.append(tiles[grid[(x, y)]])
+        for c in range(cols):
+            row.append(tiles[grid[(c, r)]])
         print(''.join(row))
 
 
@@ -490,14 +488,14 @@ def solve5(data):
 
     # Part 1
     grid = mark_points()
-    #if custom_data:
-    #    display(grid, 10, 10, '.123456789')
+    if custom_data:
+        display(grid, 10, 10, '.123456789')
     yield sum(1 for v in grid.values() if v > 1)
 
     # Part 2
     grid = mark_points(False)
-    #if custom_data:
-    #    display(grid, 10, 10, '.123456789')
+    if custom_data:
+        display(grid, 10, 10, '.123456789')
     yield sum(1 for v in grid.values() if v > 1)
 
 
@@ -590,6 +588,48 @@ def solve8(data):
 
     yield total
 
+
+@with_solutions(417, 1148965)
+def solve9(data):
+
+    # Smoke Basin
+
+    data = [l for l in data.splitlines()]
+    heightmap = {(x, y):int(c) for x,l in enumerate(data) for y,c in enumerate(l)}
+    rows, cols = len(data), len(data[0])
+
+    # Part 1
+    lowpoints = []
+    for point,height in heightmap.items():
+        for _, (nx, ny) in neighbors(point, rows, cols):
+            if heightmap[(nx,ny)] <= height:
+                break
+        else:
+            lowpoints.append((point, height))
+
+    yield sum([v[1] + 1 for v in lowpoints])
+
+    # Part 2
+    def bfs(starting_point):
+        history = set([starting_point])
+        queue = collections.deque([starting_point])
+        while queue:
+            point = queue.popleft()
+            height = heightmap[point]
+            for _, (nx, ny) in neighbors(point, rows, cols):
+                if (nx, ny) not in history and \
+                   heightmap[(nx, ny)] != 9 and \
+                       heightmap[(nx, ny)] > height:
+                    history.add((nx, ny))
+                    queue.append((nx, ny))
+
+        return history
+
+    basins = {}
+    for lowpoint, _ in lowpoints:
+        basins[lowpoint] = bfs(lowpoint)
+    basin_sizes = sorted([len(v) for v in basins.values()])
+    yield math.prod(basin_sizes[-3:])
 
 ################################################################################
 
