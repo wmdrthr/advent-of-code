@@ -1,14 +1,16 @@
 #! /usr/bin/env python3
 # encoding: utf-8
 
-import os, sys, re
+import os, sys, re, io
 import time
 from pprint import pprint
 from datetime import datetime, timedelta
+import contextlib
 
 import itertools
 import collections
 import statistics
+import math
 
 import pytz
 import requests
@@ -188,13 +190,16 @@ def test():
                     if callable(f) and fn.startswith('solve')])
 
     errors = []
+
     start = time.monotonic_ns()
     for day in range(1, 26):
         solver = solvers.get(f'solve{day}', None)
         if solver is not None:
             try:
                 data = get_data(day).strip()
-                solutions = solver(data)
+                with contextlib.redirect_stdout(io.StringIO()) as f:
+                    with contextlib.redirect_stderr(f):
+                        solutions = solver(data)
                 print('.', end='', flush=True)
                 passed += 1
             except SolutionMismatch as s:
@@ -546,6 +551,45 @@ def solve7(data):
     for p in range(mean - 1, mean + 2):
         minfuel = min(minfuel, sum(fuel_cost(abs(x-p)) for x in positions))
     yield minfuel
+
+
+@with_solutions(344, 1048410)
+def solve8(data):
+
+    # Seven Segment Search
+
+    data = [l.split('|') for l in data.splitlines()]
+
+    # Part 1
+    count = 0
+    for _, outputs in data:
+        for output in outputs.split(' '):
+            if len(output) in (2, 3, 4, 7):
+                count += 1
+
+    yield count
+
+    # Part 2
+    canonical_pattern = "abcefg cf acdeg acdfg bdcf abdfg abdefg acf abcdefg abcdfg"
+    canonical_scores = collections.Counter([c for c in canonical_pattern if c != ' '])
+
+    lookup_table = {}
+    for digit, signals in enumerate(canonical_pattern.split(' ')):
+        score = sum(canonical_scores[s] for s in signals)
+        lookup_table[score] = digit
+
+    total = 0
+    for signals, outputs in data:
+        number = 0
+        score = collections.Counter([s for s in signals if s != ' '])
+        for output in outputs.strip().split(' '):
+            digit_score = sum(score[c] for c in output)
+            digit = lookup_table[digit_score]
+            number = (number * 10) + digit
+        total += number
+
+    yield total
+
 
 ################################################################################
 
