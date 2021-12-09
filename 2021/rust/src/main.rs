@@ -17,6 +17,7 @@ pub mod giantsquid;
 pub mod hydrothermalventure;
 pub mod lanternfish;
 pub mod treacheryofwhales;
+pub mod sevensegmentsearch;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -72,6 +73,7 @@ fn run(day: u8, data: String) {
         5  => { hydrothermalventure::solve(data);           }
         6  => { lanternfish::solve(data);                   }
         7  => { treacheryofwhales::solve(data);             }
+        8  => { sevensegmentsearch::solve(data);            }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }

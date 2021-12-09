@@ -83,11 +83,11 @@ mod tests {
     #[test]
     fn testinput() {
         let test_input = vec![(Command::Forward, 5),
-                             (Command::Down, 5),
-                             (Command::Forward, 8),
-                             (Command::Up, 3),
-                             (Command::Down, 8),
-                             (Command::Forward, 2)];
+                              (Command::Down, 5),
+                              (Command::Forward, 8),
+                              (Command::Up, 3),
+                              (Command::Down, 8),
+                              (Command::Forward, 2)];
         assert_eq!(navigate(&test_input, false), 150);
         assert_eq!(navigate(&test_input, true), 900);
     }
