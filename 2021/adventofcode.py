@@ -631,6 +631,35 @@ def solve9(data):
     basin_sizes = sorted([len(v) for v in basins.values()])
     yield math.prod(basin_sizes[-3:])
 
+
+@with_solutions(369105, 3999363569)
+def solve10(data):
+
+    # Syntax Scoring
+
+    matching = {'{':'}', '[':']', '(':')', '<':'>'}
+    scores = {')': 3, ']': 57, '}': 1197, '>': 25137}
+
+    def check(line):
+
+        stack = []
+
+        for ch in line:
+            if ch in matching:
+                stack.append(matching[ch])
+            elif ch != stack.pop():
+                return -scores[ch]
+
+        score = 0
+        for ch in reversed(stack):
+            score = score * 5 + ' )]}>'.index(ch)
+        return score
+
+    scores = [check(line) for line in data.splitlines()]
+
+    yield sum(-score for score in scores if score < 0)
+    yield statistics.median(score for score in scores if score > 0)
+
 ################################################################################
 
 if __name__ == '__main__':
