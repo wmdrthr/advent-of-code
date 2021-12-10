@@ -19,6 +19,7 @@ import GiantSquid          (day04)
 import HydrothermalVenture (day05)
 import Lanternfish         (day06)
 import TreacheryOfWhales   (day07)
+import SevenSegmentSearch  (day08)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -83,6 +84,7 @@ solve 4 = day04 . lines
 solve 5 = day05 . lines
 solve 6 = day06 . parseCommaSeparatedNumbers
 solve 7 = day07 . parseCommaSeparatedNumbers
+solve 8 = day08 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

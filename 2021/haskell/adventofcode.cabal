@@ -25,6 +25,7 @@ library
       GiantSquid
       HydrothermalVenture
       Lanternfish
+      SevenSegmentSearch
       SonarSweep
       TreacheryOfWhales
   other-modules:
@@ -61,6 +62,7 @@ test-suite aoc2021test
       GiantSquidSpec
       HydrothermalVentureSpec
       LanternfishSpec
+      SevenSegmentSearchSpec
       SonarSweepSpec
       TreacheryOfWhalesSpec
       Paths_adventofcode
