@@ -183,40 +183,62 @@ def main():
 
 def test():
 
-    passed = failed = 0
+    print('Running tests', flush=True)
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
                     if callable(f) and fn.startswith('solve')])
 
     errors = []
+    timings = []
+    passed = failed = 0
 
-    start = time.monotonic_ns()
+    total_start = time.monotonic_ns()
     for day in range(1, 26):
         solver = solvers.get(f'solve{day}', None)
         if solver is not None:
             try:
                 data = get_data(day).strip()
+
+                test_start = time.monotonic_ns()
                 with contextlib.redirect_stdout(io.StringIO()) as f:
                     with contextlib.redirect_stderr(f):
                         solutions = solver(data)
-                print('.', end='', flush=True)
+                test_elapsed = time.monotonic_ns() - test_start
+
+                print('\033[1;32m.\033[0m', end='', flush=True)
                 passed += 1
+                timings.append(test_elapsed)
             except SolutionMismatch as s:
-                print('E', end='', flush=True)
+                print('\033[1;31mE\033[0m', end='', flush=True)
                 errors.append((day, s.args[0]))
                 failed += 1
+                timings.append(None)
         else:
             print('_', end='', flush=True)
-    elapsed = (time.monotonic_ns() - start)
+            timings.append(None)
 
-    print()
+    total_elapsed = time.monotonic_ns() - total_start
+    print(f'\nTest result: {passed} passed, {failed} failed; finished in {format_elapsed_time(total_elapsed)}.')
 
     if errors:
         for day, error in errors:
-            print(f'Day {day} failed ({error}).')
+            print(f'Day {day:>2} failed ({error}).')
+    else:
+        # print stats only if all tests passed
 
-    print(f'Test result: {passed} passed, {failed} failed; finished in {format_elapsed_time(elapsed)}.')
+        for idx, timing in enumerate(timings):
+            print(f'Day {idx + 1:>2}', end='\t')
+            if timing is not None:
+                elapsed_ms = timing / (1000 * 1000)
+                if elapsed_ms > 100:
+                    color = '\033[1;31m'
+                else:
+                    color = '\033[1;32m'
+                print(f'{color}{format_elapsed_time(timing):>10}\033[0m')
+            else:
+                print('      -')
+
 
 ################################################################################
 # Common Code
