@@ -20,6 +20,7 @@ pub mod treacheryofwhales;
 pub mod sevensegmentsearch;
 pub mod smokebasin;
 pub mod syntaxscoring;
+pub mod dumbooctopus;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -78,6 +79,7 @@ fn run(day: u8, data: String) {
          8 => { sevensegmentsearch::solve(data);            }
          9 => { smokebasin::solve(data);                    }
         10 => { syntaxscoring::solve(data);                 }
+        11 => { dumbooctopus::solve(data);                  }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
