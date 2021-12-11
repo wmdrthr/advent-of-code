@@ -2,7 +2,6 @@ module SevenSegmentSearch where
 
 import qualified Data.Map        as M
 import           Data.List.Split (splitOn)
-import           Debug.Trace
 
 canonicalPattern = "abcefg cf acdeg acdfg bdcf abdfg abdefg acf abcdefg abcdfg" :: String
 

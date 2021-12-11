@@ -1,3 +1,6 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns  #-}
+
 module AdventOfCode where
 
 import Data.List        (maximumBy, dropWhileEnd)
@@ -5,6 +8,8 @@ import Data.List.Split  (splitOn)
 import Data.Ord         (comparing)
 import Data.Char        (isSpace)
 import Data.Bool        (bool)
+import Data.Maybe       (mapMaybe)
+import Prelude   hiding (Left, Right)
 
 import qualified Data.Map.Strict as M
 
@@ -143,3 +148,44 @@ bin2Dec = foldl (\a -> (+) (2*a) . bool 0 1) 0
 -- 9
 binS2Dec :: String -> Int
 binS2Dec = bin2Dec . map (=='1')
+
+
+-- Below functions assume origin is at top-left,
+-- with (X,Y) -> X = row, # Y = column.
+
+type V2 = (Int, Int)
+
+data Direction = Up | Down | Left | Right | UpLeft | UpRight | DownLeft | DownRight
+
+data Grid a = Grid { points :: M.Map V2 a,
+                     rows :: Int,
+                     cols :: Int
+                   } deriving (Show)
+
+parseGrid :: (Char -> a) -> [String] -> Grid a
+parseGrid parse lines = Grid grid rows cols
+  where grid = foldl parseLine M.empty (zip [0..] lines)
+        parseLine m (row, line) = foldl (\m (col, val) -> M.insert (row, col) (parse val) m) m (zip [0..] line)
+        rows = length lines
+        cols = length (head lines)
+
+neighbor :: Grid a -> V2 -> Direction -> Maybe V2
+neighbor _          (x,y) Up        = if x > 0         then Just (x - 1, y) else Nothing
+neighbor Grid{rows} (x,y) Down      = if x + 1 < rows  then Just (x + 1, y) else Nothing
+neighbor _          (x,y) Left      = if y > 0         then Just (x, y - 1) else Nothing
+neighbor Grid{cols} (x,y) Right     = if y + 1 < cols  then Just (x, y + 1) else Nothing
+neighbor _          (x,y) UpLeft    = if x > 0 && y > 0        then Just (x - 1, y - 1) else Nothing
+neighbor Grid{cols} (x,y) UpRight   = if x > 0 && y + 1 < cols then Just (x - 1, y + 1) else Nothing
+neighbor Grid{rows} (x,y) DownLeft  = if x + 1 < rows && y > 0 then Just (x + 1, y - 1) else Nothing
+neighbor grid       (x,y) DownRight = if x + 1 < (cols grid) && y + 1 < (rows grid)
+                                       then Just (x + 1, y + 1)
+                                       else Nothing
+
+neighbors :: Grid a -> V2 -> [V2]
+neighbors grid point = mapMaybe (neighbor grid point) [Up, Down, Left, Right]
+
+diagonalNeighbors :: Grid a -> V2 -> [V2]
+diagonalNeighbors grid point = mapMaybe (neighbor grid point) [UpLeft, UpRight, DownLeft, DownRight]
+
+allNeighbors :: Grid a -> V2 -> [V2]
+allNeighbors grid point = (neighbors grid point) ++ (diagonalNeighbors grid point)

@@ -26,6 +26,7 @@ library
       HydrothermalVenture
       Lanternfish
       SevenSegmentSearch
+      SmokeBasin
       SonarSweep
       TreacheryOfWhales
   other-modules:
@@ -57,12 +58,14 @@ test-suite aoc2021test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AdventOfCodeSpec
       BinaryDiagnosticSpec
       DiveSpec
       GiantSquidSpec
       HydrothermalVentureSpec
       LanternfishSpec
       SevenSegmentSearchSpec
+      SmokeBasinSpec
       SonarSweepSpec
       TreacheryOfWhalesSpec
       Paths_adventofcode
@@ -72,5 +75,6 @@ test-suite aoc2021test
   build-depends:
       adventofcode
     , base >=4.7 && <5
+    , containers
     , hspec
   default-language: Haskell2010

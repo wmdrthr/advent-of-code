@@ -39,5 +39,6 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - containers
     - adventofcode
     - hspec

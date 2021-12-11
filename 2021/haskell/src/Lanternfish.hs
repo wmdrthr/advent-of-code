@@ -1,7 +1,6 @@
 module Lanternfish where
 
 import qualified Data.Map as M
-import           Debug.Trace
 
 initPopulation :: [Int] -> M.Map Int Int
 initPopulation initial = foldl f M.empty initial
