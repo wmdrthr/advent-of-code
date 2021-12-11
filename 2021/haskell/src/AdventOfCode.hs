@@ -177,7 +177,7 @@ neighbor Grid{cols} (x,y) Right     = if y + 1 < cols  then Just (x, y + 1) else
 neighbor _          (x,y) UpLeft    = if x > 0 && y > 0        then Just (x - 1, y - 1) else Nothing
 neighbor Grid{cols} (x,y) UpRight   = if x > 0 && y + 1 < cols then Just (x - 1, y + 1) else Nothing
 neighbor Grid{rows} (x,y) DownLeft  = if x + 1 < rows && y > 0 then Just (x + 1, y - 1) else Nothing
-neighbor grid       (x,y) DownRight = if x + 1 < (cols grid) && y + 1 < (rows grid)
+neighbor grid       (x,y) DownRight = if x + 1 < (rows grid) && y + 1 < (cols grid)
                                        then Just (x + 1, y + 1)
                                        else Nothing
 

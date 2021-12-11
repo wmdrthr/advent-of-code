@@ -45,3 +45,37 @@ spec = do
                                                                   ['B', 'D', 'E'],
                                                                   ['C', 'D', 'E']]
 
+
+  let testGrid = AoC.parseGrid id ["abcde",
+                                   "fghij",
+                                   "klmno",
+                                   "pqrst"]
+
+  context "parseGrid" $ do
+    it "points" $ do (points testGrid) `shouldBe` M.fromList [((0,0),'a'), ((0,1),'b'), ((0,2),'c'), ((0,3),'d'), ((0,4),'e'),
+                                                              ((1,0),'f'), ((1,1),'g'), ((1,2),'h'), ((1,3),'i'), ((1,4),'j'),
+                                                              ((2,0),'k'), ((2,1),'l'), ((2,2),'m'), ((2,3),'n'), ((2,4),'o'),
+                                                              ((3,0),'p'), ((3,1),'q'), ((3,2),'r'), ((3,3),'s'), ((3,4),'t')]
+    it "rows" $ do (rows testGrid) `shouldBe` 4
+    it "cols" $ do (cols testGrid) `shouldBe` 5
+
+  context "neighbors" $ do
+
+    let testGrid = AoC.parseGrid id ["abcde","fghij","klmno","pqrst"]
+
+    context "straight neighbors" $ do
+      it "top left"  $ do AoC.neighbors testGrid (0, 0) `shouldBe` [(1, 0), (0, 1)]
+      it "top right" $ do AoC.neighbors testGrid (0, 4) `shouldBe` [(1, 4), (0, 3)]
+      it "bottom left"  $ do AoC.neighbors testGrid (3, 0) `shouldBe` [(2, 0), (3, 1)]
+      it "bottom right" $ do AoC.neighbors testGrid (3, 4) `shouldBe` [(2, 4), (3, 3)]
+      it "middle left"  $ do AoC.neighbors testGrid (1, 2) `shouldBe` [(0, 2), (2, 2), (1, 1), (1, 3)]
+      it "middle left"  $ do AoC.neighbors testGrid (2, 3) `shouldBe` [(1, 3), (3, 3), (2, 2), (2, 4)]
+
+    context "diagonal neighbors" $ do
+      it "top left"  $ do AoC.diagonalNeighbors testGrid (0, 0) `shouldBe` [(1, 1)]
+      it "top right" $ do AoC.diagonalNeighbors testGrid (0, 4) `shouldBe` [(1, 3)]
+      it "bottom left"  $ do AoC.diagonalNeighbors testGrid (3, 0) `shouldBe` [(2, 1)]
+      it "bottom right" $ do AoC.diagonalNeighbors testGrid (3, 4) `shouldBe` [(2, 3)]
+      it "middle left"  $ do AoC.diagonalNeighbors testGrid (1, 2) `shouldBe` [(0, 1), (0, 3), (2, 1), (2, 3)]
+      it "middle left"  $ do AoC.diagonalNeighbors testGrid (2, 3) `shouldBe` [(1, 2), (1, 4), (3, 2), (3, 4)]
+
