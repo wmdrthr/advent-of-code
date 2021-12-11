@@ -225,15 +225,18 @@ ORIGIN = (0, 0)
 def manhattan(a, b = ORIGIN):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-DIRECTIONS = { '↑' : (( 0, -1), ('←', '→')),
-               '↓' : (( 0,  1), ('→', '←')),
-               '←' : ((-1,  0), ('↓', '↑')),
-               '→' : (( 1,  0), ('↑', '↓'))}
+# Below functions assume origin is at top-left,
+# with (X,Y) -> X = row, # Y = column.
 
-DIAGONALS = {'↖' : ((-1, -1), ('←', '↑')),
-             '↗' : (( 1, -1), ('↑', '→')),
-             '↘' : (( 1,  1), ('→', '↓')),
-             '↙' : ((-1,  1), ('↓', '←'))}
+DIRECTIONS = { '↑' : ((-1, 0), ('←', '→')),
+               '↓' : (( 1, 0), ('→', '←')),
+               '←' : (( 0,-1), ('↓', '↑')),
+               '→' : (( 0, 1), ('↑', '↓'))}
+
+DIAGONALS = {'↖' : ((-1,-1), ('←', '↑')),
+             '↗' : ((-1, 1), ('↑', '→')),
+             '↘' : (( 1, 1), ('→', '↓')),
+             '↙' : (( 1,-1), ('↓', '←'))}
 
 ALL_DIRECTIONS = DIRECTIONS | DIAGONALS
 
@@ -257,9 +260,9 @@ def turn(heading, direction, angle, base_angle = 90):
     return heading
 
 
-def neighbors(point, rows = None, cols = None):
-    for dir in DIRECTIONS:
-        dx, dy = DIRECTIONS[dir][0]
+def neighbors(point, rows = None, cols = None, directions = DIRECTIONS):
+    for dir in directions:
+        dx, dy = directions[dir][0]
         nx, ny = point[0] + dx, point[1] + dy
         if nx < 0 or ny < 0:
             continue
@@ -277,7 +280,7 @@ def display(grid, rows, cols, tiles):
     for r in range(rows):
         row = []
         for c in range(cols):
-            row.append(tiles[grid[(c, r)]])
+            row.append(tiles[grid[(r, c)]])
         print(''.join(row))
 
 
@@ -461,7 +464,7 @@ def solve5(data):
         a, b = line.split(' -> ')
         x1, y1 = [int(v) for v in a.split(',')]
         x2, y2 = [int(v) for v in b.split(',')]
-        lines.append(((x1, y1), (x2, y2)))
+        lines.append(((y1, x1), (y2, x2)))
 
     def generate_points(line):
 
@@ -659,6 +662,50 @@ def solve10(data):
 
     yield sum(-score for score in scores if score < 0)
     yield statistics.median(score for score in scores if score > 0)
+
+
+@with_solutions(1603, 222)
+def solve11(data):
+
+    # Dumbo Octopus
+
+    data = [l for l in data.splitlines()]
+    octopuses = {(x, y):int(c) for x,l in enumerate(data) for y,c in enumerate(l)}
+    rows, cols = len(data), len(data[0])
+
+    flashes = 0
+    n = 0
+
+    while True:
+        total_energy_level = sum(octopuses.values())
+        if total_energy_level == 0:
+            yield n
+
+        if n == 100:
+            yield flashes
+
+        for octopus in octopuses.keys():
+            octopuses[octopus] += 1
+
+        flashed = set()
+        while True:
+
+            ready_to_flash = [octopus for octopus,energy_level in octopuses.items() if energy_level > 9]
+            if len(ready_to_flash) == 0:
+                break
+
+            for octopus in ready_to_flash:
+                if octopus in flashed:
+                    continue
+                flashed.add(octopus)
+                for _, neighbor in neighbors(octopus, rows, cols, ALL_DIRECTIONS):
+                    octopuses[neighbor] += 1
+
+            for octopus in flashed:
+                octopuses[octopus] = 0
+
+        flashes += len(flashed)
+        n += 1
 
 ################################################################################
 
