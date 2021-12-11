@@ -19,6 +19,7 @@ pub mod lanternfish;
 pub mod treacheryofwhales;
 pub mod sevensegmentsearch;
 pub mod smokebasin;
+pub mod syntaxscoring;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -67,15 +68,16 @@ fn get_data(day: u8) -> io::Result<String> {
 fn run(day: u8, data: String) {
 
     match day {
-        1  => { sonarsweep::solve(data);                    }
-        2  => { dive::solve(data);                          }
-        3  => { binarydiagnostic::solve(data);              }
-        4  => { giantsquid::solve(data);                    }
-        5  => { hydrothermalventure::solve(data);           }
-        6  => { lanternfish::solve(data);                   }
-        7  => { treacheryofwhales::solve(data);             }
-        8  => { sevensegmentsearch::solve(data);            }
-        9  => { smokebasin::solve(data);                    }
+         1 => { sonarsweep::solve(data);                    }
+         2 => { dive::solve(data);                          }
+         3 => { binarydiagnostic::solve(data);              }
+         4 => { giantsquid::solve(data);                    }
+         5 => { hydrothermalventure::solve(data);           }
+         6 => { lanternfish::solve(data);                   }
+         7 => { treacheryofwhales::solve(data);             }
+         8 => { sevensegmentsearch::solve(data);            }
+         9 => { smokebasin::solve(data);                    }
+        10 => { syntaxscoring::solve(data);                 }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }
