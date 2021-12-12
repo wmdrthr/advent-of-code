@@ -729,6 +729,40 @@ def solve11(data):
         flashes += len(flashed)
         n += 1
 
+@with_solutions(3410, 98796)
+def solve12(data):
+
+    # Passage Pathing
+
+    graph = collections.defaultdict(set)
+    for line in data.splitlines():
+        a, b = line.split('-')
+        graph[a].add(b)
+        graph[b].add(a)
+
+    def dfs(current, history, path, flag = False):
+
+        if current == 'end':
+            if custom_data:
+                print(path)
+            return 1
+
+        n = 0
+        for node in graph[current]:
+            if node == 'start':
+                continue
+
+            if node.islower() and node in history:
+                if not flag:
+                    n += dfs(node, history, path + [node], True)
+            else:
+                n += dfs(node, history | {node}, path + [node], flag)
+
+        return n
+
+    yield dfs('start', set(), ['start'], True)
+    yield dfs('start', set(), ['start'])
+
 ################################################################################
 
 if __name__ == '__main__':
