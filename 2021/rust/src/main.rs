@@ -21,6 +21,7 @@ pub mod sevensegmentsearch;
 pub mod smokebasin;
 pub mod syntaxscoring;
 pub mod dumbooctopus;
+pub mod passagepathing;
 
 fn usage() {
     println!("usage: adventofcode <day> [-|input file]");
@@ -80,6 +81,7 @@ fn run(day: u8, data: String) {
          9 => { smokebasin::solve(data);                    }
         10 => { syntaxscoring::solve(data);                 }
         11 => { dumbooctopus::solve(data);                  }
+        12 => { passagepathing::solve(data);                }
         _  => { println!("no solver for day {} yet.", day); }
     }
 }

@@ -740,7 +740,7 @@ def solve12(data):
         graph[a].add(b)
         graph[b].add(a)
 
-    def dfs(current, history, path, flag = False):
+    def dfs(current, history, path, flag):
 
         if current == 'end':
             if custom_data:
@@ -761,7 +761,7 @@ def solve12(data):
         return n
 
     yield dfs('start', set(), ['start'], True)
-    yield dfs('start', set(), ['start'])
+    yield dfs('start', set(), ['start'], False)
 
 ################################################################################
 
