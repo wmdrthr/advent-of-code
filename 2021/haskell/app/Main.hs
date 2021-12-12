@@ -21,6 +21,7 @@ import Lanternfish         (day06)
 import TreacheryOfWhales   (day07)
 import SevenSegmentSearch  (day08)
 import SmokeBasin          (day09)
+import SyntaxScoring       (day10)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -78,15 +79,16 @@ formatElapsedTime elapsed = let t :: Double
 -- solve calls the correct solver after parsing the input into the
 -- expected format
 solve :: Int -> String -> IO ()
-solve 1 = day01 . parseInputNumbers
-solve 2 = day02 . lines
-solve 3 = day03 . lines
-solve 4 = day04 . lines
-solve 5 = day05 . lines
-solve 6 = day06 . parseCommaSeparatedNumbers
-solve 7 = day07 . parseCommaSeparatedNumbers
-solve 8 = day08 . lines
-solve 9 = day09 . lines
+solve  1 = day01 . parseInputNumbers
+solve  2 = day02 . lines
+solve  3 = day03 . lines
+solve  4 = day04 . lines
+solve  5 = day05 . lines
+solve  6 = day06 . parseCommaSeparatedNumbers
+solve  7 = day07 . parseCommaSeparatedNumbers
+solve  8 = day08 . lines
+solve  9 = day09 . lines
+solve 10 = day10 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

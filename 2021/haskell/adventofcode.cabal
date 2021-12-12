@@ -28,6 +28,7 @@ library
       SevenSegmentSearch
       SmokeBasin
       SonarSweep
+      SyntaxScoring
       TreacheryOfWhales
   other-modules:
       Paths_adventofcode
@@ -67,6 +68,7 @@ test-suite aoc2021test
       SevenSegmentSearchSpec
       SmokeBasinSpec
       SonarSweepSpec
+      SyntaxScoringSpec
       TreacheryOfWhalesSpec
       Paths_adventofcode
   hs-source-dirs:

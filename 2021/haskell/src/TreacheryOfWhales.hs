@@ -1,14 +1,7 @@
 module TreacheryOfWhales where
 
 import Data.List   (sort, minimum)
-import Debug.Trace
-
-median :: [Int] -> Int
-median xs
-  | odd  len = xs !! mid
-  | even len = (xs !! (mid-1) + xs !! mid) `quot` 2
-    where len = length xs
-          mid = len `div` 2
+import AdventOfCode
 
 mean :: [Int] -> Int
 mean xs = sum xs `div` length xs

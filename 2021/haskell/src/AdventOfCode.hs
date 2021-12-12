@@ -150,6 +150,19 @@ binS2Dec :: String -> Int
 binS2Dec = bin2Dec . map (=='1')
 
 
+-- Median (middle value) of numeric data, using the common “mean of
+-- middle two” method (and using integer division)
+-- >>> median [1, 3, 5]
+-- 3
+-- >>> median [1, 3, 5, 7]
+-- 4
+median :: Integral a => [a] -> a
+median xs
+  | odd  len = xs !! mid
+  | even len = (xs !! (mid-1) + xs !! mid) `quot` 2
+    where len = length xs
+          mid = len `div` 2
+
 -- Below functions assume origin is at top-left,
 -- with (X,Y) -> X = row, # Y = column.
 

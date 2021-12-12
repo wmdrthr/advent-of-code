@@ -46,6 +46,12 @@ spec = do
                                                                   ['C', 'D', 'E']]
 
 
+  context "median" $ do
+    it "median [1, 3, 5] -> 3" $ do AoC.median [1, 3, 5] `shouldBe` 3
+    it "median [1, 3, 5, 7] -> 4" $ do AoC.median [1, 3, 5, 7] `shouldBe` 4
+
+  -- Grid Utility Functions
+
   let testGrid = AoC.parseGrid id ["abcde",
                                    "fghij",
                                    "klmno",
