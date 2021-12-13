@@ -6,6 +6,7 @@ import time
 from pprint import pprint
 from datetime import datetime, timedelta
 import contextlib
+import unicodedata as U
 
 import itertools
 import collections
@@ -297,7 +298,8 @@ def neighbors(point, rows = None, cols = None, directions = DIRECTIONS):
 
 def display(grid, rows, cols, tiles):
     # Given a dict (not a 2d array) representing a point grid, print
-    # the grid, using the given tileset.
+    # the grid, using the given tileset. This assumes a non-sparse
+    # grid.
 
     for r in range(rows):
         row = []
@@ -762,6 +764,64 @@ def solve12(data):
 
     yield dfs('start', set(), ['start'], True)
     yield dfs('start', set(), ['start'], False)
+
+
+@with_solutions(621, 'HKUJGAJZ')
+def solve13(data):
+
+    # Transparent Origami
+
+    point_lines, folds = data.split('\n\n')
+
+    points = {}
+    for line in point_lines.split('\n'):
+        (x, y) = [int(v) for v in line.split(',')]
+        points[(x, y)] = True
+
+    def fold(points, fold):
+        fold = fold.split(' ')[2].split('=')
+        if fold[0] == 'x':
+            x = int(fold[1])
+            newpoints = {point:True
+                         for point in points
+                         if point[0] < x}
+            newpoints.update({(2 * x - point[0], point[1]):True
+                              for point in points
+                              if point[0] > x})
+        elif fold[0] == 'y':
+            y = int(fold[1])
+            newpoints = {point:True
+                         for point in points
+                         if point[1] < y}
+            newpoints.update({(point[0], 2 * y - point[1]):True
+                              for point in points
+                              if point[1] > y})
+        return newpoints
+
+    folds = folds.split('\n')
+
+    # Part 1
+    points = fold(points, folds[0])
+    yield len(points)
+
+    # Part 2
+    for line in folds[1:]:
+        points = fold(points, line)
+
+    maxx = maxy = 0
+    for (x, y) in points:
+        maxx = max(maxx, x)
+        maxy = max(maxy, y)
+
+    for y in range(maxy + 1):
+        for x in range(maxx + 1):
+            if (x,y) in points:
+                print(U.lookup('FULL BLOCK'), end='')
+            else:
+                print(U.lookup('LIGHT SHADE'), end='')
+        print()
+
+    yield 'HKUJGAJZ'
 
 ################################################################################
 
