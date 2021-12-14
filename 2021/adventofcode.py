@@ -823,6 +823,36 @@ def solve13(data):
 
     yield 'HKUJGAJZ'
 
+
+@with_solutions(5656, 12271437788530)
+def solve14(data):
+
+    # Extended Polymerization
+
+    template, rest = data.split('\n\n')
+    rules = {}
+    for rule in rest.splitlines():
+        a, b = rule.split(' -> ')
+        rules[a] = b
+
+    counter = collections.Counter([pair[0] + pair[1] for pair in itertools.pairwise(template)])
+    for step in range(40):
+        new_counter = collections.Counter()
+        for pair in counter:
+            mid = rules[pair]
+            new_counter[pair[0] + mid] += counter[pair]
+            new_counter[mid + pair[1]] += counter[pair]
+        counter = new_counter
+
+        if step in (9, 39):
+            chars = collections.Counter()
+            for pair in counter:
+                chars[pair[0]] += counter[pair]
+            chars[template[-1]] += 1
+
+            char_counts = list(chars.values())
+            yield max(char_counts) - min(char_counts)
+
 ################################################################################
 
 if __name__ == '__main__':
