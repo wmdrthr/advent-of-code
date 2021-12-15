@@ -15,6 +15,7 @@ import math
 
 import pytz
 import requests
+import networkx as nx
 
 YEAR = 2021
 
@@ -231,11 +232,13 @@ def test():
         for idx, timing in enumerate(timings):
             print(f'Day {idx + 1:>2}', end='\t')
             if timing is not None:
-                elapsed_ms = timing / (1000 * 1000)
-                if elapsed_ms > 100:
-                    color = '\033[1;31m'
+                elapsed_ms = timing // (1000 * 1000)
+                if elapsed_ms >= 1000:
+                    color = '\033[1;31m' # red
+                elif elapsed_ms > 100:
+                    color = '\033[1;33m' # yellow
                 else:
-                    color = '\033[1;32m'
+                    color = '\033[1;32m' # green
                 print(f'{color}{format_elapsed_time(timing):>10}\033[0m')
             else:
                 print('      -')
@@ -852,6 +855,44 @@ def solve14(data):
 
             char_counts = list(chars.values())
             yield max(char_counts) - min(char_counts)
+
+
+@with_solutions(741, 2976)
+def solve15(data):
+
+    # Chiton
+
+    data = [l for l in data.splitlines()]
+    chiton_map = {(x, y):int(c) for x,l in enumerate(data) for y,c in enumerate(l)}
+    rows, cols = len(data), len(data[0])
+
+    def calculate(chiton_map):
+        graph = nx.DiGraph()
+        for node in chiton_map:
+            for _, neighbor in neighbors(node, rows, cols):
+                graph.add_edge(node, neighbor, risk_level=chiton_map[neighbor])
+
+        path = nx.shortest_path(graph, source=(0, 0),
+                                target=(rows - 1, cols-1),
+                                weight='risk_level')
+        return sum(chiton_map[node] for node in path[1:])
+
+    yield calculate(chiton_map)
+
+    chiton_map = {}
+    for x in range(rows * 5):
+        for y in range(cols * 5):
+            dist = x // rows + y // cols
+            newval = int(data[x % rows][y % cols])
+            for n in range(dist):
+                newval += 1
+                if newval == 10:
+                    newval = 1
+            chiton_map[(x, y)] = newval
+    rows *= 5
+    cols *= 5
+
+    yield calculate(chiton_map)
 
 ################################################################################
 
