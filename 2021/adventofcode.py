@@ -894,6 +894,97 @@ def solve15(data):
 
     yield calculate(chiton_map)
 
+
+@with_solutions(974, 180616437720)
+def solve16(data):
+
+    # Packet Decoder
+
+    class Packet:
+
+        def __init__(self, version, typeid):
+
+            self.version = version
+            self.typeid = typeid
+            self.subpackets = []
+
+        @classmethod
+        def parse(cls, bitstream):
+
+            packet = cls(int(bitstream[0:3], 2), int(bitstream[3:6], 2))
+            bitstream = bitstream[6:]
+
+            if packet.typeid == 4:
+                value = ''
+                cursor = 0
+                for chunk in (bitstream[n:n+5] for n in range(0, len(bitstream), 5)):
+                    value += chunk[1:]
+                    cursor += 5
+                    if chunk[0] == '0':
+                        break
+                packet.value = int(value, 2)
+                return packet, bitstream[cursor:]
+            else:
+                length_type_id, bitstream = bitstream[0], bitstream[1:]
+                if length_type_id == '0':
+                    subpacket_length, bitstream = int(bitstream[:15], 2), bitstream[15:]
+                    length = len(bitstream)
+                    while (length - len(bitstream)) < subpacket_length:
+                        subpacket, bitstream = Packet.parse(bitstream)
+                        packet.subpackets.append(subpacket)
+
+                    return packet, bitstream
+
+                number_of_subpackets, bitstream = int(bitstream[:11], 2), bitstream[11:]
+                for _ in range(number_of_subpackets):
+                    subpacket, bitstream = Packet.parse(bitstream)
+                    packet.subpackets.append(subpacket)
+
+                return packet, bitstream
+
+        def version_sum(self):
+            return self.version + sum(sp.version_sum() for sp in self.subpackets)
+
+        def evaluate(self):
+
+            match self.typeid:
+                case 0:
+                    return sum(sp.evaluate() for sp in self.subpackets)
+                case 1:
+                    return math.prod(sp.evaluate() for sp in self.subpackets)
+                case 2:
+                    return min(sp.evaluate() for sp in self.subpackets)
+                case 3:
+                    return max(sp.evaluate() for sp in self.subpackets)
+                case 4:
+                    return self.value
+                case 5:
+                    return int(self.subpackets[0].evaluate() > self.subpackets[1].evaluate())
+                case 6:
+                    return int(self.subpackets[0].evaluate() < self.subpackets[1].evaluate())
+                case 7:
+                    return int(self.subpackets[0].evaluate() == self.subpackets[1].evaluate())
+
+        def __str__(self):
+
+            match self.typeid:
+                case 4:
+                    return f'LiteralValuePacket<v{self.version} {self.value}>'
+                case _:
+                    return f'OperatorPacket<v{self.version} [{", ".join(str(p) for p in self.subpackets)}]>'
+
+    if custom_data:
+        for line in data.splitlines():
+            packet_data = ''.join(bin(int(char, 16))[2:].zfill(4) for char in line)
+            packet, packet_data = Packet.parse(packet_data)
+            print(f'{line} => {packet.version_sum()}, {packet.evaluate()}')
+
+    else:
+        packet_data = ''.join(bin(int(char, 16))[2:].zfill(4) for char in data)
+        packet, _ = Packet.parse(packet_data)
+        yield packet.version_sum()
+        yield packet.evaluate()
+
 ################################################################################
 
 if __name__ == '__main__':
