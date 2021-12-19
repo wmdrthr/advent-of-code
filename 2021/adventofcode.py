@@ -985,6 +985,29 @@ def solve16(data):
         yield packet.version_sum()
         yield packet.evaluate()
 
+
+@with_solutions(4851, 1739)
+def solve17(data):
+
+    # Trick Shot
+
+    tx, ty = [[int(v) for v in w[2:].split('..')] for w in data[13:].split(', ')]
+    y = abs(ty[0])
+    yield y * (y - 1) // 2
+
+    def simulate(vx, vy):
+        x = y = 0
+        while y >= ty[0]:
+            x, y = x + vx, y + vy
+            vx, vy = max(0, vx - 1), vy - 1
+            if tx[0] <= x <= tx[1] and ty[0] <= y <= ty[1]:
+                return 1
+        return 0
+
+    yield sum(simulate(vx, vy) for vx in range(tx[1] + 1) for vy in range(ty[0], -ty[0]))
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
