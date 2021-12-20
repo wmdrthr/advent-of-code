@@ -1081,6 +1081,59 @@ def solve18(data):
 
     yield max(magnitude(add(a, b)) for a, b in itertools.permutations(numbers, 2))
 
+
+@with_solutions(5231, 14279)
+def solve20(data):
+
+    # Trench Map
+
+    data = data.splitlines()
+    algorithm = data[0]
+    image = collections.defaultdict(int, {(x, y):1 for x,l in enumerate(data[2:]) for y,c in enumerate(l) if c == '#'})
+
+    assert(len(algorithm) == 512)
+
+    pixel_mapping = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+    def show(image, n):
+        for x in range(-n, n):
+            for y in range(-n, n):
+                print('#' if image[(x, y)] == 1 else '.', end='')
+            print()
+        print()
+
+    def enhance(image, step):
+
+        maxx = maxy = 0
+        minx = miny = float('inf')
+        for (x,y) in image.keys():
+            if image[(x, y)] == 1:
+                maxx, maxy = max(maxx, x), max(maxy, y)
+                minx, miny = min(minx, x), min(miny, y)
+
+        boundary = {(x, y) for x in range(minx, maxx+1) for y in range(miny, maxy+1)}
+
+        output_image = collections.defaultdict(int)
+
+        for x in range(minx - 1, maxx + 2):
+            for y in range(miny - 1, maxy + 2):
+                digits = ''
+                for (dx, dy) in pixel_mapping:
+                    nx, ny = x + dx, y +  dy
+                    if step % 2 == 1:
+                        digits += '1' if image[(nx, ny)] == 1 or (nx, ny) not in boundary else '0'
+                    else:
+                        digits += '1' if image[(nx, ny)] == 1 else '0'
+                output_image[(x, y)] = int(algorithm[int(digits, 2)] == '#')
+
+        return output_image
+
+    for n in range(50):
+        image = enhance(image, n)
+        if n == 1:
+            yield sum(image.values())
+    yield sum(image.values())
+
 ################################################################################
 
 if __name__ == '__main__':
