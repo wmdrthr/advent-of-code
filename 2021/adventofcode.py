@@ -1134,6 +1134,64 @@ def solve20(data):
             yield sum(image.values())
     yield sum(image.values())
 
+
+@with_solutions(1073709, 148747830493442)
+def solve21(data):
+
+    # Dirac Dice
+
+    data = data.splitlines()
+    starting_positions = [None, int(data[0][-1]), int(data[1][-1])]
+
+    # Part 1
+    positions = starting_positions[:]
+    scores = [None, 0, 0]
+    current_player = 1
+    die = rolls = 0
+
+    while True:
+        for _ in range(3):
+            die, rolls = die % 100 + 1, rolls + 1
+            positions[current_player] += die
+        positions[current_player] = (positions[current_player] - 1) % 10 + 1
+        scores[current_player] += positions[current_player]
+
+        if scores[current_player] >= 1000:
+            losing_player = 2 if current_player == 1 else 1
+            yield scores[losing_player] * rolls
+            break
+
+        current_player = 2 if current_player == 1 else 1
+
+    # Part 2
+    roll_counts = [0, 0, 0, 1, 3, 6, 7, 6, 3, 1]
+    # tuple contains - (p1 position, p2 position, p1 score, p2 score)
+    states = {(starting_positions[1], starting_positions[2], 0, 0): 1}
+    current_player = 1
+    wins = [0, 0, 0]
+
+    while len(states) > 0:
+
+        new_states = collections.defaultdict(int)
+        for state in states.keys():
+            for roll in range(3, 10):
+                position, score = state[current_player - 1], state[current_player + 1]
+                position = (position + roll - 1) % 10 + 1
+                score += position
+                if score >= 21:
+                    wins[current_player] += states[state] * roll_counts[roll]
+                else:
+                    if current_player == 1:
+                        new_state = (position, state[1], score, state[3])
+                    else:
+                        new_state = (state[0], position, state[2], score)
+                    new_states[new_state] += states[state] * roll_counts[roll]
+
+        current_player = 2 if current_player == 1 else 1
+        states = new_states
+
+    yield max(wins)
+
 ################################################################################
 
 if __name__ == '__main__':
