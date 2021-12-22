@@ -92,42 +92,45 @@ def format_elapsed_time(elapsed):
             continue
         return f'{elapsed:4.3f} {unit}'
 
+def colorize_elapsed_time(elapsed):
+    elapsed_ms = elapsed // (1000 * 1000)
+    if elapsed_ms >= 1000:
+        color = '\033[1;31m' # red
+    elif elapsed_ms > 100:
+        color = '\033[1;33m' # yellow
+    elif elapsed < (1000 * 1000):
+        color = '\033[1;34m' # blue
+    else:
+        color = '\033[1;32m' # green
+    return f'{color}{format_elapsed_time(elapsed)}\033[0m'
 
 custom_data = False
 
 class SolutionMismatch(Exception):
+    pass
 
-    def __init__(self, message, values):
-
-        self.values = values
-        super().__init__(message)
 
 def with_solutions(*expected):
     def wrapper(f):
         def wrapped_method(*args):
             fgen = f(*args)
-            values = []
             for index in range(2):
                 try:
                     actual = next(fgen)
+                    print(actual)
                 except (StopIteration, TypeError) as e:
                     if len(expected) > index and expected[index] is not None:
-                        raise SolutionMismatch(f'No solution found for part {index + 1}', tuple(values))
+                        raise SolutionMismatch(f'No solution found for part {index + 1}')
                     if len(e.args) > 0 and e.args[0] != "'NoneType' object is not an iterator":
                         raise e
-                    actual = None
 
                 if actual and not custom_data and len(expected) > index:
                     if expected[index] is None:
-                        raise SolutionMismatch(f'Could not verify solution for part {index + 1}', tuple(values))
+                        raise SolutionMismatch(f'Could not verify solution for part {index + 1}')
                     if actual != expected[index]:
                         raise SolutionMismatch('Incorrect solution for Part {}: Expected "{}", Actual "{}"'.format(index + 1,
                                                                                                                    expected[index],
-                                                                                                                   actual),
-                                               tuple(values))
-                values.append(actual)
-            return tuple(values)
-
+                                                                                                                   actual))
         return wrapped_method
     return wrapper
 
@@ -172,15 +175,11 @@ def main():
         try:
             solutions = solver(data)
         except SolutionMismatch as s:
-            if s.values:
-                print(*s.values, sep='\n')
             print(s.args[0])
             return 23
         end = time.monotonic_ns()
         elapsed = (end - start)
-        if solutions:
-            print(*solutions, sep='\n')
-        print(f'Time: {format_elapsed_time(elapsed)}')
+        print(f'Time: {colorize_elapsed_time(elapsed)}')
     else:
         print(f'No solver for day {day}')
         return 5
@@ -207,7 +206,7 @@ def test():
                 test_start = time.monotonic_ns()
                 with contextlib.redirect_stdout(io.StringIO()) as f:
                     with contextlib.redirect_stderr(f):
-                        solutions = solver(data)
+                        solver(data)
                 test_elapsed = time.monotonic_ns() - test_start
 
                 print('\033[1;32m.\033[0m', end='', flush=True)
@@ -234,18 +233,10 @@ def test():
         for idx, timing in enumerate(timings):
             print(f'Day {idx + 1:>2}', end='\t')
             if timing is not None:
-                elapsed_ms = timing // (1000 * 1000)
-                if elapsed_ms >= 1000:
-                    color = '\033[1;31m' # red
-                elif elapsed_ms > 100:
-                    color = '\033[1;33m' # yellow
-                elif timing < (1000 * 1000):
-                    color = '\033[1;34m' # blue
-                else:
-                    color = '\033[1;32m' # green
-                print(f'{color}{format_elapsed_time(timing):>10}\033[0m')
+                timing_str = colorize_elapsed_time(timing)
+                print(f'{timing_str:>22}')
             else:
-                print('      -')
+                print(f'          -')
 
 
 ################################################################################
