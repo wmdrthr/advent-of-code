@@ -1183,6 +1183,74 @@ def solve21(data):
 
     yield max(wins)
 
+
+@with_solutions(577205, 1197308251666843)
+def solve22(data):
+
+    # Reactor Reboot
+
+    steps = []
+    for line in data.splitlines():
+        words = line.split(' ', 1)
+        toggle = words[0] == 'on'
+        words = words[1].split(',')
+        x1, x2 = [int(v) for v in words[0][2:].split('..')]
+        y1, y2 = [int(v) for v in words[1][2:].split('..')]
+        z1, z2 = [int(v) for v in words[2][2:].split('..')]
+
+        steps.append((toggle, range(x1, x2 + 1), range(y1, y2 + 1), range(z1, z2 + 1)))
+
+    def subrange(r, low = -50, high = 50):
+        first, last = r[0], r[-1]
+        if last < low:
+            return []
+        elif first > high:
+            return []
+        first = min(max(first, low), high)
+        last = min(max(last, low), high)
+        return range(first, last + 1)
+
+    # Part 1
+    cubes = {}
+    for toggle, rx, ry, rz in steps:
+        for x in subrange(rx):
+            for y in subrange(ry):
+                for z in subrange(rz):
+                    cubes[(x, y, z)] = toggle
+
+    yield sum(1 for v in cubes.values() if v)
+
+    # Part 2
+
+    def process_cube(rx, ry, rz, rest):
+
+        volume = len(rx) * len(ry) * len(rz)
+
+        intersections = []
+        for (_, orx, ory, orz) in rest:
+            nrx = subrange(orx, rx[0], rx[-1])
+            nry = subrange(ory, ry[0], ry[-1])
+            nrz = subrange(orz, rz[0], rz[-1])
+
+            if len(nrx) == 0 or len(nry) == 0 or len(nrz) == 0:
+                continue
+
+            intersections.append((None, nrx, nry, nrz))
+
+        for idx, intersection in enumerate(intersections):
+            _, rx, ry, rz = intersection
+            volume -= process_cube(rx, ry, rz, intersections[idx+1:])
+
+        return volume
+
+    total = 0
+    for idx, (toggle, rx, ry, rz) in enumerate(steps):
+        if not toggle:
+            continue
+        total += process_cube(rx, ry, rz, steps[idx+1:])
+    yield total
+
+
 ################################################################################
 
 if __name__ == '__main__':
