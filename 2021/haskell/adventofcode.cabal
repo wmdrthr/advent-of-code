@@ -1,0 +1,82 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           adventofcode
+version:        2021.0.0.0
+description:    Advent of Code 2021: Haskell Solutions
+author:         Shantanu Joshi
+maintainer:     mail@weemadarthur.dev
+copyright:      2021 Shantanu Joshi
+license:        MIT
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://git.sr.ht/weemadarthur/advent-of-code
+
+library
+  exposed-modules:
+      AdventOfCode
+      BinaryDiagnostic
+      Dive
+      GiantSquid
+      HydrothermalVenture
+      Lanternfish
+      SevenSegmentSearch
+      SmokeBasin
+      SonarSweep
+      SyntaxScoring
+      TreacheryOfWhales
+  other-modules:
+      Paths_adventofcode
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , split
+  default-language: Haskell2010
+
+executable aoc2021
+  main-is: Main.hs
+  other-modules:
+      Paths_adventofcode
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      adventofcode
+    , base >=4.7 && <5
+    , directory
+    , split
+    , time
+  default-language: Haskell2010
+
+test-suite aoc2021test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      AdventOfCodeSpec
+      BinaryDiagnosticSpec
+      DiveSpec
+      GiantSquidSpec
+      HydrothermalVentureSpec
+      LanternfishSpec
+      SevenSegmentSearchSpec
+      SmokeBasinSpec
+      SonarSweepSpec
+      SyntaxScoringSpec
+      TreacheryOfWhalesSpec
+      Paths_adventofcode
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      adventofcode
+    , base >=4.7 && <5
+    , containers
+    , hspec
+  default-language: Haskell2010
