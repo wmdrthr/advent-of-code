@@ -20,6 +20,7 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
+      CalorieCounting
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
@@ -50,6 +51,7 @@ test-suite aoc2022test
   main-is: Spec.hs
   other-modules:
       AdventOfCodeSpec
+      CalorieCountingSpec
       Paths_adventofcode
   hs-source-dirs:
       test
