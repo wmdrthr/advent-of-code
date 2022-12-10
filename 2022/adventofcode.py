@@ -307,6 +307,22 @@ def display(grid, rows, cols, tiles):
 ################################################################################
 # Solvers
 
+@with_solutions(71023, 206289)
+def solve1(data):
+
+    # Calorie Counting
+
+    foodpacks = data.split('\n\n')
+
+    totals = []
+    for pack in foodpacks:
+        total = 0
+        for item in pack.split('\n'):
+            total += int(item)
+        totals.append(total)
+
+    yield max(totals)
+    yield sum(sorted(totals)[-3:])
 
 ################################################################################
 
