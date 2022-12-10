@@ -1,0 +1,44 @@
+name:                adventofcode
+version:             2022
+git:                 "https://git.sr.ht/weemadarthur/advent-of-code"
+license:             MIT
+author:              "Shantanu Joshi"
+maintainer:          "mail@weemadarthur.dev"
+copyright:           "2022 Shantanu Joshi"
+description:         "Advent of Code 2022: Haskell Solutions"
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - containers
+  - split
+
+executables:
+  aoc2022:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - adventofcode
+    - directory
+    - time
+    - split
+
+tests:
+  aoc2022test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - containers
+    - adventofcode
+    - hspec
