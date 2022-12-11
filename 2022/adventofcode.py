@@ -324,6 +324,46 @@ def solve1(data):
     yield max(totals)
     yield sum(sorted(totals)[-3:])
 
+@with_solutions(8392, 10116)
+def solve2(data):
+
+    # Rock Paper Scissors
+
+    SHAPE_SCORE = {'X': 1, 'Y': 2, 'Z': 3}
+    OUTCOME_SCORE = {'win': 6, 'draw': 3, 'loss': 0}
+    OUTCOMES = {'X': 'loss', 'Y': 'draw', 'Z': 'win'}
+    STRATEGY = {'A': {'win': 'Y', 'loss': 'Z', 'draw': 'X'},
+                'B': {'win': 'Z', 'loss': 'X', 'draw': 'Y'},
+                'C': {'win': 'X', 'loss': 'Y', 'draw': 'Z'}}
+
+    def outcome(moves: list[str]) -> str:
+        match moves:
+          case ['A', 'X']: return 'draw'
+          case ['A', 'Y']: return 'win'
+          case ['A', 'Z']: return 'loss'
+
+          case ['B', 'X']: return 'loss'
+          case ['B', 'Y']: return 'draw'
+          case ['B', 'Z']: return 'win'
+
+          case ['C', 'X']: return 'win'
+          case ['C', 'Y']: return 'loss'
+          case ['C', 'Z']: return 'draw'
+
+        return ''
+
+    turns = [line.split(' ') for line in data.splitlines()]
+
+    yield sum(SHAPE_SCORE[turn[1]] + OUTCOME_SCORE[outcome(turn)] for turn in turns)
+
+    score = 0
+    for move, desired_outcome in turns:
+        desired_outcome = OUTCOMES[desired_outcome]
+        response = STRATEGY[move][desired_outcome]
+        score += SHAPE_SCORE[response] + OUTCOME_SCORE[desired_outcome]
+    yield score
+
+
 ################################################################################
 
 if __name__ == '__main__':
