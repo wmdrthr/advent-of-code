@@ -9,6 +9,7 @@ import contextlib
 import unicodedata as U
 
 import string
+from copy import deepcopy
 
 import pytz
 import requests
@@ -160,7 +161,8 @@ def main():
         print('Cannot run solver without data. Bailing')
         return 4
 
-    data = data.strip()
+    if day != 5:
+        data = data.strip()
 
     solvers = {}
     solvers = dict([(fn, f) for fn, f in globals().items()
@@ -421,6 +423,60 @@ def solve4(data):
 
     yield len([pair for pair in assignments if contains(pair)])
     yield len([pair for pair in assignments if overlap(pair)])
+
+@with_solutions('RLFNRTNFB', 'MHQTLJRLB')
+def solve5(data):
+
+    # Supply Stacks
+    starting_stacks = [[] for _ in range(10)]
+    commands = []
+
+    flag = False
+    for line in data.splitlines():
+        if flag:
+            words = line.split(' ')
+            count, src, dst = int(words[1]), int(words[3]), int(words[5])
+            commands.append((count, src, dst))
+        else:
+            if line.startswith(' 1'):
+                continue
+            if line == '':
+                flag = True
+                continue
+
+            for idx in range(0, len(line), 4):
+                crate = line[idx:idx+4]
+                if crate[0] == '[':
+                    starting_stacks[idx // 4].append(crate[1])
+
+    original_stacks = [list(reversed(stack)) for stack in starting_stacks if len(stack) > 0]
+
+    def move_9000(stacks, command):
+        count, src, dst = command
+        for _ in range(count):
+            crate = stacks[src - 1].pop()
+            stacks[dst - 1].append(crate)
+        return stacks
+
+    def move_9001(stacks, command):
+        count, src, dst = command
+        crates = [stacks[src - 1].pop() for _ in range(count)]
+        for crate in reversed(crates):
+            stacks[dst - 1].append(crate)
+        return stacks
+
+    # Part 1
+    stacks = deepcopy(original_stacks)
+    for command in commands:
+        stacks = move_9000(stacks, command)
+    yield ''.join(stack[-1] for stack in stacks)
+
+    # Part 2
+    stacks = deepcopy(original_stacks)
+    for command in commands:
+        stacks = move_9001(stacks, command)
+    yield ''.join(stack[-1] for stack in stacks)
+
 
 ################################################################################
 
