@@ -397,6 +397,30 @@ def solve3(data):
 
     yield priority_sum
 
+@with_solutions(518, 909)
+def solve4(data):
+
+    # Camp Cleanup
+
+    def contains(pairs):
+        left, right = pairs
+        return left <= right or right <= left
+
+    def overlap(pairs):
+        left, right = pairs
+        return len(left & right) > 0
+
+    assignments = []
+    for line in data.splitlines():
+        pairs = line.split(',')
+        left = tuple(int(v) for v in pairs[0].split('-'))
+        left = set(range(left[0], left[1] + 1))
+        right = tuple(int(v) for v in pairs[1].split('-'))
+        right = set(range(right[0], right[1] + 1))
+        assignments.append((left, right))
+
+    yield len([pair for pair in assignments if contains(pair)])
+    yield len([pair for pair in assignments if overlap(pair)])
 
 ################################################################################
 
