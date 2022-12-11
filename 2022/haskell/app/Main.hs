@@ -12,7 +12,8 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 
 
 import AdventOfCode
-import CalorieCounting (day01)
+import CalorieCounting   (day01)
+import RockPaperScissors (day02)
 
 loadFile :: FilePath -> IO String
 loadFile filename = do
@@ -71,6 +72,7 @@ formatElapsedTime elapsed = let t :: Double
 -- expected format
 solve :: Int -> String -> IO ()
 solve 1 = day01
+solve 2 = day02 . lines
 solve n = error (printf "No solver for day %d yet.\n" n)
 
 

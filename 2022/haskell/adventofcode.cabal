@@ -21,6 +21,7 @@ library
   exposed-modules:
       AdventOfCode
       CalorieCounting
+      RockPaperScissors
   other-modules:
       Paths_adventofcode
   hs-source-dirs:
@@ -52,6 +53,7 @@ test-suite aoc2022test
   other-modules:
       AdventOfCodeSpec
       CalorieCountingSpec
+      RockPaperScissorsSpec
       Paths_adventofcode
   hs-source-dirs:
       test
