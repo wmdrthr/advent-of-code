@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import contextlib
 import unicodedata as U
 
+import string
+
 import pytz
 import requests
 
@@ -362,6 +364,38 @@ def solve2(data):
         response = STRATEGY[move][desired_outcome]
         score += SHAPE_SCORE[response] + OUTCOME_SCORE[desired_outcome]
     yield score
+
+@with_solutions(7446, 2646)
+def solve3(data):
+
+    # Rucksack Reorganization
+
+    PRIORITIES = dict(zip(string.ascii_lowercase, range(1, 27))) | dict(zip(string.ascii_uppercase, range(27, 53)))
+
+    rucksacks = []
+    for line in data.splitlines():
+        midpoint = len(line)//2
+        rucksacks.append((line[:midpoint], line[midpoint:]))
+
+    # Part 1
+    priority_sum = 0
+    for rucksack in rucksacks:
+        compartments = [set(compartment) for compartment in rucksack]
+        common = compartments[0] & compartments[1]
+        priority_sum += PRIORITIES[common.pop()]
+
+    yield priority_sum
+
+    # Part 2
+    priority_sum = 0
+    for idx in range(0, len(rucksacks), 3):
+        group = []
+        for rucksack in rucksacks[idx:idx+3]:
+            group.append(set(rucksack[0] + rucksack[1]))
+        common = group[0] & group[1] & group[2]
+        priority_sum += PRIORITIES[common.pop()]
+
+    yield priority_sum
 
 
 ################################################################################
